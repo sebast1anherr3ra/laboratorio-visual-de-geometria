@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Laboratório Visual de Geometria</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2d;--line:#26334c;--text:#edf3ff;--muted:#9aabc5;--accent:#70d6c2;--accent2:#8bb8ff}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+#app{height:100%;min-height:440px;display:flex;flex-direction:column;background:radial-gradient(ellipse at 50% 35%,#17243c 0%,#0b1020 68%)}
+header{padding:14px 18px 10px;border-bottom:1px solid rgba(150,180,220,.13);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-size:12px;letter-spacing:.17em;text-transform:uppercase;color:var(--accent);font-weight:750}.heading{font-size:clamp(16px,2.4vw,21px);font-weight:650;margin-top:4px}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+#stage{position:relative;flex:1;min-height:250px;touch-action:none}canvas{display:block;width:100%;height:100%;outline:none}
+.hud{position:absolute;left:14px;top:14px;display:flex;flex-direction:column;gap:7px;pointer-events:none}.chip{background:rgba(12,19,34,.78);border:1px solid rgba(150,180,220,.18);backdrop-filter:blur(8px);padding:7px 10px;border-radius:9px;font-size:11px;color:#cbd8ed}.chip b{color:var(--accent);font-weight:700}
+footer{padding:10px 14px 13px;border-top:1px solid rgba(150,180,220,.13);background:rgba(9,14,27,.72);max-height:48vh;overflow-y:auto;overscroll-behavior:contain}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px}.metric{background:rgba(20,31,52,.85);border:1px solid var(--line);border-radius:10px;padding:8px 10px;min-width:0}.metric span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em}.metric strong{display:block;font-size:17px;margin-top:2px;font-variant-numeric:tabular-nums}.metric.result strong{color:var(--accent)}
+.controls{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.left,.right{display:flex;gap:7px;align-items:center;flex-wrap:wrap}button{border:1px solid #33435f;background:#17243b;color:var(--text);padding:8px 11px;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer}button:hover{background:#223452;border-color:#587092}button.primary{border-color:#367f79;background:#143b3a;color:#b9fff0}button.active{border-color:var(--accent);color:var(--accent)}.hint{color:var(--muted);font-size:10px}
+
+html,body{overflow:hidden}
+[hidden]{display:none!important}
+#app{height:100dvh;min-height:0;display:flex;flex-direction:column}
+.site-header{height:76px;flex:0 0 76px;padding:10px 22px;display:flex;align-items:center;gap:17px;background:rgba(9,14,27,.94);position:relative;z-index:20}
+.menu-toggle{width:42px;height:42px;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:9px 10px;border-radius:10px;background:#17243b;border:1px solid #34445f}
+.menu-toggle span{height:2px;width:20px;background:#d9e7f8;border-radius:2px;display:block}
+.site-brand{min-width:0}.brand{font-size:9px;letter-spacing:.2em;color:var(--accent);font-weight:800}.site-title{font-size:18px;font-weight:700;margin-top:3px;letter-spacing:-.02em}.header-spacer{flex:1}
+.home-page,.viewer-page{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.home-page{padding:34px clamp(18px,5vw,76px) 18px;background:radial-gradient(ellipse at 50% 0%,#1a2b46 0%,#0b1020 60%)}
+.hero{max-width:920px;margin:25px auto 54px;padding:34px 0 28px}.eyebrow,.page-kicker{font-size:10px;letter-spacing:.2em;color:var(--accent);font-weight:800}.hero h1{font-size:clamp(34px,6vw,62px);letter-spacing:-.045em;line-height:1.05;margin:15px 0 18px;max-width:760px}.hero p{font-size:clamp(15px,2vw,18px);line-height:1.75;color:#b8c7dc;max-width:760px;margin:0}.hero-button{margin-top:25px;padding:12px 17px;font-size:12px;background:#17413e;border-color:#3c9588;color:#c5fff2}.hero-button span{margin-left:12px;font-size:16px}
+.home-section-head{max-width:1160px;margin:0 auto 18px;display:flex;justify-content:space-between;align-items:end;gap:16px}.home-section-head h2{font-size:24px;margin:7px 0 0}.home-section-head>p{font-size:11px;color:var(--muted);margin:0 0 4px}
+.surface-cards{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}.surface-card{display:flex;flex-direction:column;min-height:220px;text-decoration:none;color:var(--text);padding:18px 18px 16px;border:1px solid #293954;border-radius:14px;background:linear-gradient(145deg,rgba(23,36,59,.9),rgba(15,24,41,.9));transition:transform .18s,border-color .18s,background .18s}.surface-card:hover{transform:translateY(-3px);border-color:#5c9b9a;background:linear-gradient(145deg,rgba(29,53,72,.95),rgba(15,24,41,.95))}.card-index{font-size:9px;letter-spacing:.15em;color:#8fa6c4;font-weight:750}.surface-card h3{font-size:19px;margin:12px 0 8px}.surface-card p{font-size:12px;line-height:1.65;color:#aebed3;margin:0 0 12px}.formula{font-family:Georgia,serif;color:#a9e7db;font-size:13px;margin-top:auto;padding-top:10px}.card-link{font-size:10px;color:#75d8c6;margin-top:12px;font-weight:700}.home-footer{max-width:1160px;margin:28px auto 0;padding:16px 0;border-top:1px solid #26334c;color:#778ba8;font-size:10px}
+.drawer-backdrop{position:fixed;inset:76px 0 0;background:rgba(1,5,14,.58);z-index:29;opacity:0;pointer-events:none;transition:opacity .2s}.sidebar{position:fixed;z-index:30;top:76px;bottom:0;left:0;width:min(310px,86vw);padding:18px 14px;background:#101a2c;border-right:1px solid #2b3b55;transform:translateX(-102%);transition:transform .22s;overflow-y:auto;box-shadow:18px 0 50px rgba(0,0,0,.25)}.sidebar.open{transform:translateX(0)}.drawer-backdrop.open{opacity:1;pointer-events:auto}.sidebar-top{display:flex;align-items:center;justify-content:space-between;padding:2px 8px 15px;color:#7f95b4;font-size:9px;letter-spacing:.18em;font-weight:800}.sidebar-top button{font-size:22px;line-height:1;padding:3px 9px}.nav-link{display:flex;align-items:center;gap:10px;padding:11px 10px;border-radius:8px;text-decoration:none;color:#c2d0e3;font-size:12px;margin:2px 0}.nav-link:hover,.nav-link.active{background:#1d3049;color:#8de2d1}.nav-icon{font-size:17px}.nav-section{font-size:9px;letter-spacing:.17em;color:#7288a7;padding:19px 10px 7px;font-weight:800}.sidebar-note{margin:20px 8px 5px;padding:12px;border-top:1px solid #2a3952;color:#8295b0;font-size:10px;line-height:1.6}
+.viewer-page{display:flex;flex-direction:column;overflow-y:auto;background:radial-gradient(ellipse at 50% 20%,#17243c 0%,#0b1020 68%)}
+#stage{position:relative;flex:0 0 auto;height:clamp(390px,68vh,780px);min-height:390px;touch-action:none;overflow:hidden}
+#stage canvas{display:block;width:100%;height:100%;outline:none}
+.graph-maximize{position:absolute;right:14px;top:14px;z-index:5;display:flex;align-items:center;gap:7px;background:rgba(12,19,34,.88);border-color:#536987;backdrop-filter:blur(8px);font-size:11px}
+.surface-caption{flex:0 0 auto;margin:0;padding:13px 18px 15px;border-top:1px solid rgba(150,180,220,.13);border-bottom:1px solid rgba(150,180,220,.13);background:rgba(9,14,27,.72)}
+.surface-caption h1{font-size:18px;line-height:1.3;margin:0;font-weight:650}
+#stage:fullscreen{width:100vw;height:100vh;min-height:100vh;background:#0b1020}
+#stage.stage-expanded{position:fixed;inset:0;width:100vw;height:100vh;min-height:100vh;z-index:1000;background:#0b1020}
+#stage:fullscreen canvas,#stage.stage-expanded canvas{width:100%;height:100%}
+footer{flex:0 0 auto;max-height:none;overflow:visible;overscroll-behavior:auto}
+@media(max-width:850px){.surface-cards{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{margin:8px auto 34px;padding:24px 0}.home-page{padding-top:22px}}
+@media(max-width:560px){.site-header{height:66px;flex-basis:66px;padding:8px 12px}.site-title{font-size:15px}.brand{font-size:8px}.sidebar{top:66px}.drawer-backdrop{top:66px}.surface-cards{grid-template-columns:1fr}.surface-card{min-height:175px}.home-section-head{align-items:flex-start;flex-direction:column}.hero h1{font-size:38px}.metrics{grid-template-columns:repeat(4,minmax(0,1fr))}#stage{height:64vh;min-height:360px}.surface-caption{padding:11px 14px 13px}.surface-caption h1{font-size:16px}}
+
+@media(max-width:520px){header{padding:11px 12px}.sub{max-width:260px}.hud{left:8px;top:8px}.chip{font-size:10px;padding:6px 8px}.metrics{gap:5px}.metric{padding:7px 6px}.metric strong{font-size:15px}.metric span{font-size:9px}footer{padding:8px}.controls{align-items:flex-start}.hint{width:100%;order:3}button{padding:8px 9px}.graph-maximize{right:8px;top:8px;padding:7px 8px}}
+
+/* Tema claro padrão */
+body[data-theme="light"]{background:#fff;color:#172033}
+body[data-theme="light"] #app{background:#fff}
+body[data-theme="light"] .site-header{background:#fff;border-bottom:1px solid #dce2ea;box-shadow:0 2px 12px rgba(20,35,55,.05)}
+body[data-theme="light"] .brand,body[data-theme="light"] .eyebrow,body[data-theme="light"] .page-kicker{color:#246c68}
+body[data-theme="light"] .site-title,body[data-theme="light"] .hero h1,body[data-theme="light"] .home-section-head h2,body[data-theme="light"] .surface-caption h1{color:#172033}
+body[data-theme="light"] .sub,body[data-theme="light"] .home-section-head>p,body[data-theme="light"] .hint{color:#586579}
+body[data-theme="light"] .home-page,body[data-theme="light"] .viewer-page{background:#fff}
+body[data-theme="light"] .hero p{color:#48566b}
+body[data-theme="light"] .surface-card{color:#172033;background:#fff;border-color:#d7dee8;box-shadow:0 3px 14px rgba(20,35,55,.045)}
+body[data-theme="light"] .surface-card:hover{background:#f6fbfa;border-color:#6a9f99}
+body[data-theme="light"] .surface-card h3{color:#172033}
+body[data-theme="light"] .surface-card p{color:#536176}
+body[data-theme="light"] .card-index{color:#64748b}
+body[data-theme="light"] .formula{color:#176b63}
+body[data-theme="light"] .card-link{color:#176b63}
+body[data-theme="light"] .home-footer{border-color:#dce2ea;color:#64748b}
+body[data-theme="light"] .surface-caption{background:#fff;border-color:#dce2ea}
+body[data-theme="light"] footer{background:#f7f9fc;border-color:#dce2ea}
+body[data-theme="light"] .metric{background:#fff;border-color:#d7dee8}
+body[data-theme="light"] .metric span{color:#64748b}
+body[data-theme="light"] .metric strong{color:#172033}
+body[data-theme="light"] .metric.result strong{color:#176b63}
+body[data-theme="light"] button{background:#f1f5f9;color:#263449;border-color:#c7d0dc}
+body[data-theme="light"] button:hover{background:#e7eef5;border-color:#8295aa}
+body[data-theme="light"] button.primary,body[data-theme="light"] .hero-button{background:#e5f4f1;border-color:#78aaa2;color:#145c55}
+body[data-theme="light"] button.active{background:#e5f4f1;border-color:#31877d;color:#176b63}
+body[data-theme="light"] .menu-toggle{background:#f1f5f9;border-color:#c7d0dc}
+body[data-theme="light"] .menu-toggle span{background:#263449}
+body[data-theme="light"] .sidebar{background:#fff;border-color:#d7dee8;box-shadow:18px 0 50px rgba(20,35,55,.12)}
+body[data-theme="light"] .sidebar-top{color:#64748b}
+body[data-theme="light"] .nav-link{color:#334155}
+body[data-theme="light"] .nav-link:hover,body[data-theme="light"] .nav-link.active{background:#eaf4f2;color:#176b63}
+body[data-theme="light"] .nav-section{color:#64748b}
+body[data-theme="light"] .sidebar-note{border-color:#dce2ea;color:#64748b}
+body[data-theme="light"] .drawer-backdrop{background:rgba(15,23,42,.24)}
+body[data-theme="light"] .chip{background:rgba(255,255,255,.92);border-color:#d4dce6;color:#344256;box-shadow:0 2px 8px rgba(20,35,55,.08)}
+body[data-theme="light"] .chip b{color:#176b63}
+body[data-theme="light"] .graph-maximize{background:rgba(255,255,255,.94);border-color:#c4cfdb;color:#263449}
+body[data-theme="light"] .surface-info-panel,body[data-theme="light"] #surfaceInfoPanel{background:#fff!important;border-color:#d7dee8!important;color:#172033!important}
+body[data-theme="light"] #surfaceInfoPanel summary{color:#176b63!important}
+body[data-theme="light"] #surfaceGeneralInfo,body[data-theme="light"] #surfaceInfoExtras{color:#45546a!important}
+body[data-theme="light"] #surfaceGeneralInfo p,body[data-theme="light"] #surfaceInfoExtras p,
+body[data-theme="light"] #surfaceGeneralInfo div,body[data-theme="light"] #surfaceInfoExtras div,
+body[data-theme="light"] #surfaceInfoExtras label{color:#45546a!important}
+body[data-theme="light"] #surfaceGeneralInfo strong,body[data-theme="light"] #surfaceInfoExtras strong{color:#174f4a!important}
+body[data-theme="light"] #surfaceGeneralInfo [style*="background"],body[data-theme="light"] #surfaceInfoExtras [style*="background"]{background:#f1f6f8!important}
+body[data-theme="light"] #strataPanel{background:#fff!important;border-color:#d7dee8!important;color:#172033!important}
+body[data-theme="light"] #strataPanel summary{color:#176b63!important}
+body[data-theme="light"] #strataPanel div,body[data-theme="light"] #strataPanel span,body[data-theme="light"] #strataPanel label{color:#45546a}
+body[data-theme="light"] input[type="range"]{accent-color:#267c73!important}
+body[data-theme="light"] #stage:fullscreen,body[data-theme="light"] #stage.stage-expanded{background:#fff}
+.contrast-toggle{display:flex;align-items:center;gap:8px;white-space:nowrap;padding:9px 12px;font-size:11px}
+.contrast-icon{font-size:15px;line-height:1}
+@media(max-width:560px){.contrast-toggle{padding:8px 9px;gap:5px;font-size:10px}.contrast-icon{font-size:14px}}
+
+/* Alto contraste: fundo preto, texto branco/amarelo e contornos bem definidos */
+body.high-contrast{background:#000;color:#fff}
+body.high-contrast #app,body.high-contrast .home-page,body.high-contrast .viewer-page{background:#000!important;color:#fff}
+body.high-contrast .site-header{background:#000;border-bottom:2px solid #fff}
+body.high-contrast .brand,body.high-contrast .eyebrow,body.high-contrast .page-kicker,
+body.high-contrast .contrast-icon{color:#ffeb3b}
+body.high-contrast .site-title,body.high-contrast .hero h1,body.high-contrast .home-section-head h2,
+body.high-contrast .surface-caption h1{color:#fff}
+body.high-contrast .sub,body.high-contrast .hero p,body.high-contrast .home-section-head>p,
+body.high-contrast .surface-card p,body.high-contrast .home-footer,body.high-contrast .hint{color:#fff}
+body.high-contrast .surface-card{background:#000;border:2px solid #fff;color:#fff;box-shadow:none}
+body.high-contrast .surface-card:hover{background:#171717;border-color:#ffeb3b}
+body.high-contrast .surface-card h3,body.high-contrast .card-index{color:#ffeb3b}
+body.high-contrast .formula,body.high-contrast .card-link{color:#00ffff}
+body.high-contrast .home-footer{border-color:#fff}
+body.high-contrast .surface-caption,body.high-contrast footer{background:#000;border-color:#fff}
+body.high-contrast .metric{background:#000;border:1px solid #fff}
+body.high-contrast .metric span,body.high-contrast .metric strong{color:#fff}
+body.high-contrast .metric.result strong{color:#ffeb3b}
+body.high-contrast button{background:#000;color:#fff;border:2px solid #fff}
+body.high-contrast button:hover,body.high-contrast button.active{background:#222;color:#ffeb3b;border-color:#ffeb3b}
+body.high-contrast button.primary,body.high-contrast .hero-button{background:#000;color:#00ffff;border-color:#00ffff}
+body.high-contrast .menu-toggle{background:#000;border:2px solid #fff}
+body.high-contrast .menu-toggle span{background:#fff}
+body.high-contrast .sidebar{background:#000;border-right:2px solid #fff}
+body.high-contrast .sidebar-top,body.high-contrast .nav-section{color:#ffeb3b}
+body.high-contrast .nav-link{color:#fff}
+body.high-contrast .nav-link:hover,body.high-contrast .nav-link.active{background:#222;color:#ffeb3b;outline:1px solid #ffeb3b}
+body.high-contrast .sidebar-note{border-color:#fff;color:#fff}
+body.high-contrast .drawer-backdrop{background:rgba(0,0,0,.8)}
+body.high-contrast .chip{background:#000;border:2px solid #fff;color:#fff}
+body.high-contrast .chip b{color:#ffeb3b}
+body.high-contrast .graph-maximize{background:#000;color:#fff;border:2px solid #fff}
+body.high-contrast #surfaceInfoPanel,body.high-contrast #strataPanel{background:#000!important;border:2px solid #fff!important;color:#fff!important}
+body.high-contrast #surfaceInfoPanel summary,body.high-contrast #strataPanel summary{color:#ffeb3b!important}
+body.high-contrast #surfaceGeneralInfo,body.high-contrast #surfaceInfoExtras,
+body.high-contrast #surfaceGeneralInfo p,body.high-contrast #surfaceInfoExtras p,
+body.high-contrast #surfaceGeneralInfo div,body.high-contrast #surfaceInfoExtras div,
+body.high-contrast #surfaceInfoExtras label,body.high-contrast #strataPanel div,
+body.high-contrast #strataPanel span,body.high-contrast #strataPanel label{color:#fff!important}
+body.high-contrast #surfaceGeneralInfo strong,body.high-contrast #surfaceInfoExtras strong{color:#ffeb3b!important}
+body.high-contrast #surfaceGeneralInfo [style*="background"],body.high-contrast #surfaceInfoExtras [style*="background"]{background:#111!important;border:1px solid #fff}
+body.high-contrast input[type="range"]{accent-color:#ffeb3b}
+body.high-contrast #stage:fullscreen,body.high-contrast #stage.stage-expanded{background:#000}
+
+</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body data-theme="light"><div id="app">
+<header class="site-header">
+ <button id="menuToggle" class="menu-toggle" aria-label="Abrir menu" aria-expanded="false"><span></span><span></span><span></span></button>
+ <div class="site-brand"><div class="brand">GEOMETRIA · LABORATÓRIO INTERATIVO</div><div class="site-title">Laboratório Visual de Geometria</div></div>
+ <div class="header-spacer"></div>
+ <button id="contrastToggle" class="contrast-toggle" type="button" aria-pressed="false" aria-label="Ativar modo de alto contraste"><span class="contrast-icon" aria-hidden="true">◐</span> <span id="contrastLabel">Alto contraste</span></button>
+</header>
+<div id="drawerBackdrop" class="drawer-backdrop"></div>
+<aside id="sidebar" class="sidebar" aria-label="Navegação principal">
+ <div class="sidebar-top"><span>NAVEGAÇÃO</span><button id="menuClose" aria-label="Fechar menu">×</button></div>
+ <a class="nav-link" href="#/" data-route="home"><span class="nav-icon">⌂</span>Página principal</a>
+ <div class="nav-section">SUPERFÍCIES</div>
+ <a class="nav-link" href="#/superficies/torus" data-surface="torus">Toro</a>
+ <a class="nav-link" href="#/superficies/sphere" data-surface="sphere">Esfera</a>
+ <a class="nav-link" href="#/superficies/spindle" data-surface="spindle">Spindle orbifold</a>
+ <a class="nav-link" href="#/superficies/pinched" data-surface="pinched">Toro pinçado</a>
+ <a class="nav-link" href="#/superficies/crosscap" data-surface="crosscap">Cross-cap · Whitney umbrella</a>
+ <a class="nav-link" href="#/superficies/boy" data-surface="boy">Superfície de Boy</a>
+ <a class="nav-link" href="#/superficies/steiner" data-surface="steiner">Superfície romana de Steiner</a>
+ <a class="nav-link" href="#/superficies/astroid" data-surface="astroid">Esfera astroidal</a>
+ <div class="sidebar-note">Cada superfície possui sua própria página, descrição e ambiente de exploração.</div>
+</aside>
+
+<section id="homePage" class="home-page">
+ <div class="hero">
+  <div class="eyebrow">UM ESPAÇO DE EXPLORAÇÃO MATEMÁTICA</div>
+  <h1>Laboratório Visual de Geometria</h1>
+  <p>Um ambiente interativo para explorar superfícies, suas parametrizações, triangulações, singularidades e invariantes topológicos. Selecione uma superfície para abrir seu laboratório individual.</p>
+  <button class="hero-button" id="exploreButton">Explorar as superfícies <span>→</span></button>
+ </div>
+ <div class="home-section-head"><div><div class="eyebrow">COLEÇÃO</div><h2>Superfícies do laboratório</h2></div><p>Oito modelos · geometria diferencial e topologia</p></div>
+ <div class="surface-cards">
+  <a class="surface-card" href="#/superficies/torus"><div class="card-index">01 · SUPERFÍCIE FECHADA</div><h3>Toro</h3><p>Superfície orientável de gênero 1. A triangulação permite observar vértices, arestas e faces e verificar a característica de Euler.</p><div class="formula">χ(T²) = V − E + F = 0</div><span class="card-link">Abrir laboratório →</span></a>
+  <a class="surface-card" href="#/superficies/sphere"><div class="card-index">02 · SUPERFÍCIE FECHADA</div><h3>Esfera</h3><p>Modelo de referência para uma superfície simplesmente conexa. A malha poliédrica permite examinar a fórmula de Euler para a esfera.</p><div class="formula">χ(S²) = V − E + F = 2</div><span class="card-link">Abrir laboratório →</span></a>
+  <a class="surface-card" href="#/superficies/spindle"><div class="card-index">03 · ORBIFOLD</div><h3>Spindle orbifold</h3><p>Superfície de revolução com dois pontos cônicos. O parâmetro de isotropia modifica o ângulo cônico e a característica de Euler orbifold.</p><div class="formula">χ<sub>orb</sub> = 2/m</div><span class="card-link">Abrir laboratório →</span></a>
+  <a class="surface-card" href="#/superficies/pinched"><div class="card-index">04 · ESPAÇO ESTRATIFICADO</div><h3>Toro pinçado</h3><p>Uma família de quocientes em que uma ou mais curvas são contraídas a pontos. A visualização acompanha os estratos regular e singular e a característica de Euler.</p><div class="formula">X = X₂ ⊔ X₀</div><span class="card-link">Abrir laboratório →</span></a>
+  <a class="surface-card" href="#/superficies/crosscap"><div class="card-index">05 · SINGULARIDADE</div><h3>Cross-cap · Whitney umbrella</h3><p>Imagem da aplicação F(u,v) = (u,v²,uv). Exibe uma curva dupla e um ponto de pinçamento; permite separar os estratos de dimensões 2, 1 e 0 e estudar Whitney A/B.</p><div class="formula">z² = x²y, &nbsp; y ≥ 0</div><span class="card-link">Abrir laboratório →</span></a>
+  <a class="surface-card" href="#/superficies/boy"><div class="card-index">06 · IMERSÃO</div><h3>Superfície de Boy</h3><p>Imersão do plano projetivo real em R³. As auto-interseções pertencem à imagem da imersão, enquanto o domínio permanece uma variedade suave.</p><div class="formula">χ(RP²) = 1</div><span class="card-link">Abrir laboratório →</span></a>
+  <a class="surface-card" href="#/superficies/steiner"><div class="card-index">07 · AUTO-INTERSEÇÕES</div><h3>Superfície romana de Steiner</h3><p>Imagem do plano projetivo real por uma aplicação quadrática. Apresenta três eixos de autointerseção, seis pontos de pinch e um ponto triplo.</p><div class="formula">F(u,v,w) = (uv,vw,wu)</div><span class="card-link">Abrir laboratório →</span></a>
+  <a class="surface-card" href="#/superficies/astroid"><div class="card-index">08 · CÚSPIDES</div><h3>Esfera astroidal</h3><p>Superfície homeomorfa à esfera, definida por uma equação com potências fracionárias. Possui seis cúspides nos extremos dos eixos coordenados.</p><div class="formula">|x|<sup>2/3</sup> + |y|<sup>2/3</sup> + |z|<sup>2/3</sup> = 1</div><span class="card-link">Abrir laboratório →</span></a>
+ </div>
+ <footer class="home-footer">Laboratório Visual de Geometria · Geometria diferencial, singularidades e topologia</footer>
+</section>
+<section id="viewerPage" class="viewer-page" hidden>
+ <main id="stage"><div class="hud"><div class="chip">Arraste para <b>rotacionar</b></div><div class="chip">Scroll / pinça para <b>zoom</b></div></div><button id="graphMaximize" class="graph-maximize" type="button" aria-label="Maximizar gráfico">⛶ <span>Maximizar gráfico</span></button></main>
+ <div class="surface-caption"><h1 id="pageTitle">Toro</h1></div>
+
+<footer><div class="metrics"><div class="metric"><span>Vértices (V)</span><strong id="v">512</strong></div><div class="metric"><span>Arestas (E)</span><strong id="e">1536</strong></div><div class="metric"><span>Faces (F)</span><strong id="f">1024</strong></div><div class="metric result"><span>Euler · V − E + F</span><strong id="chi">0</strong></div></div>
+<div class="controls"><div class="left"><label for="resolution" style="font-size:11px;color:var(--muted);margin-left:8px">Faces</label><input id="resolution" type="range" min="3" max="32" step="1" value="16" style="width:112px;accent-color:#55c9b5;vertical-align:middle"><span id="resolutionValue" style="font-size:11px;color:var(--text);min-width:42px">1024</span><button id="wire">Arestas</button><button id="solid">Superfície</button><button id="both" class="active">Ambos</button><button id="numbers">Numerar faces</button><button id="vertexNumbers">Numerar vértices</button><button id="edgeNumbers">Numerar arestas</button><button id="rotate" class="active">Rotação automática</button></div><div class="right"><button id="reset">Reiniciar câmera</button><button id="newtab" class="primary">Abrir em nova aba ↗</button></div><div class="hint">Triangulação: 32 × 16 · toro · 1024 faces</div>
+
+<details id="surfaceInfoPanel" style="margin-top:9px;padding:9px 12px;border:1px solid #34445f;border-radius:10px;background:#111d30;color:var(--text)">
+ <summary style="cursor:pointer;font-size:12px;font-weight:700;color:#9bded5">Sobre esta superfície · parametrização e característica de Euler</summary>
+ <div id="surfaceGeneralInfo" style="font-size:11px;color:var(--muted);line-height:1.7;margin:9px 0 7px">
+  Selecione uma superfície para consultar sua descrição matemática, parametrização e cálculo da característica de Euler.
+ </div>
+ <div id="surfaceInfoExtras"></div>
+</details>
+
+<details id="strataPanel" open style="margin-top:9px;padding:9px 12px;border:1px solid #34445f;border-radius:10px;background:#111d30;color:var(--text)">
+ <summary style="cursor:pointer;font-size:12px;font-weight:700;color:#9bded5">Estratificação · visualizar estratos separadamente</summary>
+ <div id="strataDescription" style="font-size:11px;color:var(--muted);line-height:1.55;margin:7px 0">A esfera é uma variedade suave e admite a estratificação trivial, com um único estrato regular.</div>
+ <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+  <label style="display:flex;gap:6px;align-items:center;font-size:11px;cursor:pointer"><input id="showStratum2" type="checkbox" checked style="accent-color:#55c9b5"> <span>Estratos de dimensão 2</span></label>
+  <label style="display:flex;gap:6px;align-items:center;font-size:11px;cursor:pointer"><input id="showStratum1" type="checkbox" checked style="accent-color:#ffb86b"> <span>Estratos de dimensão 1</span></label>
+  <label style="display:flex;gap:6px;align-items:center;font-size:11px;cursor:pointer"><input id="showStratum0" type="checkbox" checked style="accent-color:#d8b4fe"> <span>Estratos de dimensão 0</span></label>
+ </div>
+ <div id="whitneyPanel" style="display:none;margin-top:9px;padding:9px 10px;border:1px solid #46536d;border-radius:8px;background:#0e1929;font-size:11px;line-height:1.6">
+  <strong style="color:#9bded5">Condições de Whitney para a estratificação exibida</strong>
+  <div id="whitneySummary" style="margin-top:4px"></div>
+  <div id="whitneyDetails" style="color:var(--muted);margin-top:4px"></div>
+  <div style="color:var(--muted);font-size:10px;margin-top:5px">A classificação é baseada nos modelos locais analíticos (pinch point e ponto triplo), não em um teste numérico executado pelo navegador.</div>
+ </div>
+</details>
+<div id="orbifoldPanel" style="display:none;margin-top:10px;padding:12px 14px;border:1px solid #8b5cf6;border-radius:10px;background:#17152b;color:var(--text);font-size:12px;line-height:1.7">
+ <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <strong style="color:#c4b5fd;font-size:13px">Spindle orbifold</strong>
+  <label for="isotropyOrder" style="color:var(--muted)">Ordem da isotropia m:</label>
+  <input id="isotropyOrder" type="range" min="2" max="12" step="1" value="3"
+   style="display:inline-block;width:170px;min-width:145px;height:24px;accent-color:#c084fc;cursor:pointer;touch-action:pan-y">
+  <strong id="isotropyValue" style="color:#f0abfc;min-width:34px">m = 3</strong>
+ </div>
+ <div style="margin-top:5px">
+  Polos cônicos: <strong style="color:#fb923c">v₁ e v₂</strong>, ambos com grupo de isotropia
+  <strong id="isotropyGroup" style="color:#f0abfc">ℤ₃</strong> e ângulo cônico
+  <strong id="coneAngle" style="color:#f0abfc">2π/3</strong>.
+ </div>
+ <div style="margin-top:6px;font-size:13px">
+  Característica de Euler topológica do espaço subjacente:
+  <strong style="color:#70d6c2">χ<sub>top</sub> = 2</strong>.
+ </div>
+ <div style="font-size:14px;margin-top:2px">
+  Característica de Euler orbifold:
+  <strong style="color:#f0abfc">χ<sub>orb</sub> = (V − 2 + 2/m) − E + F = </strong><strong id="orbifoldEuler" style="color:#f0abfc">2/3</strong>.
+ </div>
+ <div style="color:var(--muted);font-size:11px;margin-top:3px">
+  A superfície subjacente é homeomorfa a S². Cada polo contribui com peso 1/m na característica orbifold; os demais simplexos têm isotropia trivial.
+ </div>
+</div>
+<div id="pinchedPanel" style="display:none;margin-top:10px;padding:12px 14px;border:1px solid #e6a34a;border-radius:10px;background:#241d18;color:var(--text);font-size:12px;line-height:1.7">
+ <strong style="color:#ffc477;font-size:13px">Toro pinçado · estrutura estratificada</strong>
+ <div data-role="regular" style="margin-top:5px">Estrato regular: <strong style="color:#8be0d0">X₂ = X ∖ {p₁,…,pₙ}</strong> — componente(s) cilíndrico(s) aberto(s).</div>
+ <div data-role="singular">Estrato singular: <strong style="color:#ffc477">X₀ = {p₁,…,pₙ}</strong>, com ponto(s) de dimensão 0.</div>
+ <div style="margin-top:6px">Característica de Euler por estratos, usando cohomologia com suporte compacto:</div>
+ <div style="font-size:14px;color:#ffc477"><strong id="pinchedEuler">χ(X) = χ꜀(X₂) + χ꜀(X₀) = 0 + 1 = 1</strong></div>
+ <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:9px">
+  <label for="pinchCount" style="color:var(--muted)">Número de pinçamentos:</label>
+  <input id="pinchCount" type="range" min="1" max="8" step="1" value="1" style="display:inline-block;width:170px;min-width:145px;height:24px;accent-color:#f0ad5e;cursor:pointer;touch-action:pan-y">
+  <strong id="pinchCountValue" style="color:#ffc477;min-width:28px">1</strong>
+ </div>
+ <div id="pinchStrataDescription" style="color:var(--muted);font-size:11px;margin-top:5px">A parametrização é Φ₁(x,y)=(g cos x,g sin x,sin(x/2) sin y), com g=2+sin(x/2)cos y. Há um ponto singular p₁=(2,0,0).</div>
+</div>
+<div id="crosscapPanel" style="display:none;margin-top:10px;padding:12px 14px;border:1px solid #e6a34a;border-radius:10px;background:#241d18;color:var(--text);font-size:12px;line-height:1.7">
+ <strong style="color:#ffc477;font-size:13px">Cross-cap · guarda-chuva de Whitney</strong>
+ <div style="margin-top:5px">Parametrização clássica: <strong>F(u,v) = (u, v², uv)</strong>, com domínio retangular truncado.</div>
+ <div>O ponto singular é <strong style="color:#ffc477">p = (0,0,0)</strong>, onde o diferencial perde posto.</div>
+ <div>O semieixo <strong style="color:#ffc477">x = z = 0, y ≥ 0</strong> é a curva dupla: duas folhas da parametrização coincidem nessa linha.</div>
+ <div style="color:var(--muted);font-size:11px;margin-top:5px">Modelo local singular (Whitney umbrella), não uma superfície mergulhada. A malha e os números V, E, F referem-se ao domínio parametrizador truncado.</div>
+</div>
+<div id="boyPanel" style="display:none;margin-top:10px;padding:12px 14px;border:1px solid #70d6c2;border-radius:10px;background:#142522;color:var(--text);font-size:12px;line-height:1.7">
+ <strong style="color:#8be0d0;font-size:13px">Plano projetivo real · superfície de Boy</strong>
+ <div style="margin-top:5px">Imersão clássica de <strong>ℝP² em ℝ³</strong>. O domínio é um disco cuja borda é identificada antipodalmente.</div>
+ <div>A aplicação é uma <strong>imersão</strong>: não há pontos singulares do diferencial. A imagem possui auto-interseções, que não são singularidades da variedade parametrizadora.</div>
+ <div style="margin-top:5px">Característica de Euler do plano projetivo:</div>
+ <div style="font-size:14px;color:#8be0d0"><strong>χ(ℝP²) = V − E + F = 1</strong></div>
+ <div style="color:var(--muted);font-size:11px;margin-top:5px">A triangulação identifica os pontos antipodais da borda do disco; os valores V, E e F são contados no quociente, não no disco antes da identificação.</div>
+</div>
+<div id="steinerPanel" style="display:none;margin-top:10px;padding:12px 14px;border:1px solid #c084fc;border-radius:10px;background:#21182d;color:var(--text);font-size:12px;line-height:1.7">
+ <strong style="color:#d8b4fe;font-size:13px">Plano projetivo real · superfície romana de Steiner</strong>
+ <div style="margin-top:5px">Aplicação induzida por <strong>F(u,v,w) = (uv, vw, wu)</strong>, com u² + v² + w² = 1 e identificação antipodal.</div>
+ <div>O domínio quociente é <strong>ℝP²</strong>. A aplicação é uma <strong>imersão fora dos seis pontos de pinch</strong>, onde o diferencial perde posto; a origem é um ponto triplo distinto.</div>
+ <div>As três linhas coordenadas são loci de auto-interseção. Os seis pontos laranja são os extremos desses loci, calculados pela própria parametrização.</div>
+ <div style="margin-top:5px">Característica de Euler do domínio:</div>
+ <div style="font-size:14px;color:#d8b4fe"><strong>χ(ℝP²) = V − E + F = 1</strong></div>
+ <div style="color:var(--muted);font-size:11px;margin-top:5px">A malha usa resolução adaptativa (mínimo 8 e múltiplo de 4) para incluir exatamente os seis pontos de pinch. A contagem celular é feita no domínio ℝP², não na imagem auto-intersectante.</div>
+</div>
+<div id="astroidPanel" style="display:none;margin-top:10px;padding:12px 14px;border:1px solid #55c9b5;border-radius:10px;background:#142b31;color:var(--text);font-size:12px;line-height:1.7">
+ <strong style="color:#9cf3e5;font-size:13px">Esfera astroidal · superfície de seis cúspides</strong>
+ <div style="margin-top:5px">Parametrização apresentada:</div>
+ <div style="font-size:13px;color:#9cf3e5"><strong>x = (cos u cos v)³, &nbsp; y = (sin u cos v)³, &nbsp; z = (sin v)³</strong></div>
+ <div>Equação implícita: <strong>|x|<sup>2/3</sup> + |y|<sup>2/3</sup> + |z|<sup>2/3</sup> = 1</strong>.</div>
+ <div>A superfície é homeomorfa a <strong>S²</strong>, mas a parametrização perde posto ao longo das três curvas coordenadas; elas se encontram em seis cúspides nos extremos dos eixos.</div>
+ <div style="margin-top:5px">Característica de Euler da superfície:</div>
+ <div style="font-size:14px;color:#9cf3e5"><strong>χ(S²) = V − E + F = 2</strong></div>
+ <div style="color:var(--muted);font-size:11px;margin-top:5px">A malha adaptativa inclui exatamente os seis pontos de cúspide, mesmo em resoluções baixas.</div>
+</div>
+</div></footer>
+</section>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const infoExtras=document.getElementById('surfaceInfoExtras');
+['orbifoldPanel','pinchedPanel','crosscapPanel','boyPanel','steinerPanel','astroidPanel'].forEach(id=>{
+ const panel=document.getElementById(id);
+ if(panel)infoExtras.appendChild(panel);
+});
+
+const stage=document.getElementById('stage');
+const scene=new THREE.Scene(); scene.background=new THREE.Color(0x0b1020);
+const contrastToggle=document.getElementById('contrastToggle');
+const contrastLabel=document.getElementById('contrastLabel');
+function setVisualTheme(highContrast){
+ document.body.classList.toggle('high-contrast',highContrast);
+ document.body.dataset.theme=highContrast?'contrast':'light';
+ contrastToggle.setAttribute('aria-pressed',String(highContrast));
+ contrastToggle.setAttribute('aria-label',highContrast?'Desativar alto contraste':'Ativar modo de alto contraste');
+ contrastLabel.textContent=highContrast?'Tema claro':'Alto contraste';
+ scene.background=new THREE.Color(highContrast?0x000000:0xffffff);
+}
+contrastToggle.addEventListener('click',()=>setVisualTheme(!document.body.classList.contains('high-contrast')));
+setVisualTheme(false);
+const camera=new THREE.PerspectiveCamera(42,1,.1,100); camera.position.set(4.8,3.1,5.8);
+const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false}); renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.15; stage.appendChild(renderer.domElement);
+const controls=new OrbitControls(camera,renderer.domElement); controls.enableDamping=true; controls.dampingFactor=.06; controls.minDistance=2.7; controls.maxDistance=12; controls.target.set(0,0,0);
+scene.add(new THREE.HemisphereLight(0xc7e7ff,0x172038,2.0));
+const key=new THREE.DirectionalLight(0xffffff,2.5);key.position.set(4,6,5);scene.add(key);const fill=new THREE.DirectionalLight(0x62b9ff,1.1);fill.position.set(-5,-2,-4);scene.add(fill);
+
+const rootGroup=new THREE.Group();scene.add(rootGroup);
+let N=16,M=2*N; let pinchCount=1; const R=1.55,r=.66;
+const mat=new THREE.MeshStandardMaterial({color:0x55c9b5,metalness:.25,roughness:.38,side:THREE.DoubleSide});
+const atlasCell=32,atlasCols=32;
+let active={group:null,mesh:null,lines:null,labels:null,counts:null};
+let showNumbers=false,showVertexNumbers=false,showEdgeNumbers=false,displayMode='both';
+let showStratum2=true,showStratum1=true,showStratum0=true;
+
+function makeAtlas(faceCount,textColor='#fff36b'){
+ const atlasRows=Math.ceil(faceCount/atlasCols);
+ const canvas=document.createElement('canvas');canvas.width=atlasCols*atlasCell;canvas.height=atlasRows*atlasCell;
+ const ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.font='bold 16px Inter, Arial, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+ for(let n=0;n<faceCount;n++){
+  const x=(n%atlasCols)*atlasCell+atlasCell/2,y=Math.floor(n/atlasCols)*atlasCell+atlasCell/2;
+  ctx.shadowColor='#000000';ctx.shadowBlur=5;ctx.lineWidth=4;ctx.strokeStyle='#07111f';ctx.strokeText(String(n+1),x,y);
+  ctx.fillStyle=textColor;ctx.fillText(String(n+1),x,y);
+ }
+ const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+ texture.magFilter=THREE.LinearFilter;texture.minFilter=THREE.LinearMipmapLinearFilter;return texture;
+}
+
+
+
+function makeSurface(type){
+ const group=new THREE.Group();
+ let positions=[],indices=[];
+ if(type==='torus'){
+  for(let i=0;i<M;i++){const u=2*Math.PI*i/M;for(let j=0;j<N;j++){const v=2*Math.PI*j/N,q=R+r*Math.cos(v);positions.push(q*Math.cos(u),r*Math.sin(v),q*Math.sin(u));}}
+  for(let i=0;i<M;i++)for(let j=0;j<N;j++){
+   const a=i*N+j,b=((i+1)%M)*N+j,c=((i+1)%M)*N+(j+1)%N,d=i*N+(j+1)%N;
+   indices.push(a,b,d,b,c,d);
+  }
+ }else if(type==='spindle'){
+  // Football/spindle orbifold: one closed surface of revolution with two conical tips.
+  // The meridian is (r(u), y(u)); revolving it about the vertical axis gives the surface.
+  // Near either pole, r/s -> 1/m, hence the intrinsic cone angle is 2π/m.
+  const north=0, Rdrop=1.9;
+  const m=Number(document.getElementById('isotropyOrder').value);
+  const eps=.18, base=.48*Rdrop;
+  const endSlope=Rdrop*Math.sqrt(m*m-1);
+  const delta=endSlope-base;
+  const yProfile=u=>{
+   return base*(Math.PI/2-u)+delta*eps*(Math.exp(-u/eps)-Math.exp(-(Math.PI-u)/eps));
+  };
+  positions.push(0,yProfile(0),0);
+  for(let j=1;j<N;j++){
+   const u=Math.PI*j/N, radius=Rdrop*Math.sin(u), y=yProfile(u);
+   for(let i=0;i<M;i++){
+    const phi=2*Math.PI*i/M;
+    positions.push(radius*Math.cos(phi),y,radius*Math.sin(phi));
+   }
+  }
+  const south=positions.length/3;positions.push(0,yProfile(Math.PI),0);
+  const ring=(j,i)=>1+(j-1)*M+((i+M)%M);
+  for(let i=0;i<M;i++)indices.push(north,ring(1,i+1),ring(1,i));
+  for(let j=1;j<N-1;j++)for(let i=0;i<M;i++){
+   const a=ring(j,i),b=ring(j,i+1),c=ring(j+1,i+1),d=ring(j+1,i);
+   indices.push(a,b,d,b,c,d);
+  }
+  for(let i=0;i<M;i++)indices.push(south,ring(N-1,i),ring(N-1,i+1));
+ }else if(type==='pinched'){
+  // Multi-pinched version of the parametrization used in the earlier Geometric Lab:
+  // Phi_n(x,y)=(g cos x, g sin x, sin(n x/2) sin y),
+  // g=2+sin(n x/2)cos(y), 0<=x,y<=2pi.
+  // The n circles x=2pi*k/n are collapsed to n distinct singular points.
+  const L=2*N, singularIds=[];
+  for(let k=0;k<pinchCount;k++){
+   const x=2*Math.PI*k/pinchCount;
+   singularIds.push(positions.length/3);
+   positions.push(2*Math.cos(x),2*Math.sin(x),0);
+  }
+  const ring=(k,i,j)=>pinchCount+(k*(L-1)+(i-1))*N+((j+N)%N);
+  for(let k=0;k<pinchCount;k++){
+   const x0=2*Math.PI*k/pinchCount;
+   for(let i=1;i<L;i++){
+    const x=x0+(2*Math.PI/pinchCount)*i/L, ss=Math.sin(pinchCount*x/2);
+    for(let j=0;j<N;j++){
+     const y=2*Math.PI*j/N, g=2+ss*Math.cos(y);
+     positions.push(g*Math.cos(x),g*Math.sin(x),ss*Math.sin(y));
+    }
+   }
+  }
+  for(let k=0;k<pinchCount;k++){
+   const start=singularIds[k],end=singularIds[(k+1)%pinchCount];
+   for(let j=0;j<N;j++)indices.push(start,ring(k,1,j+1),ring(k,1,j));
+   for(let i=1;i<L-1;i++)for(let j=0;j<N;j++){
+    const a=ring(k,i,j),b=ring(k,i,j+1),c=ring(k,i+1,j+1),d=ring(k,i+1,j);
+    indices.push(a,b,d,b,c,d);
+   }
+   for(let j=0;j<N;j++)indices.push(end,ring(k,L-1,j),ring(k,L-1,j+1));
+  }
+ }else if(type==='crosscap'){
+  // Whitney cross-cap / umbrella: F(u,v)=(u,v^2,u*v).
+  // A finite rectangular parameter domain is used for visualization.
+  const U=1.55, V=1.15, uSteps=M, vSteps=N;
+  for(let i=0;i<=uSteps;i++){
+   const u=-U+2*U*i/uSteps;
+   for(let j=0;j<=vSteps;j++){
+    const v=-V+2*V*j/vSteps;
+    positions.push(u,v*v,u*v);
+   }
+  }
+  const idx=(i,j)=>i*(vSteps+1)+j;
+  for(let i=0;i<uSteps;i++)for(let j=0;j<vSteps;j++){
+   const a=idx(i,j),b=idx(i+1,j),c=idx(i+1,j+1),d=idx(i,j+1);
+   indices.push(a,b,d,b,c,d);
+  }
+ }else if(type==='boy'){
+  // Boy's surface: a smooth immersion of RP^2 into R^3.
+  // Parameter domain: a disk 0<=v<=pi/2, with antipodal identification
+  // (u,0)~(u+pi,0) along its boundary; all u at v=pi/2 collapse to the center.
+  // Classical formula; u is periodic with M samples and M is even.
+  const uCount=M, radialSteps=N, boundaryCount=M/2;
+  const boyPoint=(u,v)=>{
+   const c=Math.cos(v), s=Math.sin(2*v), den=2-Math.sqrt(2)*Math.sin(3*u)*s;
+   return [
+    (Math.sqrt(2)*c*c*Math.cos(2*u)+Math.cos(u)*s)/den,
+    (Math.sqrt(2)*c*c*Math.sin(2*u)-Math.sin(u)*s)/den,
+    (3*c*c)/den
+   ];
+  };
+  // Boundary ring has M/2 vertices because antipodal boundary parameters coincide.
+  for(let i=0;i<boundaryCount;i++){
+   const [x,y,z]=boyPoint(2*Math.PI*i/M,0);positions.push(x,y,z);
+  }
+  // Interior rings retain M samples; the disk center is represented by one vertex.
+  for(let j=1;j<radialSteps;j++){
+   const v=(Math.PI/2)*j/radialSteps;
+   for(let i=0;i<uCount;i++){
+    const [x,y,z]=boyPoint(2*Math.PI*i/uCount,v);positions.push(x,y,z);
+   }
+  }
+  const centerIndex=positions.length/3;positions.push(0,0,0);
+  const ring=(j,i)=>j===0?((i%boundaryCount)+boundaryCount)%boundaryCount:
+    boundaryCount+(j-1)*uCount+((i%uCount)+uCount)%uCount;
+  // Quads from the boundary toward the center, followed by the central fan.
+  for(let j=0;j<radialSteps-1;j++)for(let i=0;i<uCount;i++){
+   const a=ring(j,i),b=ring(j,i+1),c=ring(j+1,i+1),d=ring(j+1,i);
+   indices.push(a,b,d,b,c,d);
+  }
+  for(let i=0;i<uCount;i++)indices.push(ring(radialSteps-1,i),ring(radialSteps-1,i+1),centerIndex);
+ }else if(type==='steiner'){
+  // Steiner Roman surface: RP² -> R³ induced by (u,v,w) -> s*(uv,vw,wu).
+  // Parameterize a hemisphere; antipodal boundary points are identified.
+  // This map is not an immersion: it has six pinch singularities and a triple point.
+  // Adaptive mesh: Steiner's six pinch points occur at parameter values
+  // theta=pi/2, phi=pi/4,3pi/4 and theta=pi/4, phi=0,pi/2,pi,3pi/2.
+  // Choose an even radial resolution divisible by four so every special point
+  // is an actual mesh vertex, even when the user selects a very coarse value.
+  const radialSteps=Math.max(8,4*Math.ceil(N/4));
+  const uCount=2*radialSteps, boundaryCount=radialSteps, scale=3.3;
+  const steinerPoint=(phi,theta)=>{
+   const u=Math.sin(theta)*Math.cos(phi), v=Math.sin(theta)*Math.sin(phi), w=Math.cos(theta);
+   return [scale*u*v, scale*v*w, scale*w*u];
+  };
+  // The equator is quotiented by the antipodal map, hence only half of its
+  // angular samples are stored. Interior rings retain all 2*radialSteps samples.
+  for(let i=0;i<boundaryCount;i++){
+   const [x,y,z]=steinerPoint(Math.PI*i/radialSteps,Math.PI/2);positions.push(x,y,z);
+  }
+  for(let j=1;j<radialSteps;j++){
+   const theta=(Math.PI/2)*(1-j/radialSteps);
+   for(let i=0;i<uCount;i++){
+    const [x,y,z]=steinerPoint(2*Math.PI*i/uCount,theta);positions.push(x,y,z);
+   }
+  }
+  const centerIndex=positions.length/3;positions.push(0,0,0);
+  const ring=(j,i)=>j===0?((i%boundaryCount)+boundaryCount)%boundaryCount:
+    boundaryCount+(j-1)*uCount+((i%uCount)+uCount)%uCount;
+  for(let j=0;j<radialSteps-1;j++)for(let i=0;i<uCount;i++){
+   const a=ring(j,i),b=ring(j,i+1),c=ring(j+1,i+1),d=ring(j+1,i);
+   indices.push(a,b,d,b,c,d);
+  }
+  for(let i=0;i<uCount;i++)indices.push(ring(radialSteps-1,i),ring(radialSteps-1,i+1),centerIndex);
+ }else if(type==='astroid'){
+  // Astroidal sphere from the screenshot:
+  // x=(cos u cos v)^3, y=(sin u cos v)^3, z=(sin v)^3.
+  // Reparameterize v=pi/2-theta to obtain a pole-and-latitude mesh.
+  // An even adaptive number of latitude steps puts v=0 on a ring;
+  // M is a multiple of four, so all six axial cusps are mesh vertices.
+  const steps=Math.max(4,2*Math.ceil(N/2));
+  const around=2*steps;
+  const astroidPoint=(u,theta)=>{
+   const c=Math.sin(theta), z=Math.cos(theta);
+   return [Math.pow(Math.cos(u)*c,3),Math.pow(Math.sin(u)*c,3),Math.pow(z,3)];
+  };
+  const north=0;positions.push(0,0,1);
+  for(let j=1;j<steps;j++){
+   const theta=Math.PI*j/steps;
+   for(let i=0;i<around;i++){
+    const u=2*Math.PI*i/around;
+    const [x,y,z]=astroidPoint(u,theta);positions.push(x,y,z);
+   }
+  }
+  const south=positions.length/3;positions.push(0,0,-1);
+  const ring=(j,i)=>1+(j-1)*around+((i+around)%around);
+  for(let i=0;i<around;i++)indices.push(north,ring(1,i+1),ring(1,i));
+  for(let j=1;j<steps-1;j++)for(let i=0;i<around;i++){
+   const a=ring(j,i),b=ring(j,i+1),c=ring(j+1,i+1),d=ring(j+1,i);
+   indices.push(a,b,d,b,c,d);
+  }
+  for(let i=0;i<around;i++)indices.push(south,ring(steps-1,i),ring(steps-1,i+1));
+ }else{
+  // UV sphere: two poles and N-1 latitude rings, with no duplicated pole vertices.
+  const north=0;
+  positions.push(0,1.9,0);
+  for(let j=1;j<N;j++){
+   const theta=Math.PI*j/N;
+   for(let i=0;i<M;i++){
+    const phi=2*Math.PI*i/M;
+    positions.push(1.9*Math.sin(theta)*Math.cos(phi),1.9*Math.cos(theta),1.9*Math.sin(theta)*Math.sin(phi));
+   }
+  }
+  const south=positions.length/3;positions.push(0,-1.9,0);
+  const ring=(j,i)=>1+(j-1)*M+((i+M)%M);
+  for(let i=0;i<M;i++)indices.push(north,ring(1,i+1),ring(1,i));
+  for(let j=1;j<N-1;j++)for(let i=0;i<M;i++){
+   const a=ring(j,i),b=ring(j,i+1),c=ring(j+1,i+1),d=ring(j+1,i);
+   indices.push(a,b,d,b,c,d);
+  }
+  for(let i=0;i<M;i++)indices.push(south,ring(N-1,i),ring(N-1,i+1));
+ }
+ // Orient every triangle toward the exterior before building either mesh or labels.
+ for(let k=0;k<indices.length;k+=3){
+  const ia=indices[k],ib=indices[k+1],ic=indices[k+2];
+  // For the Whitney umbrella preserve the parameter-domain orientation.
+  // It is singular and has a self-intersection, so no global outward normal exists.
+  if(type==='crosscap'||type==='boy'||type==='steiner') continue;
+  const A=new THREE.Vector3(...positions.slice(3*ia,3*ia+3));
+  const B=new THREE.Vector3(...positions.slice(3*ib,3*ib+3));
+  const C=new THREE.Vector3(...positions.slice(3*ic,3*ic+3));
+  const center=A.clone().add(B).add(C).multiplyScalar(1/3);
+  let target;
+  if(type==='sphere')target=center.clone().normalize();
+  else if(type==='spindle')target=new THREE.Vector3(center.x,center.y*.35,center.z).normalize();
+  else if(type==='pinched'){
+   const rho=Math.hypot(center.x,center.y), x=Math.atan2(center.y,center.x);
+   let y=Math.atan2(center.z,rho-2); if(Math.sin(pinchCount*x/2)<0)y-=Math.PI; const h=1e-4;
+   const Phi=(u,v)=>{const ss=Math.sin(pinchCount*u/2),gg=2+ss*Math.cos(v);return new THREE.Vector3(gg*Math.cos(u),gg*Math.sin(u),ss*Math.sin(v));};
+   const dx=Phi(x+h,y).sub(Phi(x-h,y));
+   const dy=Phi(x,y+h).sub(Phi(x,y-h));
+   target=dx.cross(dy).normalize();
+   if(target.lengthSq()<1e-10)target.set(center.x-2,center.y,center.z).normalize();
+  }else if(type==='crosscap'){
+   const u=center.x, v=Math.abs(u)>1e-7?center.z/u:Math.sqrt(Math.max(0,center.y));
+   target=new THREE.Vector3(-2*v*v,-u,2*v).normalize();
+  }
+  else{
+   const radial=new THREE.Vector3(center.x,0,center.z).normalize().multiplyScalar(R);
+   target=center.clone().sub(radial).normalize();
+  }
+  const normal=B.clone().sub(A).cross(C.clone().sub(A));
+  if(normal.dot(target)<0){const tmp=indices[k+1];indices[k+1]=indices[k+2];indices[k+2]=tmp;}
+ }
+ const geom=new THREE.BufferGeometry();geom.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geom.setIndex(indices);geom.computeVertexNormals();
+ const surfaceMat=(type==='boy'||type==='steiner'||type==='astroid')?new THREE.MeshStandardMaterial({color:type==='boy'?0x70d6c2:type==='steiner'?0xb78ae8:0x13b9e8,metalness:.08,roughness:.48,side:THREE.DoubleSide,flatShading:true}):mat;
+ const mesh=new THREE.Mesh(geom,surfaceMat);group.add(mesh);
+
+ const edgeSet=new Set(),edgePositions=[],edgeList=[];
+ for(let k=0;k<indices.length;k+=3){
+  const tri=[indices[k],indices[k+1],indices[k+2]];
+  for(let s=0;s<3;s++){
+   let a=tri[s],b=tri[(s+1)%3];if(a>b)[a,b]=[b,a];
+   const id=a+'_'+b;if(!edgeSet.has(id)){edgeSet.add(id);edgeList.push([a,b]);edgePositions.push(...positions.slice(3*a,3*a+3),...positions.slice(3*b,3*b+3));}
+  }
+ }
+ const edgeGeom=new THREE.BufferGeometry();edgeGeom.setAttribute('position',new THREE.Float32BufferAttribute(edgePositions,3));
+ const lines=new THREE.LineSegments(edgeGeom,new THREE.LineBasicMaterial({color:0x102b39,transparent:true,opacity:.95}));group.add(lines);
+
+ const faceCount=indices.length/3,atlasRows=Math.ceil(faceCount/atlasCols),texture=makeAtlas(faceCount);
+ const labelPositions=[],labelUVs=[],labelIndices=[],labelOffset=.045,labelSize=.075;
+ for(let k=0;k<indices.length;k+=3){
+  const ia=indices[k],ib=indices[k+1],ic=indices[k+2];
+  const A=new THREE.Vector3(...positions.slice(3*ia,3*ia+3));
+  const B=new THREE.Vector3(...positions.slice(3*ib,3*ib+3));
+  const C=new THREE.Vector3(...positions.slice(3*ic,3*ic+3));
+  const center=A.clone().add(B).add(C).multiplyScalar(1/3);
+  const normal=B.clone().sub(A).cross(C.clone().sub(A)).normalize();
+  const u=B.clone().sub(A).normalize(),v=normal.clone().cross(u).normalize();
+  const ps=[
+   center.clone().addScaledVector(u,-labelSize).addScaledVector(v,-labelSize),
+   center.clone().addScaledVector(u,labelSize).addScaledVector(v,-labelSize),
+   center.clone().addScaledVector(u,labelSize).addScaledVector(v,labelSize),
+   center.clone().addScaledVector(u,-labelSize).addScaledVector(v,labelSize)
+  ];
+  const base=labelPositions.length/3;
+  for(const q of ps){q.addScaledVector(normal,labelOffset);labelPositions.push(q.x,q.y,q.z);}
+  const n=k/3,col=n%atlasCols,row=Math.floor(n/atlasCols),pad=.06;
+  const u0=(col+pad)/atlasCols,u1=(col+1-pad)/atlasCols;
+  const vTop=1-(row+pad)/atlasRows,vBottom=1-(row+1-pad)/atlasRows;
+  labelUVs.push(u0,vBottom,u1,vBottom,u1,vTop,u0,vTop);
+  labelIndices.push(base,base+1,base+2,base,base+2,base+3);
+ }
+ const labelGeom=new THREE.BufferGeometry();
+ labelGeom.setAttribute('position',new THREE.Float32BufferAttribute(labelPositions,3));
+ labelGeom.setAttribute('uv',new THREE.Float32BufferAttribute(labelUVs,2));labelGeom.setIndex(labelIndices);
+ const labels=new THREE.Mesh(labelGeom,new THREE.MeshBasicMaterial({map:texture,transparent:true,depthWrite:false,side:THREE.DoubleSide}));
+ labels.visible=showNumbers;labels.renderOrder=3;group.add(labels);
+
+ // Vertex labels: separate atlas and contrasting cyan color.
+ const vertexTexture=makeAtlas(positions.length/3,'#58e6ff');
+ const vertexLabelPositions=[],vertexLabelUVs=[],vertexLabelIndices=[];
+ const vertexOffset=(type==='steiner'||type==='astroid')?.13:.075,vertexSize=.055;
+ for(let vi=0;vi<positions.length/3;vi++){
+  const P=new THREE.Vector3(...positions.slice(3*vi,3*vi+3));
+  let normal;
+  if(type==='sphere') normal=P.clone().normalize();
+  else if(type==='spindle') normal=new THREE.Vector3(P.x,P.y*.35,P.z).normalize();
+  else if(type==='pinched') normal=new THREE.Vector3(P.x,P.y*.12,P.z).normalize();
+  else if(type==='crosscap'){
+   const u=P.x, v=Math.abs(u)>1e-7?P.z/u:Math.sqrt(Math.max(0,P.y));
+   normal=new THREE.Vector3(-2*v*v,-u,2*v).normalize();
+  }else if(type==='boy'){
+   normal=P.clone().sub(new THREE.Vector3(0,0,.72)).normalize();
+  }else if(type==='steiner'||type==='astroid'){
+   // A direção radial não é normal à superfície. Usamos a normal local
+   // da folha parametrizada, calculada pela triangulação.
+   normal=new THREE.Vector3().fromBufferAttribute(geom.getAttribute('normal'),vi);
+   if(normal.lengthSq()<1e-8) normal=new THREE.Vector3(0,0,1);
+   normal.normalize();
+  }else{
+   const radial=new THREE.Vector3(P.x,0,P.z).normalize().multiplyScalar(R);
+   normal=P.clone().sub(radial).normalize();
+  }
+  if(normal.lengthSq()<1e-10)normal.set(0,1,0);
+  const u=new THREE.Vector3(1,0,0);
+  if(Math.abs(u.dot(normal))>.92)u.set(0,0,1);
+  u.addScaledVector(normal,-u.dot(normal)).normalize();
+  const v=new THREE.Vector3().crossVectors(normal,u).normalize();
+  const center=P.clone().addScaledVector(normal,vertexOffset);
+  const quad=[
+   center.clone().addScaledVector(u,-vertexSize).addScaledVector(v,-vertexSize),
+   center.clone().addScaledVector(u, vertexSize).addScaledVector(v,-vertexSize),
+   center.clone().addScaledVector(u, vertexSize).addScaledVector(v, vertexSize),
+   center.clone().addScaledVector(u,-vertexSize).addScaledVector(v, vertexSize)
+  ];
+  const base=vertexLabelPositions.length/3;
+  for(const q of quad)vertexLabelPositions.push(q.x,q.y,q.z);
+  const col=vi%atlasCols,row=Math.floor(vi/atlasCols),pad=.08;
+  const u0=(col+pad)/atlasCols,u1=(col+1-pad)/atlasCols;
+  const rows=Math.ceil((positions.length/3)/atlasCols);
+  const vTop=1-(row+pad)/rows,vBottom=1-(row+1-pad)/rows;
+  vertexLabelUVs.push(u0,vBottom,u1,vBottom,u1,vTop,u0,vTop);
+  vertexLabelIndices.push(base,base+1,base+2,base,base+2,base+3);
+ }
+ const vertexLabelGeom=new THREE.BufferGeometry();
+ vertexLabelGeom.setAttribute('position',new THREE.Float32BufferAttribute(vertexLabelPositions,3));
+ vertexLabelGeom.setAttribute('uv',new THREE.Float32BufferAttribute(vertexLabelUVs,2));
+ vertexLabelGeom.setIndex(vertexLabelIndices);
+ const vertexLabels=new THREE.Mesh(vertexLabelGeom,new THREE.MeshBasicMaterial({
+  map:vertexTexture,transparent:true,depthWrite:false,side:THREE.DoubleSide
+ }));
+ vertexLabels.visible=showVertexNumbers;vertexLabels.renderOrder=4;group.add(vertexLabels);
+
+ // Edge labels: one numbered marker at the midpoint of each unique edge.
+ const edgeTexture=makeAtlas(edgeList.length,'#a8ff75');
+ const edgeLabelPositions=[],edgeLabelUVs=[],edgeLabelIndices=[];
+ const edgeOffset=(type==='steiner'||type==='astroid')?.16:.095,edgeSize=.047;
+ for(let ei=0;ei<edgeList.length;ei++){
+  const [ia,ib]=edgeList[ei];
+  const A=new THREE.Vector3(...positions.slice(3*ia,3*ia+3));
+  const B=new THREE.Vector3(...positions.slice(3*ib,3*ib+3));
+  const tangent=B.clone().sub(A).normalize();
+  const P=A.clone().add(B).multiplyScalar(.5);
+  let normal;
+  if(type==='sphere')normal=P.clone().normalize();
+  else if(type==='spindle')normal=new THREE.Vector3(P.x,P.y*.35,P.z).normalize();
+  else if(type==='pinched')normal=new THREE.Vector3(P.x,P.y*.12,P.z).normalize();
+  else if(type==='crosscap'){
+   const u=P.x, v=Math.abs(u)>1e-7?P.z/u:Math.sqrt(Math.max(0,P.y));
+   normal=new THREE.Vector3(-2*v*v,-u,2*v).normalize();
+  }else if(type==='boy'){
+   normal=P.clone().sub(new THREE.Vector3(0,0,.72)).normalize();
+  }else if(type==='steiner'||type==='astroid'){
+   // Average the local normals at the endpoints so the label stays on its sheet.
+   const na=new THREE.Vector3().fromBufferAttribute(geom.getAttribute('normal'),ia);
+   const nb=new THREE.Vector3().fromBufferAttribute(geom.getAttribute('normal'),ib);
+   normal=na.add(nb);
+   if(normal.lengthSq()<1e-8) normal=new THREE.Vector3(0,0,1);
+   normal.normalize();
+  }else{
+   const radial=new THREE.Vector3(P.x,0,P.z).normalize().multiplyScalar(R);
+   normal=P.clone().sub(radial).normalize();
+  }
+  if(normal.lengthSq()<1e-10)normal.set(0,1,0);
+  const u=tangent.clone().addScaledVector(normal,-tangent.dot(normal));
+  if(u.lengthSq()<1e-10)u.set(1,0,0);
+  u.normalize();
+  const v=new THREE.Vector3().crossVectors(normal,u).normalize();
+  const center=P.clone().addScaledVector(normal,edgeOffset);
+  const quad=[
+   center.clone().addScaledVector(u,-edgeSize).addScaledVector(v,-edgeSize),
+   center.clone().addScaledVector(u, edgeSize).addScaledVector(v,-edgeSize),
+   center.clone().addScaledVector(u, edgeSize).addScaledVector(v, edgeSize),
+   center.clone().addScaledVector(u,-edgeSize).addScaledVector(v, edgeSize)
+  ];
+  const base=edgeLabelPositions.length/3;
+  for(const q of quad)edgeLabelPositions.push(q.x,q.y,q.z);
+  const col=ei%atlasCols,row=Math.floor(ei/atlasCols),pad=.08;
+  const u0=(col+pad)/atlasCols,u1=(col+1-pad)/atlasCols;
+  const rows=Math.ceil(edgeList.length/atlasCols);
+  const vTop=1-(row+pad)/rows,vBottom=1-(row+1-pad)/rows;
+  edgeLabelUVs.push(u0,vBottom,u1,vBottom,u1,vTop,u0,vTop);
+  edgeLabelIndices.push(base,base+1,base+2,base,base+2,base+3);
+ }
+ const edgeLabelGeom=new THREE.BufferGeometry();
+ edgeLabelGeom.setAttribute('position',new THREE.Float32BufferAttribute(edgeLabelPositions,3));
+ edgeLabelGeom.setAttribute('uv',new THREE.Float32BufferAttribute(edgeLabelUVs,2));
+ edgeLabelGeom.setIndex(edgeLabelIndices);
+ const edgeLabels=new THREE.Mesh(edgeLabelGeom,new THREE.MeshBasicMaterial({
+  map:edgeTexture,transparent:true,depthWrite:false,side:THREE.DoubleSide
+ }));
+ edgeLabels.visible=showEdgeNumbers;edgeLabels.renderOrder=5;group.add(edgeLabels);
+
+ let singularMarker=null, stratum1D=null, stratum0D=null;
+ if(type==='spindle'){
+  const m=Number(document.getElementById('isotropyOrder').value);
+  const Rdrop=1.9, eps=.18, base=.48*Rdrop;
+  const endSlope=Rdrop*Math.sqrt(m*m-1), delta=endSlope-base;
+  const tipY=base*Math.PI/2+delta*eps*(1-Math.exp(-Math.PI/eps));
+  const markerMat=new THREE.MeshBasicMaterial({color:0xfff1d6,depthTest:false});
+  singularMarker=new THREE.Group();stratum1D=new THREE.Group();stratum0D=new THREE.Group();singularMarker.add(stratum1D,stratum0D);
+  [-1,1].forEach((sign,index)=>{
+   const dot=new THREE.Mesh(new THREE.SphereGeometry(.065,20,14),markerMat);
+   dot.position.set(0,sign*(tipY+.035),0);dot.renderOrder=10;stratum0D.add(dot);
+   const tagCanvas=document.createElement('canvas');
+   tagCanvas.width=320;tagCanvas.height=112;
+   const tagCtx=tagCanvas.getContext('2d');
+   tagCtx.clearRect(0,0,320,112);
+   tagCtx.font='bold 48px Arial';tagCtx.textAlign='center';tagCtx.textBaseline='middle';
+   tagCtx.fillStyle='#ffb86b';tagCtx.shadowColor='#111827';tagCtx.shadowBlur=7;
+   tagCtx.fillText(index===0?'v₁ : ℤₘ':'v₂ : ℤₘ',160,56);
+   const tagTexture=new THREE.CanvasTexture(tagCanvas);
+   tagTexture.colorSpace=THREE.SRGBColorSpace;
+   const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTexture,transparent:true,depthTest:false}));
+   tag.position.set(.48,sign*(tipY+.22),0);
+   tag.scale.set(.90,.32,1);tag.renderOrder=11;stratum0D.add(tag);
+  });
+  group.add(singularMarker);
+ }else if(type==='pinched'){
+  singularMarker=new THREE.Group();stratum1D=new THREE.Group();stratum0D=new THREE.Group();singularMarker.add(stratum1D,stratum0D);
+  for(let k=0;k<pinchCount;k++){
+   // In Phi_n the singular point is (2 cos x_k, 2 sin x_k, 0).
+   // Three.js uses (X,Y,Z), so the second coordinate belongs in Y,
+   // not in Z. The previous marker incorrectly used (px,0,pz).
+   const x=2*Math.PI*k/pinchCount, px=2*Math.cos(x), py=2*Math.sin(x);
+   const dot=new THREE.Mesh(new THREE.SphereGeometry(.075,24,16),new THREE.MeshBasicMaterial({color:0xffc477,depthTest:false}));
+   dot.position.set(px,py,0);dot.renderOrder=12;stratum0D.add(dot);
+   const tagCanvas=document.createElement('canvas');tagCanvas.width=220;tagCanvas.height=100;
+   const tagCtx=tagCanvas.getContext('2d');tagCtx.clearRect(0,0,220,100);
+   tagCtx.font='bold 43px Arial';tagCtx.textAlign='center';tagCtx.textBaseline='middle';
+   tagCtx.fillStyle='#ffc477';tagCtx.shadowColor='#111827';tagCtx.shadowBlur=7;tagCtx.fillText(`p${k+1}`,110,50);
+   const tagTexture=new THREE.CanvasTexture(tagCanvas);tagTexture.colorSpace=THREE.SRGBColorSpace;
+   const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTexture,transparent:true,depthTest:false}));
+   tag.position.set(px*1.12,py*1.12,.18);tag.scale.set(.42,.22,1);tag.renderOrder=13;stratum0D.add(tag);
+  }
+  group.add(singularMarker);
+ }else if(type==='crosscap'){
+  singularMarker=new THREE.Group();stratum1D=new THREE.Group();stratum0D=new THREE.Group();singularMarker.add(stratum1D,stratum0D);
+  const dot=new THREE.Mesh(new THREE.SphereGeometry(.075,24,16),new THREE.MeshBasicMaterial({color:0xffc477,depthTest:false}));
+  dot.position.set(0,0,0);dot.renderOrder=12;stratum0D.add(dot);
+  const tagCanvas=document.createElement('canvas');tagCanvas.width=220;tagCanvas.height=100;
+  const tagCtx=tagCanvas.getContext('2d');tagCtx.clearRect(0,0,220,100);
+  tagCtx.font='bold 43px Arial';tagCtx.textAlign='center';tagCtx.textBaseline='middle';
+  tagCtx.fillStyle='#ffc477';tagCtx.shadowColor='#111827';tagCtx.shadowBlur=7;tagCtx.fillText('p',110,50);
+  const tagTexture=new THREE.CanvasTexture(tagCanvas);tagTexture.colorSpace=THREE.SRGBColorSpace;
+  const tag=new THREE.Sprite(new THREE.SpriteMaterial({map:tagTexture,transparent:true,depthTest:false}));
+  tag.position.set(.22,-.20,.16);tag.scale.set(.35,.20,1);tag.renderOrder=13;stratum0D.add(tag);
+  // The self-intersection (double locus) is the positive y-axis in image space.
+  const crosscapV=1.15;
+  const eps=0.035;
+  const pts=[new THREE.Vector3(0,eps,0),new THREE.Vector3(0,crosscapV*crosscapV,0)];
+  const doubleLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:0xffa45b,transparent:true,opacity:.95,depthTest:false}));
+  doubleLine.renderOrder=11;stratum1D.add(doubleLine);
+  group.add(singularMarker);
+ }else if(type==='steiner'){
+  singularMarker=new THREE.Group();stratum1D=new THREE.Group();stratum0D=new THREE.Group();singularMarker.add(stratum1D,stratum0D);
+  const mark=(x,y,z,label,color=0xffa45b)=>{
+   const dot=new THREE.Mesh(new THREE.SphereGeometry(.065,20,14),new THREE.MeshBasicMaterial({color,depthTest:false}));
+   dot.position.set(x,y,z);dot.renderOrder=12;stratum0D.add(dot);
+   const canvas=document.createElement('canvas');canvas.width=180;canvas.height=80;
+   const ctx=canvas.getContext('2d');ctx.clearRect(0,0,180,80);ctx.font='bold 34px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle=color===0xffa45b?'#ffb86b':'#e9d5ff';ctx.shadowColor='#111827';ctx.shadowBlur=6;ctx.fillText(label,90,40);
+   const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;
+   const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+   const offset=new THREE.Vector3(x,y,z);if(offset.lengthSq()<1e-10)offset.set(0,1,0);offset.normalize().multiplyScalar(.17);
+   sprite.position.set(x+offset.x,y+offset.y,z+offset.z);sprite.scale.set(.34,.16,1);sprite.renderOrder=13;stratum0D.add(sprite);
+  };
+  const scale=3.3;
+  const a=scale/2; // exact image coordinate of the six pinch points
+  const steinerPoint=(phi,theta)=>{
+   const u=Math.sin(theta)*Math.cos(phi),v=Math.sin(theta)*Math.sin(phi),w=Math.cos(theta);
+   return [scale*u*v,scale*v*w,scale*w*u];
+  };
+  // These image points are evaluated from the same parametrization as the mesh.
+  // Each is now guaranteed to be a mesh vertex by the adaptive angular grid.
+  const pinchPoints=[
+   [...steinerPoint(Math.PI/4,Math.PI/2),'s₁'],[...steinerPoint(3*Math.PI/4,Math.PI/2),'s₂'],
+   [...steinerPoint(Math.PI/2,Math.PI/4),'s₃'],[...steinerPoint(3*Math.PI/2,Math.PI/4),'s₄'],
+   [...steinerPoint(0,Math.PI/4),'s₅'],[...steinerPoint(Math.PI,Math.PI/4),'s₆']
+  ];
+  pinchPoints.forEach(q=>mark(...q));
+  mark(0,0,0,'T',0xe9d5ff);
+  const axisMat=new THREE.LineBasicMaterial({color:0xffa45b,transparent:true,opacity:.78,depthTest:false});
+  // Six separate 1D strata: remove a small neighborhood of the triple point
+  // and the six pinch points, which are represented by 0D strata.
+  const eps=.055, inner=a-eps;
+  const rays=[
+   [new THREE.Vector3(eps,0,0),new THREE.Vector3(inner,0,0)],
+   [new THREE.Vector3(-inner,0,0),new THREE.Vector3(-eps,0,0)],
+   [new THREE.Vector3(0,eps,0),new THREE.Vector3(0,inner,0)],
+   [new THREE.Vector3(0,-inner,0),new THREE.Vector3(0,-eps,0)],
+   [new THREE.Vector3(0,0,eps),new THREE.Vector3(0,0,inner)],
+   [new THREE.Vector3(0,0,-inner),new THREE.Vector3(0,0,-eps)]
+  ];
+  rays.forEach(pair=>{
+   const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pair),axisMat);line.renderOrder=11;stratum1D.add(line);
+  });
+  group.add(singularMarker);
+ }else if(type==='astroid'){
+  singularMarker=new THREE.Group();stratum1D=new THREE.Group();stratum0D=new THREE.Group();singularMarker.add(stratum1D,stratum0D);
+  const markerMat=new THREE.MeshBasicMaterial({color:0xffa45b,depthTest:false});
+  const pts=[[1,0,0,'x⁺'],[-1,0,0,'x⁻'],[0,1,0,'y⁺'],[0,-1,0,'y⁻'],[0,0,1,'z⁺'],[0,0,-1,'z⁻']];
+  for(const [x,y,z,label] of pts){
+   const dot=new THREE.Mesh(new THREE.SphereGeometry(.035,16,12),markerMat);
+   dot.position.set(x,y,z);dot.renderOrder=12;stratum0D.add(dot);
+   const canvas=document.createElement('canvas');canvas.width=160;canvas.height=64;
+   const ctx=canvas.getContext('2d');ctx.font='bold 30px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+   ctx.fillStyle='#ffb86b';ctx.shadowColor='#111827';ctx.shadowBlur=5;ctx.fillText(label,80,32);
+   const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;
+   const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));
+   const dir=new THREE.Vector3(x,y,z);
+   sprite.position.copy(dir.multiplyScalar(1.13));sprite.scale.set(.22,.11,1);sprite.renderOrder=13;stratum0D.add(sprite);
+  }
+  group.add(singularMarker);
+ }
+ return {group,mesh,lines,labels,vertexLabels,edgeLabels,singularMarker,stratum1D,stratum0D,counts:{V:positions.length/3,E:edgeSet.size,F:faceCount,chi:positions.length/3-edgeSet.size+faceCount}};
+}
+
+function updateMetrics(counts){
+ document.getElementById('v').textContent=counts.V;
+ document.getElementById('e').textContent=counts.E;
+ document.getElementById('f').textContent=counts.F;
+ document.getElementById('chi').textContent=counts.chi;
+}
+let currentSurface='torus';
+function faceCountFor(type){
+ if(type==='steiner'){
+  const ns=Math.max(8,4*Math.ceil(N/4)), ms=2*ns;
+  return 2*ms*ns-ms;
+ }
+ if(type==='astroid'){
+  const ns=Math.max(4,2*Math.ceil(N/2)), ms=2*ns;
+  return 2*ms*(ns-1);
+ }
+ return type==='torus' ? 2*M*N : type==='pinched' ? pinchCount*2*N*(2*N-1) : type==='crosscap' ? 2*M*N : type==='boy' ? 2*M*N-M : 2*M*(N-1);
+}
+function updateResolutionReadout(){
+ document.getElementById('resolutionValue').textContent=String(faceCountFor(currentSurface));
+ const displayN=currentSurface==='steiner'?Math.max(8,4*Math.ceil(N/4)):currentSurface==='astroid'?Math.max(4,2*Math.ceil(N/2)):N;
+ const displayM=(currentSurface==='steiner'||currentSurface==='astroid')?2*displayN:M;
+ const adaptiveNote=(currentSurface==='steiner'||currentSurface==='astroid')&&displayN!==N?' · resolução adaptativa':'';
+ document.querySelector('.hint').textContent=
+  `Triangulação: ${displayM} × ${displayN} ${currentSurface==='torus'?'· toro':currentSurface==='spindle'?'· spindle':currentSurface==='pinched'?'· toro pinçado':currentSurface==='crosscap'?'· cross-cap':currentSurface==='boy'?'· plano projetivo (Boy)':currentSurface==='steiner'?'· superfície romana de Steiner':currentSurface==='astroid'?'· esfera astroidal':'· esfera'}${adaptiveNote} · ${faceCountFor(currentSurface)} faces`;
+}
+function updatePinchReadout(){
+ const slider=document.getElementById('pinchCount');
+ if(!slider)return;
+ slider.value=String(pinchCount);
+ document.getElementById('pinchCountValue').textContent=String(pinchCount);
+ const singular=pinchCount===1?'ponto singular':'pontos singulares';
+ document.getElementById('pinchStrataDescription').textContent=
+  `Φₙ(x,y)=(g cos x,g sin x,sin(${pinchCount}x/2) sin y), g=2+sin(${pinchCount}x/2)cos y. Há ${pinchCount} ${singular}; o estrato regular tem ${pinchCount===1?'um componente, homeomorfo a S¹ × ℝ':`${pinchCount} componentes, cada um homeomorfo a S¹ × ℝ`}.`;
+ const panel=document.getElementById('pinchedPanel');
+ const regularLine=panel.querySelector('[data-role="regular"]');
+ const singularLine=panel.querySelector('[data-role="singular"]');
+ const eulerLine=document.getElementById('pinchedEuler');
+ if(regularLine)regularLine.innerHTML=`Estrato regular: <strong style="color:#8be0d0">X₂ = X ∖ {p₁,…,pₙ}</strong> — ${pinchCount} componente(s) cilíndrico(s) aberto(s).`;
+ if(singularLine)singularLine.innerHTML=`Estrato singular: <strong style="color:#ffc477">X₀ = {p₁,…,pₙ}</strong>, com ${pinchCount} ponto(s) de dimensão 0.`;
+ if(eulerLine)eulerLine.textContent=`χ(X) = χ꜀(X₂) + χ꜀(X₀) = 0 + ${pinchCount} = ${pinchCount}`;
+}
+function updateStrataPanel(type){
+ const descriptions={
+  torus:"Estratificação trivial: X₂ é toda a superfície; não há estratos de dimensões 1 ou 0.",
+  sphere:"Estratificação trivial: X₂ é toda a superfície; não há estratos de dimensões 1 ou 0.",
+  spindle:"X₂ é a parte regular; X₀ contém os dois polos cônicos. Não há estrato de dimensão 1 nesta decomposição.",
+  pinched:"X₂ é a parte regular e X₀ é o conjunto dos pontos de pinçamento.",
+  crosscap:"X₂: parte regular da imagem (as duas folhas são separadas ao retirar a curva dupla). X₁: semieixo duplo sem a origem. X₀: ponto de pinçamento na origem.",
+  boy:"No domínio, RP² é um único estrato X₂. As auto-interseções são fenômenos da imagem da imersão, não estratos singulares do domínio.",
+  steiner:"X₂: imagem regular fora dos eixos duplos. X₁: seis semieixos dos três eixos coordenados, retirando origem e extremos. X₀: seis pontos de pinch e o ponto triplo.",
+  astroid:"X₂ é a parte regular; X₀ contém os seis pontos de cúspide. Não há estrato de dimensão 1 na estratificação por cúspides."
+ };
+ document.getElementById('strataDescription').textContent=descriptions[type]||"Estratificação da superfície selecionada.";
+ const has1D=type==='crosscap'||type==='steiner';
+ const has0D=!!active.stratum0D && !['torus','sphere','boy'].includes(type);
+ document.getElementById('showStratum1').disabled=!has1D;
+ document.getElementById('showStratum0').disabled=!has0D;
+ document.getElementById('showStratum1').parentElement.style.opacity=has1D?'1':'.4';
+ document.getElementById('showStratum0').parentElement.style.opacity=has0D?'1':'.4';
+ document.getElementById('showStratum2').checked=showStratum2;
+ document.getElementById('showStratum1').checked=showStratum1;
+ document.getElementById('showStratum0').checked=showStratum0;
+ active.mesh.visible=showStratum2 && displayMode!=='wire';
+ active.lines.visible=showStratum2 && displayMode!=='solid';
+ active.labels.visible=showStratum2 && showNumbers;
+ active.vertexLabels.visible=showStratum2 && showVertexNumbers;
+ active.edgeLabels.visible=showStratum2 && showEdgeNumbers;
+ if(active.stratum1D)active.stratum1D.visible=has1D&&showStratum1;
+ if(active.stratum0D)active.stratum0D.visible=has0D&&showStratum0;
+ const wp=document.getElementById('whitneyPanel');
+ const ws=document.getElementById('whitneySummary'), wd=document.getElementById('whitneyDetails');
+ if(type==='crosscap'){
+  wp.style.display='block';
+  ws.innerHTML='<strong style="color:#86d9a8">Condições (A) e (B): satisfeitas</strong> para a estratificação refinada X₂ ⊔ X₁ ⊔ X₀.';
+  wd.textContent='O refinamento separa a curva dupla (sem o ponto de pinch) do ponto de pinch. A decomposição grosseira que mantivesse o pinch dentro do estrato 1D não seria Whitney regular no ponto de pinch.';
+ }else if(type==='steiner'){
+  wp.style.display='block';
+  ws.innerHTML='<strong style="color:#86d9a8">Condições (A) e (B): satisfeitas</strong> para a decomposição refinada descrita, com os pontos de pinch e o ponto triplo em estratos 0D.';
+  wd.textContent='Cada semieixo duplo é um estrato 1D separado; seus extremos (pinch points) e o ponto triplo são estratos 0D. Localmente, nos pinch points, o modelo é o guarda-chuva de Whitney; no ponto triplo, os ramos são separados pelos estratos 1D incidentes.';
+ }else{
+  wp.style.display='none';
+ }
+}
+function selectSurface(type){
+ currentSurface=type;
+ updateSurfaceGeneralInfo(type);
+ if(active.group)rootGroup.remove(active.group);
+ active=makeSurface(type);rootGroup.add(active.group);
+ active.mesh.visible=displayMode!=='wire';active.lines.visible=displayMode!=='solid';
+ active.labels.visible=showNumbers;active.vertexLabels.visible=showVertexNumbers;active.edgeLabels.visible=showEdgeNumbers;updateMetrics(active.counts);
+ document.getElementById('orbifoldPanel').style.display=type==='spindle'?'block':'none';
+ document.getElementById('pinchedPanel').style.display=type==='pinched'?'block':'none';
+ document.getElementById('crosscapPanel').style.display=type==='crosscap'?'block':'none';
+ document.getElementById('boyPanel').style.display=type==='boy'?'block':'none';
+ document.getElementById('steinerPanel').style.display=type==='steiner'?'block':'none';
+ document.getElementById('astroidPanel').style.display=type==='astroid'?'block':'none';
+ updateStrataPanel(type);
+ updatePinchReadout();
+ updateResolutionReadout();
+ updateOrbifoldEuler();
+}
+function updateOrbifoldEuler(){
+ const m=Number(document.getElementById('isotropyOrder').value);
+ document.getElementById('isotropyValue').textContent=`m = ${m}`;
+ document.getElementById('isotropyGroup').textContent=`ℤ${m}`;
+ document.getElementById('coneAngle').textContent=`2π/${m}`;
+ // Weighted cell count: the two cone vertices have weight 1/m;
+ // all open edges and faces have trivial isotropy.
+ const c=active.counts;
+ const chiOrb=(c.V-2+2/m)-c.E+c.F;
+ const g=(a,b)=>b?g(b,a%b):a;
+ const den=m, num=2, d=g(num,den), a=num/d, b=den/d;
+ const exact=b===1?String(a):`${a}/${b}`;
+ document.getElementById('orbifoldEuler').textContent=
+   Math.abs(chiOrb-2/m)<1e-9?exact:`${chiOrb.toFixed(6)} (esperado ${exact})`;
+}
+document.getElementById('pinchCount').addEventListener('input',e=>{
+ pinchCount=Number(e.target.value);
+ updatePinchReadout();
+ if(currentSurface==='pinched')selectSurface('pinched');
+});
+document.getElementById('isotropyOrder').addEventListener('input',()=>{
+ updateOrbifoldEuler();
+ if(currentSurface==='spindle')selectSurface('spindle');
+});
+
+
+const surfaceGeneralInfo={
+ torus:`
+  <p><strong style="color:#dbeafe">Modelo geométrico.</strong> Toro de revolução, compacto, conexo e orientável, de gênero 1. Os parâmetros percorrem um quadrado com lados opostos identificados periodicamente.</p>
+  <p><strong style="color:#9bded5">Parametrização usada.</strong></p>
+  <div style="color:#bdeee5;padding:5px 8px;background:#0c1727;border-radius:7px">P(u,v)=((R+r cos v)cos u, r sin v, (R+r cos v)sin u),<br>0 ≤ u,v ≤ 2π, com R=1.55 e r=0.66.</div>
+  <p><strong style="color:#9bded5">Cálculo de Euler.</strong> A malha periódica tem M·N vértices, 3MN arestas e 2MN faces. Portanto, χ(T²)=V−E+F=MN−3MN+2MN=0. A identificação periódica nas duas direções é essencial para essa contagem.</p>`,
+ sphere:`
+  <p><strong style="color:#dbeafe">Modelo geométrico.</strong> Esfera redonda, compacta e orientável, usada como modelo de gênero 0.</p>
+  <p><strong style="color:#9bded5">Parametrização usada.</strong></p>
+  <div style="color:#bdeee5;padding:5px 8px;background:#0c1727;border-radius:7px">P(θ,φ)=(ρ sinθ cosφ, ρ cosθ, ρ sinθ sinφ),<br>0 ≤ θ ≤ π, 0 ≤ φ ≤ 2π, com ρ=1.9.</div>
+  <p><strong style="color:#9bded5">Cálculo de Euler.</strong> A triangulação fecha os dois polos e identifica periodicamente a direção angular. Contando os vértices, arestas e faces da malha fechada, obtém-se V−E+F=2, como para qualquer decomposição celular da esfera.</p>`,
+ spindle:`
+  <p><strong style="color:#dbeafe">Modelo geométrico.</strong> Superfície de revolução com dois polos cônicos. O espaço topológico subjacente é uma esfera; a estrutura orbifold registra isotropia ℤ<sub>m</sub> nos dois polos.</p>
+  <p><strong style="color:#9bded5">Parametrização usada.</strong> Com t∈[0,π] e φ∈[0,2π],</p>
+  <div style="color:#bdeee5;padding:5px 8px;background:#0c1727;border-radius:7px">P(t,φ)=(1.9 sin t cosφ, y<sub>m</sub>(t), 1.9 sin t sinφ),<br>y<sub>m</sub>(t)=b(π/2−t)+δε(e<sup>−t/ε</sup>−e<sup>−(π−t)/ε</sup>),<br>b=0.48·1.9, ε=0.18, δ=1.9√(m²−1)−b.</div>
+  <p><strong style="color:#9bded5">Cálculo de Euler.</strong> Ignorando os pesos orbifold, a triangulação do espaço subjacente dá χ<sub>top</sub>=V−E+F=2. Para a característica orbifold, cada polo cônico recebe peso 1/m em vez de 1. Assim, χ<sub>orb</sub>=2−2(1−1/m)=2/m. O controle m altera essa contribuição e o ângulo cônico 2π/m.</p>`,
+ pinched:`
+  <p><strong style="color:#dbeafe">Modelo geométrico.</strong> Família de superfícies obtida pela identificação de cada círculo parametrizado por x=2πk/n em um ponto. O parâmetro n determina o número de pontos de pinçamento.</p>
+  <p><strong style="color:#9bded5">Parametrização usada.</strong> Para 0≤x,y≤2π,</p>
+  <div style="color:#bdeee5;padding:5px 8px;background:#0c1727;border-radius:7px">Φ<sub>n</sub>(x,y)=(g cos x, g sin x, sin(nx/2)sin y),<br>g=2+sin(nx/2)cos y.</div>
+  <p><strong style="color:#9bded5">Cálculo de Euler.</strong> Usa-se a aditividade da característica de Euler com suporte compacto na decomposição estratificada X=X<sub>2</sub>⊔X<sub>0</sub>. O estrato regular é união de n cilindros abertos S¹×ℝ, cada um com χ<sub>c</sub>=0; o estrato singular contém n pontos e tem χ<sub>c</sub>=n. Logo χ(X)=χ<sub>c</sub>(X<sub>2</sub>)+χ<sub>c</sub>(X<sub>0</sub>)=0+n=n. A contagem V−E+F da malha é a verificação combinatória da discretização construída.</p>`,
+ crosscap:`
+  <p><strong style="color:#dbeafe">Modelo geométrico.</strong> Whitney umbrella (cross-cap), uma imagem singular em ℝ³ com curva dupla e ponto de pinçamento na origem.</p>
+  <p><strong style="color:#9bded5">Parametrização usada.</strong></p>
+  <div style="color:#bdeee5;padding:5px 8px;background:#0c1727;border-radius:7px">F(u,v)=(u,v²,uv),<br>−1.55≤u≤1.55, −1.15≤v≤1.15.</div>
+  <p><strong style="color:#9bded5">Cálculo de Euler — cuidado com a interpretação.</strong> A malha implementada triangula o retângulo de parâmetros, que é um disco. Por isso, os números exibidos V, E e F contam o domínio parametrizador truncado e dão V−E+F=1. Eles <em>não</em> são uma contagem celular da imagem singular após identificar os pontos do domínio que têm a mesma imagem. A característica da imagem exige especificar essa identificação e a estrutura celular correspondente.</p>`,
+ boy:`
+  <p><strong style="color:#dbeafe">Modelo geométrico.</strong> Superfície de Boy: imersão do plano projetivo real ℝP² em ℝ³. A imagem tem auto-interseções, mas o domínio ℝP² é uma variedade suave.</p>
+  <p><strong style="color:#9bded5">Parametrização usada.</strong> No disco 0≤v≤π/2, com u periódico,</p>
+  <div style="color:#bdeee5;padding:5px 8px;background:#0c1727;border-radius:7px">c=cos v, s=sin(2v), D=2−√2 sin(3u)s,<br>x=(√2 c² cos(2u)+cos(u)s)/D,<br>y=(√2 c² sin(2u)−sin(u)s)/D,<br>z=3c²/D.</div>
+  <p><strong style="color:#9bded5">Cálculo de Euler.</strong> A malha identifica os pontos antipodais da borda do disco, construindo uma triangulação do domínio ℝP². Assim, V−E+F=χ(ℝP²)=1. A contagem é feita no domínio, não tratando as auto-interseções da imagem como novas identificações.</p>`,
+ steiner:`
+  <p><strong style="color:#dbeafe">Modelo geométrico.</strong> Superfície romana de Steiner, imagem do plano projetivo real por uma aplicação quadrática. A imagem apresenta três eixos de autointerseção, seis pontos de pinch e um ponto triplo.</p>
+  <p><strong style="color:#9bded5">Parametrização usada.</strong> Para (u,v,w) na esfera unitária, identificando (u,v,w)∼(−u,−v,−w),</p>
+  <div style="color:#bdeee5;padding:5px 8px;background:#0c1727;border-radius:7px">F(u,v,w)=3.3(uv,vw,wu),<br>u²+v²+w²=1.</div>
+  <p><strong style="color:#9bded5">Cálculo de Euler.</strong> A triangulação é construída no domínio quociente ℝP², identificando os pontos antipodais do equador parametrizador. Portanto, V−E+F=χ(ℝP²)=1. A contagem não é feita diretamente na imagem auto-intersectante; as interseções não criam vértices adicionais no domínio.</p>`,
+ astroid:`
+  <p><strong style="color:#dbeafe">Modelo geométrico.</strong> Esfera astroidal, superfície homeomorfa a S², com seis cúspides nos extremos dos eixos coordenados.</p>
+  <p><strong style="color:#9bded5">Parametrização usada.</strong></p>
+  <div style="color:#bdeee5;padding:5px 8px;background:#0c1727;border-radius:7px">P(u,θ)=((cos u sinθ)³, (sin u sinθ)³, (cosθ)³),<br>0≤u≤2π, 0≤θ≤π.</div>
+  <p><strong style="color:#9bded5">Equação implícita.</strong> |x|<sup>2/3</sup>+|y|<sup>2/3</sup>+|z|<sup>2/3</sup>=1.</p>
+  <p><strong style="color:#9bded5">Cálculo de Euler.</strong> A malha adaptativa triangula uma esfera, incluindo os seis pontos de cúspide como vértices. Logo, a contagem celular da malha fechada fornece V−E+F=χ(S²)=2.</p>`
+};
+function updateSurfaceGeneralInfo(type){
+ const target=document.getElementById('surfaceGeneralInfo');
+ if(target)target.innerHTML=surfaceGeneralInfo[type]||'Informações desta superfície ainda não disponíveis.';
+}
+
+const pageInfo={
+ torus:{title:'Toro',kicker:'SUPERFÍCIE FECHADA · GÊNERO 1',description:'O toro é uma superfície compacta, conexa e orientável de gênero 1. A visualização constrói uma triangulação periódica, calcula V, E e F e permite verificar a característica de Euler.',formula:'χ(T²) = V − E + F = 0'},
+ sphere:{title:'Esfera',kicker:'SUPERFÍCIE FECHADA · GÊNERO 0',description:'A esfera é uma superfície compacta, conexa e orientável de gênero 0. Sua malha triangular permite explorar a estrutura celular e a característica de Euler.',formula:'χ(S²) = V − E + F = 2'},
+ spindle:{title:'Spindle orbifold',kicker:'ORBIFOLD · PONTOS CÔNICOS',description:'Superfície de revolução com dois polos cônicos. O controle da ordem m altera o ângulo cônico 2π/m; a contagem ponderada dos vértices calcula a característica de Euler orbifold.',formula:'χorb = 2/m'},
+ pinched:{title:'Toro pinçado',kicker:'ESPAÇO ESTRATIFICADO · PINÇAMENTOS',description:'Família de superfícies obtidas pela contração de curvas a pontos singulares. O parâmetro n controla o número de pinçamentos; a página exibe os estratos regular e singular e a contribuição de Euler com suporte compacto.',formula:'X = X₂ ⊔ X₀'},
+ crosscap:{title:'Cross-cap · Whitney umbrella',kicker:'SINGULARIDADES · ESTRATIFICAÇÃO DE WHITNEY',description:'Imagem da aplicação F(u,v) = (u,v²,uv), cuja equação é z² = x²y, com y ≥ 0. A curva dupla e o ponto de pinçamento são separados em estratos de dimensões 1 e 0. O painel permite examinar as condições de Whitney A e B para a estratificação refinada.',formula:'F(u,v) = (u,v²,uv)'},
+ boy:{title:'Superfície de Boy',kicker:'IMERSÃO · PLANO PROJETIVO REAL',description:'A superfície de Boy é uma imersão suave de RP² em R³. A imagem apresenta auto-interseções, mas o domínio parametrizador permanece uma variedade suave; a triangulação é construída respeitando a identificação antipodal.',formula:'χ(RP²) = 1'},
+ steiner:{title:'Superfície romana de Steiner',kicker:'AUTO-INTERSEÇÕES · PLANO PROJETIVO REAL',description:'Imagem do plano projetivo real pela aplicação quadrática (u,v,w) ↦ (uv,vw,wu). A imagem possui três eixos de autointerseção, seis pontos de pinch e um ponto triplo. Os estratos 2D, 1D e 0D podem ser visualizados separadamente.',formula:'F(u,v,w) = (uv,vw,wu)'},
+ astroid:{title:'Esfera astroidal',kicker:'SUPERFÍCIE COM SEIS CÚSPIDES',description:'Superfície definida por uma equação com potências fracionárias e parametrizada por coordenadas cúbicas. É homeomorfa a S² e apresenta seis cúspides nos extremos dos eixos coordenados.',formula:'|x|²ᐟ³ + |y|²ᐟ³ + |z|²ᐟ³ = 1'}
+};
+function closeMenu(){document.getElementById('sidebar').classList.remove('open');document.getElementById('drawerBackdrop').classList.remove('open');document.getElementById('menuToggle').setAttribute('aria-expanded','false');}
+function openMenu(){document.getElementById('sidebar').classList.add('open');document.getElementById('drawerBackdrop').classList.add('open');document.getElementById('menuToggle').setAttribute('aria-expanded','true');}
+function navigate(){
+ const hash=location.hash||'#/';
+ const match=hash.match(/^#\/superficies\/([a-z]+)$/);
+ const home=!match;
+ document.getElementById('homePage').hidden=!home;
+ document.getElementById('viewerPage').hidden=home;
+ document.querySelectorAll('.nav-link').forEach(a=>a.classList.toggle('active',home?a.dataset.route==='home':a.dataset.surface===match[1]));
+ if(!home && pageInfo[match[1]]){
+  const type=match[1],info=pageInfo[type];
+  document.getElementById('pageTitle').textContent=info.title;
+  document.getElementById('surfaceInfoPanel').open=false;
+  selectSurface(type);
+  requestAnimationFrame(()=>{const w=stage.clientWidth,h=stage.clientHeight;if(w&&h){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}});
+ }
+ closeMenu();
+}
+document.getElementById('menuToggle').addEventListener('click',()=>document.getElementById('sidebar').classList.contains('open')?closeMenu():openMenu());
+document.getElementById('menuClose').addEventListener('click',closeMenu);
+document.querySelectorAll('.nav-link').forEach(a=>a.addEventListener('click',closeMenu));
+document.getElementById('drawerBackdrop').addEventListener('click',closeMenu);
+document.getElementById('exploreButton').addEventListener('click',()=>{document.querySelector('.home-section-head').scrollIntoView({behavior:'smooth'});openMenu();});
+window.addEventListener('hashchange',navigate);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&stage.classList.contains('stage-expanded')){stage.classList.remove('stage-expanded');requestAnimationFrame(syncGraphSize);}});
+
+selectSurface('torus');
+navigate();
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}new ResizeObserver(resize).observe(stage);resize();
+let auto=true;const $=id=>document.getElementById(id);
+function setActive(id){['wire','solid','both'].forEach(x=>$(x).classList.toggle('active',x===id));}
+$('wire').onclick=()=>{displayMode='wire';active.mesh.visible=false;active.lines.visible=showStratum2;setActive('wire')};
+$('solid').onclick=()=>{displayMode='solid';active.mesh.visible=showStratum2;active.lines.visible=false;setActive('solid')};
+$('both').onclick=()=>{displayMode='both';active.mesh.visible=showStratum2;active.lines.visible=showStratum2;setActive('both')};
+$('numbers').onclick=()=>{showNumbers=!showNumbers;active.labels.visible=showNumbers;$('numbers').classList.toggle('active',showNumbers);$('numbers').textContent=showNumbers?'Ocultar números':'Numerar faces';};
+$('vertexNumbers').onclick=()=>{
+ showVertexNumbers=!showVertexNumbers;
+ active.vertexLabels.visible=showVertexNumbers;
+ $('vertexNumbers').classList.toggle('active',showVertexNumbers);
+ $('vertexNumbers').textContent=showVertexNumbers?'Ocultar vértices':'Numerar vértices';
+};
+$('edgeNumbers').onclick=()=>{
+ showEdgeNumbers=!showEdgeNumbers;
+ active.edgeLabels.visible=showEdgeNumbers;
+ $('edgeNumbers').classList.toggle('active',showEdgeNumbers);
+ $('edgeNumbers').textContent=showEdgeNumbers?'Ocultar arestas':'Numerar arestas';
+};
+$('showStratum2').onchange=e=>{showStratum2=e.target.checked;updateStrataPanel(currentSurface);};
+$('showStratum1').onchange=e=>{showStratum1=e.target.checked;updateStrataPanel(currentSurface);};
+$('showStratum0').onchange=e=>{showStratum0=e.target.checked;updateStrataPanel(currentSurface);};
+
+$('resolution').oninput=e=>{
+ N=Number(e.target.value);M=2*N;
+ selectSurface(currentSurface);
+};
+$('rotate').onclick=()=>{auto=!auto;$('rotate').classList.toggle('active',auto)};
+$('reset').onclick=()=>{camera.position.set(4.8,3.1,5.8);controls.target.set(0,0,0);controls.update()};
+const graphMaximize=$('graphMaximize');
+function syncGraphSize(){
+ const w=stage.clientWidth,h=stage.clientHeight;
+ if(w>0&&h>0){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+}
+async function toggleGraphMaximize(){
+ try{
+  if(document.fullscreenElement===stage){await document.exitFullscreen();}
+  else if(document.fullscreenElement){await document.exitFullscreen();await stage.requestFullscreen();}
+  else if(stage.requestFullscreen){await stage.requestFullscreen();}
+  else {stage.classList.toggle('stage-expanded');}
+ }catch(err){stage.classList.toggle('stage-expanded');}
+ requestAnimationFrame(syncGraphSize);
+}
+graphMaximize.addEventListener('click',toggleGraphMaximize);
+document.addEventListener('fullscreenchange',()=>{
+ const expanded=document.fullscreenElement===stage||stage.classList.contains('stage-expanded');
+ graphMaximize.querySelector('span').textContent=expanded?'Restaurar gráfico':'Maximizar gráfico';
+ graphMaximize.setAttribute('aria-label',expanded?'Restaurar tamanho do gráfico':'Maximizar gráfico');
+ requestAnimationFrame(syncGraphSize);
+});
+window.addEventListener('resize',()=>requestAnimationFrame(syncGraphSize));
+$('newtab').onclick=()=>window.open(window.location.href,'_blank','noopener');
+function animate(){requestAnimationFrame(animate);if(auto)rootGroup.rotation.y+=.0025;controls.update();renderer.render(scene,camera)}animate();
+</script></body></html>
