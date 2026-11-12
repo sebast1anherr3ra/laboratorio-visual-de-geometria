@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Visualização interativa do toro, de campos vetoriais e de seus fluxos.">
+  <title>Toro — Laboratório Visual de Geometria</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #ffffff;
+      --panel: #f7f9fc;
+      --panel-2: #eef2f7;
+      --text: #182230;
+      --muted: #64748b;
+      --line: #dce3ec;
+      --accent: #285d91;
+      --accent-soft: #e7f0fa;
+      --red: #d94b4b;
+      --blue: #2878d0;
+      --shadow: 0 12px 32px rgba(20, 35, 55, .08);
+    }
+    body.contrast {
+      color-scheme: dark;
+      --bg: #080b10;
+      --panel: #111925;
+      --panel-2: #1a2635;
+      --text: #f5f8fc;
+      --muted: #c1cede;
+      --line: #46566b;
+      --accent: #68d9ff;
+      --accent-soft: #132b3b;
+      --red: #ff7777;
+      --blue: #69b7ff;
+      --shadow: 0 12px 32px rgba(0, 0, 0, .3);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { transition: background .2s, color .2s; }
+    a { color: inherit; text-decoration: none; }
+    button, select, input { font: inherit; }
+    .topbar {
+      height: 64px; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(16px, 4vw, 52px); border-bottom: 1px solid var(--line);
+      background: var(--bg); gap: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; font-weight: 700; }
+    .brand-mark { width: 30px; height: 30px; border: 2px solid var(--accent); border-radius: 50%; display: grid; place-items: center; color: var(--accent); font-size: 17px; }
+    .brand small { display: block; color: var(--muted); font-weight: 500; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    .top-actions { display: flex; gap: 8px; align-items: center; }
+    .btn {
+      border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 9px;
+      padding: 9px 12px; cursor: pointer; transition: .15s ease; font-size: 13px;
+    }
+    .btn:hover { border-color: var(--accent); transform: translateY(-1px); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 650; }
+    body.contrast .btn.primary { color: #071018; }
+    .page { max-width: 1500px; margin: 0 auto; padding: 24px clamp(14px, 3vw, 36px) 38px; }
+    .breadcrumbs { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+    .breadcrumbs a:hover { color: var(--accent); }
+    .heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 20px; }
+    .eyebrow { color: var(--accent); font-size: 11px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 6px 0 5px; font-size: clamp(28px, 4vw, 42px); letter-spacing: -.035em; }
+    .subtitle { margin: 0; color: var(--muted); max-width: 720px; line-height: 1.55; font-size: 14px; }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; align-items: start; }
+    .visual-card, .panel { border: 1px solid var(--line); border-radius: 15px; background: var(--panel); box-shadow: var(--shadow); overflow: hidden; }
+    .visual-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 15px; border-bottom: 1px solid var(--line); }
+    .visual-head strong { font-size: 13px; }
+    .visual-head span { color: var(--muted); font-size: 11px; }
+    #sceneWrap { position: relative; height: min(68vh, 690px); min-height: 390px; background: var(--bg); }
+    #scene { position: absolute; inset: 0; }
+    #scene canvas { display: block; width: 100%; height: 100%; }
+    .scene-hint { position: absolute; bottom: 12px; left: 14px; pointer-events: none; color: var(--muted); background: color-mix(in srgb, var(--panel) 82%, transparent); border: 1px solid var(--line); border-radius: 7px; padding: 6px 9px; font-size: 10px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; padding: 11px 15px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .legend span { display: inline-flex; align-items: center; gap: 6px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .dot.torus { background: #aab4c2; } .dot.x { background: var(--red); } .dot.y { background: var(--blue); }
+    .sidebar { display: grid; gap: 14px; }
+    .panel { padding: 15px; }
+    .panel h2 { font-size: 14px; margin: 0 0 13px; }
+    .field { margin: 13px 0; }
+    .field-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 7px; }
+    label { font-size: 12px; font-weight: 650; }
+    output, .value { color: var(--accent); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    select, input[type="number"] { width: 100%; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--text); }
+    input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+    .checkrow { display: flex; gap: 9px; align-items: center; margin: 10px 0; color: var(--text); font-size: 12px; }
+    .checkrow input { accent-color: var(--accent); }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 14px; }
+    .actions .wide { grid-column: 1 / -1; }
+    .formula { padding: 11px; background: var(--panel-2); border-radius: 9px; color: var(--text); font-family: Georgia, serif; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+    .formula small { display: block; color: var(--muted); font-family: inherit; font-size: 11px; }
+    .info-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 16px; }
+    .info-box { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+    .info-box strong { display: block; font-size: 11px; margin-bottom: 5px; }
+    .info-box span { color: var(--muted); font-size: 12px; }
+    .below { display: grid; grid-template-columns: 1.15fr .85fr; gap: 18px; margin-top: 18px; }
+    .text-panel { border: 1px solid var(--line); border-radius: 13px; padding: 17px; background: var(--panel); }
+    .text-panel h2 { font-size: 15px; margin: 0 0 10px; }
+    .text-panel p { color: var(--muted); font-size: 13px; line-height: 1.7; margin: 7px 0; }
+    .mathline { font-family: Georgia, serif; color: var(--text); background: var(--panel-2); border-radius: 8px; padding: 10px 12px; margin: 9px 0; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+    .footer { text-align: center; color: var(--muted); font-size: 11px; padding: 28px 10px 8px; }
+    @media (max-width: 980px) {
+      .workspace { grid-template-columns: 1fr; }
+      .sidebar { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      #sceneWrap { height: 58vh; }
+    }
+    @media (max-width: 620px) {
+      .topbar { height: auto; min-height: 60px; padding: 12px 14px; }
+      .brand { font-size: 12px; }
+      .top-actions .btn { padding: 8px; font-size: 11px; }
+      .heading { align-items: start; flex-direction: column; }
+      .sidebar, .below { grid-template-columns: 1fr; }
+      #sceneWrap { min-height: 330px; height: 52vh; }
+      .info-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../../">
+      <span class="brand-mark">∿</span>
+      <span>Laboratório Visual de Geometria<small>Geometria · Topologia · Visualização</small></span>
+    </a>
+    <div class="top-actions">
+      <a class="btn" href="../">← Superfícies</a>
+      <button class="btn" id="themeBtn" type="button">Alto contraste</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="breadcrumbs"><a href="../../">Início</a> / <a href="../">Superfícies</a> / Toro</div>
+    <section class="heading">
+      <div>
+        <div class="eyebrow">Superfícies · Geometria diferencial</div>
+        <h1>Toro e campos vetoriais</h1>
+        <p class="subtitle">Explore a parametrização do toro, os campos induzidos por vetores constantes no espaço de parâmetros e suas curvas integrais.</p>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <div class="visual-card">
+        <div class="visual-head">
+          <strong>Visualização tridimensional</strong>
+          <span>Arraste para girar · Scroll para zoom</span>
+        </div>
+        <div id="sceneWrap">
+          <div id="scene"></div>
+          <div class="scene-hint">Use o mouse ou toque para manipular a câmera</div>
+        </div>
+        <div class="legend">
+          <span><i class="dot torus"></i> Toro</span>
+          <span><i class="dot x"></i> Órbita de X</span>
+          <span><i class="dot y"></i> Órbita de Y</span>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <section class="panel">
+          <h2>Parâmetros do campo</h2>
+          <div class="field">
+            <div class="field-top"><label for="lambda1">λ₁</label><output id="lambda1Out">1</output></div>
+            <select id="lambda1">
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+              <option value="sqrt2">√2</option><option value="pi">π</option><option value="e">e</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="lambda2">λ₂</label><output id="lambda2Out">π</output></div>
+            <select id="lambda2">
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+              <option value="sqrt2">√2</option><option value="pi" selected>π</option><option value="e">e</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="tmax">Tempo máximo</label><output id="tmaxOut">30</output></div>
+            <input id="tmax" type="range" min="1" max="100" step="1" value="30">
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="theta0">θ₀ inicial</label><output id="thetaOut">π/4</output></div>
+            <input id="theta0" type="range" min="0" max="6.283185307" step="0.01" value="0.7853981634">
+          </div>
+          <div class="field">
+            <div class="field-top"><label for="phi0">φ₀ inicial</label><output id="phiOut">π/4</output></div>
+            <input id="phi0" type="range" min="0" max="6.283185307" step="0.01" value="0.7853981634">
+          </div>
+          <div class="actions">
+            <button class="btn primary" id="playBtn" type="button">▶ Animar</button>
+            <button class="btn" id="resetBtn" type="button">↺ Reiniciar</button>
+            <button class="btn wide" id="clearBtn" type="button">Atualizar curvas</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Elementos visíveis</h2>
+          <label class="checkrow"><input id="showX" type="checkbox" checked> Curva integral de X</label>
+          <label class="checkrow"><input id="showY" type="checkbox" checked> Curva integral de Y</label>
+          <label class="checkrow"><input id="showVectors" type="checkbox" checked> Vetores tangentes iniciais</label>
+          <label class="checkrow"><input id="showParticles" type="checkbox" checked> Pontos móveis</label>
+          <label class="checkrow"><input id="showGrid" type="checkbox" checked> Malha do toro</label>
+        </section>
+
+        <section class="panel">
+          <h2>Geometria do toro</h2>
+          <div class="formula">
+            f(θ, φ) = ((R + r cos θ) cos φ,<br>
+            (R + r cos θ) sen φ, r sen θ)
+            <small>Raio maior R = 5 · raio menor r = 3</small>
+          </div>
+          <div class="info-grid">
+            <div class="info-box"><strong>Topologia</strong><span>S¹ × S¹</span></div>
+            <div class="info-box"><strong>Euler</strong><span>χ(T²) = 0</span></div>
+          </div>
+        </section>
+      </aside>
+    </section>
+
+    <section class="below">
+      <article class="text-panel">
+        <h2>Campos vetoriais e fluxos</h2>
+        <p>Considere os campos constantes no espaço de parâmetros T²:</p>
+        <div class="mathline">X = λ₁ ∂/∂θ + λ₂ ∂/∂φ</div>
+        <div class="mathline">Y = −λ₂ ∂/∂θ + λ₁ ∂/∂φ</div>
+        <p>Os campos induzidos na superfície são obtidos pelo diferencial da parametrização:</p>
+        <div class="mathline">f<sub>*</sub>X = λ₁ f<sub>θ</sub> + λ₂ f<sub>φ</sub></div>
+        <div class="mathline">f<sub>*</sub>Y = −λ₂ f<sub>θ</sub> + λ₁ f<sub>φ</sub></div>
+      </article>
+      <article class="text-panel">
+        <h2>Curvas integrais</h2>
+        <p>Para o ponto inicial (θ₀, φ₀), os fluxos no espaço de parâmetros são:</p>
+        <div class="mathline">Φ<sub>X</sub>(t) = (θ₀ + λ₁t, φ₀ + λ₂t) mod 2π</div>
+        <div class="mathline">Φ<sub>Y</sub>(t) = (θ₀ − λ₂t, φ₀ + λ₁t) mod 2π</div>
+        <p>As curvas desenhadas são as imagens desses fluxos pelo mapa f. A animação percorre simultaneamente as duas órbitas.</p>
+      </article>
+    </section>
+    <div class="footer">Laboratório Visual de Geometria · Experimento interativo sobre o toro</div>
+  </main>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { ParametricGeometry } from 'three/addons/geometries/ParametricGeometry.js';
+
+    const host = document.getElementById('scene');
+    const wrap = document.getElementById('sceneWrap');
+    const scene = new THREE.Scene();
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setSize(wrap.clientWidth, wrap.clientHeight);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    host.appendChild(renderer.domElement);
+
+    const camera = new THREE.PerspectiveCamera(42, wrap.clientWidth / wrap.clientHeight, 0.1, 200);
+    camera.position.set(13, 11, 14);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.target.set(0, 0, 0);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 1.25));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.0);
+    keyLight.position.set(8, 12, 10);
+    scene.add(keyLight);
+    const fillLight = new THREE.DirectionalLight(0xb8d4ff, 0.8);
+    fillLight.position.set(-10, -4, -8);
+    scene.add(fillLight);
+
+    const R = 5, r = 3;
+    const torusGeometry = new ParametricGeometry((u, v, target) => {
+      const theta = u * 2 * Math.PI;
+      const phi = v * 2 * Math.PI;
+      target.set(
+        (R + r * Math.cos(theta)) * Math.cos(phi),
+        (R + r * Math.cos(theta)) * Math.sin(phi),
+        r * Math.sin(theta)
+      );
+    }, 96, 48);
+
+    const torusMaterial = new THREE.MeshStandardMaterial({
+      color: 0xaeb8c5, roughness: 0.72, metalness: 0.05,
+      side: THREE.DoubleSide, transparent: true, opacity: 0.88
+    });
+    const torus = new THREE.Mesh(torusGeometry, torusMaterial);
+    scene.add(torus);
+
+    const wire = new THREE.WireframeGeometry(torusGeometry);
+    const wireMaterial = new THREE.LineBasicMaterial({ color: 0x687789, transparent: true, opacity: 0.28 });
+    const wireMesh = new THREE.LineSegments(wire, wireMaterial);
+    scene.add(wireMesh);
+
+    const axes = new THREE.AxesHelper(7);
+    axes.material.transparent = true;
+    axes.material.opacity = 0.35;
+    scene.add(axes);
+
+    const groupX = new THREE.Group(), groupY = new THREE.Group();
+    scene.add(groupX, groupY);
+
+    const pointX = new THREE.Mesh(new THREE.SphereGeometry(0.14, 18, 14), new THREE.MeshStandardMaterial({ color: 0xd94b4b, emissive: 0x451010 }));
+    const pointY = new THREE.Mesh(new THREE.SphereGeometry(0.14, 18, 14), new THREE.MeshStandardMaterial({ color: 0x2878d0, emissive: 0x0b2444 }));
+    scene.add(pointX, pointY);
+
+    const arrowX = new THREE.ArrowHelper(new THREE.Vector3(1,0,0), new THREE.Vector3(), 1, 0xd94b4b, 0.35, 0.2);
+    const arrowY = new THREE.ArrowHelper(new THREE.Vector3(1,0,0), new THREE.Vector3(), 1, 0x2878d0, 0.35, 0.2);
+    scene.add(arrowX, arrowY);
+
+    const initialX = new THREE.Mesh(new THREE.SphereGeometry(0.105, 16, 12), new THREE.MeshStandardMaterial({ color: 0x9c2020 }));
+    const initialY = new THREE.Mesh(new THREE.SphereGeometry(0.105, 16, 12), new THREE.MeshStandardMaterial({ color: 0x15569a }));
+    scene.add(initialX, initialY);
+
+    function point(theta, phi) {
+      return new THREE.Vector3(
+        (R + r * Math.cos(theta)) * Math.cos(phi),
+        (R + r * Math.cos(theta)) * Math.sin(phi),
+        r * Math.sin(theta)
+      );
+    }
+    function derivatives(theta, phi) {
+      const ft = new THREE.Vector3(
+        -r * Math.sin(theta) * Math.cos(phi),
+        -r * Math.sin(theta) * Math.sin(phi),
+        r * Math.cos(theta)
+      );
+      const fp = new THREE.Vector3(
+        -(R + r * Math.cos(theta)) * Math.sin(phi),
+        (R + r * Math.cos(theta)) * Math.cos(phi),
+        0
+      );
+      return { ft, fp };
+    }
+    function tangentX(theta, phi, l1, l2) {
+      const { ft, fp } = derivatives(theta, phi);
+      return ft.multiplyScalar(l1).add(fp.multiplyScalar(l2));
+    }
+    function tangentY(theta, phi, l1, l2) {
+      const { ft, fp } = derivatives(theta, phi);
+      return ft.multiplyScalar(-l2).add(fp.multiplyScalar(l1));
+    }
+    function valueOf(id) {
+      const v = document.getElementById(id).value;
+      if (v === 'sqrt2') return Math.SQRT2;
+      if (v === 'pi') return Math.PI;
+      if (v === 'e') return Math.E;
+      return Number(v);
+    }
+    function fmtAngle(a) {
+      const twopi = 2 * Math.PI;
+      let x = ((a % twopi) + twopi) % twopi;
+      if (Math.abs(x - Math.PI/4) < .012) return 'π/4';
+      if (Math.abs(x - Math.PI/2) < .012) return 'π/2';
+      if (Math.abs(x - Math.PI) < .012) return 'π';
+      if (Math.abs(x - 3*Math.PI/2) < .012) return '3π/2';
+      return x.toFixed(2);
+    }
+    function buildCurve(group, kind, l1, l2, theta0, phi0, tmax) {
+      group.clear();
+      const count = Math.max(500, Math.ceil(tmax * 70));
+      const positions = [];
+      for (let i = 0; i <= count; i++) {
+        const t = tmax * i / count;
+        const theta = kind === 'X' ? theta0 + l1*t : theta0 - l2*t;
+        const phi = kind === 'X' ? phi0 + l2*t : phi0 + l1*t;
+        positions.push(point(theta, phi));
+      }
+      const curve = new THREE.CatmullRomCurve3(positions, false, 'centripetal');
+      const tube = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, Math.min(count, 5000), 0.045, 7, false),
+        new THREE.MeshStandardMaterial({ color: kind === 'X' ? 0xd94b4b : 0x2878d0, roughness: 0.45, metalness: 0.05 })
+      );
+      group.add(tube);
+    }
+
+    let elapsed = 0;
+    let running = false;
+    let lastTime = performance.now();
+
+    const el = id => document.getElementById(id);
+    function readState() {
+      return {
+        l1: valueOf('lambda1'), l2: valueOf('lambda2'),
+        tmax: Number(el('tmax').value),
+        theta0: Number(el('theta0').value), phi0: Number(el('phi0').value)
+      };
+    }
+    function updateLabels() {
+      el('lambda1Out').textContent = el('lambda1').selectedOptions[0].textContent;
+      el('lambda2Out').textContent = el('lambda2').selectedOptions[0].textContent;
+      el('tmaxOut').textContent = el('tmax').value;
+      el('thetaOut').textContent = fmtAngle(Number(el('theta0').value));
+      el('phiOut').textContent = fmtAngle(Number(el('phi0').value));
+    }
+    function rebuild() {
+      const s = readState();
+      updateLabels();
+      buildCurve(groupX, 'X', s.l1, s.l2, s.theta0, s.phi0, s.tmax);
+      buildCurve(groupY, 'Y', s.l1, s.l2, s.theta0, s.phi0, s.tmax);
+      elapsed = 0;
+      updateVisibility();
+      updateMovingObjects();
+    }
+    function updateVisibility() {
+      groupX.visible = el('showX').checked;
+      groupY.visible = el('showY').checked;
+      arrowX.visible = arrowY.visible = el('showVectors').checked;
+      pointX.visible = pointY.visible = el('showParticles').checked;
+      initialX.visible = initialY.visible = el('showVectors').checked;
+      wireMesh.visible = el('showGrid').checked;
+    }
+    function updateMovingObjects() {
+      const s = readState();
+      const t = Math.min(elapsed, s.tmax);
+      const tx = s.theta0 + s.l1*t, px = s.phi0 + s.l2*t;
+      const ty = s.theta0 - s.l2*t, py = s.phi0 + s.l1*t;
+      const pX = point(tx, px), pY = point(ty, py);
+      pointX.position.copy(pX);
+      pointY.position.copy(pY);
+      const p0 = point(s.theta0, s.phi0);
+      initialX.position.copy(p0);
+      initialY.position.copy(p0);
+      const vx = tangentX(s.theta0, s.phi0, s.l1, s.l2);
+      const vy = tangentY(s.theta0, s.phi0, s.l1, s.l2);
+      const lenX = Math.min(2.2, Math.max(.7, vx.length() * .12));
+      const lenY = Math.min(2.2, Math.max(.7, vy.length() * .12));
+      arrowX.position.copy(p0);
+      arrowY.position.copy(p0);
+      arrowX.setDirection(vx.clone().normalize());
+      arrowY.setDirection(vy.clone().normalize());
+      arrowX.setLength(lenX, .32, .19);
+      arrowY.setLength(lenY, .32, .19);
+    }
+
+    ['lambda1','lambda2','tmax','theta0','phi0'].forEach(id => el(id).addEventListener('input', rebuild));
+    ['showX','showY','showVectors','showParticles','showGrid'].forEach(id => el(id).addEventListener('change', updateVisibility));
+    el('clearBtn').addEventListener('click', rebuild);
+    el('playBtn').addEventListener('click', () => {
+      const s = readState();
+      if (elapsed >= s.tmax) elapsed = 0;
+      running = !running;
+      el('playBtn').textContent = running ? 'Ⅱ Pausar' : '▶ Animar';
+    });
+    el('resetBtn').addEventListener('click', () => {
+      running = false; elapsed = 0;
+      el('playBtn').textContent = '▶ Animar';
+      updateMovingObjects();
+    });
+    el('themeBtn').addEventListener('click', () => {
+      document.body.classList.toggle('contrast');
+      el('themeBtn').textContent = document.body.classList.contains('contrast') ? 'Tema claro' : 'Alto contraste';
+      const dark = document.body.classList.contains('contrast');
+      scene.background = new THREE.Color(dark ? 0x080b10 : 0xffffff);
+      renderer.setClearColor(dark ? 0x080b10 : 0xffffff, 1);
+      torusMaterial.color.setHex(dark ? 0x718096 : 0xaeb8c5);
+      wireMaterial.color.setHex(dark ? 0xb6c5d8 : 0x687789);
+    });
+
+    scene.background = new THREE.Color(0xffffff);
+    renderer.setClearColor(0xffffff, 1);
+    rebuild();
+
+    function animate(now) {
+      requestAnimationFrame(animate);
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      if (running) {
+        elapsed += dt * 1.5;
+        const max = readState().tmax;
+        if (elapsed >= max) {
+          elapsed = max;
+          running = false;
+          el('playBtn').textContent = '▶ Animar';
+        }
+        updateMovingObjects();
+      }
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    requestAnimationFrame(animate);
+
+    const resizeObserver = new ResizeObserver(() => {
+      const w = wrap.clientWidth, h = wrap.clientHeight;
+      if (!w || !h) return;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    });
+    resizeObserver.observe(wrap);
+  </script>
+</body>
+</html>
