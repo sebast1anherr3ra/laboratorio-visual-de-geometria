@@ -2,85 +2,90 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#ffffff">
 <meta name="description" content="Visualização interativa do toro pinçado e dos campos vetoriais induzidos.">
 <title>Toro pinçado — Laboratório Visual de Geometria</title>
 <style>
 :root{
-  color-scheme:light;
-  --bg:#fff;--panel:rgba(248,250,253,.96);--panel-solid:#f7f9fc;
-  --line:#dce3ec;--text:#182230;--muted:#64748b;--accent:#285d91;
-  --control:#fff;--control-hover:#edf3f9;--shadow:0 12px 34px rgba(20,35,55,.12);
+ color-scheme:light;--bg:#fff;--panel:#f7f9fc;--panel2:#eef2f7;
+ --line:#dce3ec;--text:#182230;--muted:#64748b;--accent:#285d91;
+ --control:#fff;--controlHover:#edf3f9;--shadow:0 8px 26px rgba(20,35,55,.07);
 }
 body.contrast{
-  color-scheme:dark;
-  --bg:#080b10;--panel:rgba(13,22,34,.96);--panel-solid:#111925;
-  --line:#46566b;--text:#f5f8fc;--muted:#c1cede;--accent:#68d9ff;
-  --control:#1a2635;--control-hover:#26384c;--shadow:0 12px 34px #0008;
+ color-scheme:dark;--bg:#080b10;--panel:#111925;--panel2:#1a2635;
+ --line:#46566b;--text:#f5f8fc;--muted:#c1cede;--accent:#68d9ff;
+ --control:#1a2635;--controlHover:#26384c;--shadow:0 8px 26px #0005;
 }
 *{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
-#app{position:relative;width:100%;height:100%;height:100dvh;background:var(--bg);transition:background .2s,color .2s}
-header{
- position:absolute;top:0;left:0;right:0;height:62px;z-index:4;display:flex;
- align-items:center;justify-content:space-between;gap:12px;padding:0 clamp(12px,3vw,34px);
- background:var(--bg);border-bottom:1px solid var(--line)
-}
-.brand{display:flex;align-items:center;gap:10px;min-width:0;color:var(--text);text-decoration:none;font-size:13px;font-weight:750}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;transition:background .2s,color .2s}
+a{color:inherit;text-decoration:none}
+button,select,input{font:inherit}
+.topbar{min-height:64px;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px clamp(14px,4vw,52px);border-bottom:1px solid var(--line);background:var(--bg)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;font-size:13px;font-weight:750}
 .brand-mark{width:30px;height:30px;border:2px solid var(--accent);border-radius:50%;display:grid;place-items:center;color:var(--accent);font-size:17px;flex:none}
-.brand small{display:block;color:var(--muted);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
-.head-actions{display:flex;gap:7px;align-items:center}
-button,a.navbtn{font:inherit;color:var(--text);background:var(--control);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:11px;text-decoration:none;cursor:pointer;white-space:nowrap}
-button:hover,a.navbtn:hover{background:var(--control-hover);border-color:var(--accent)}
+.brand small{display:block;color:var(--muted);font-size:9px;letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+.top-actions{display:flex;align-items:center;gap:7px}
+.btn,.navbtn{border:1px solid var(--line);background:var(--control);color:var(--text);border-radius:8px;padding:8px 11px;cursor:pointer;font-size:11px;white-space:nowrap}
+.btn:hover,.navbtn:hover{background:var(--controlHover);border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
+body.contrast .btn.primary{color:#071018}
 button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-#view{position:absolute;inset:62px 0 164px;touch-action:none}
+main{max-width:1450px;margin:0 auto;padding:22px clamp(13px,3vw,36px) 42px}
+.breadcrumbs{font-size:11px;color:var(--muted);margin-bottom:14px}
+.breadcrumbs a:hover{color:var(--accent)}
+.graph-card{border:1px solid var(--line);border-radius:15px;background:var(--panel);overflow:hidden;box-shadow:var(--shadow)}
+.graph-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 13px;border-bottom:1px solid var(--line)}
+.graph-toolbar strong{font-size:12px}
+.graph-toolbar span{font-size:10px;color:var(--muted)}
+.graph-actions{display:flex;gap:6px;align-items:center}
+#view{position:relative;width:100%;height:min(66vh,720px);min-height:420px;background:var(--bg);touch-action:none}
 #view canvas{display:block;width:100%;height:100%;touch-action:none}
-#panel{
- position:absolute;z-index:5;left:50%;bottom:10px;transform:translateX(-50%);
- width:min(1000px,calc(100% - 24px));padding:12px 15px;
- background:var(--panel);border:1px solid var(--line);border-radius:15px;
- backdrop-filter:blur(16px);box-shadow:var(--shadow)
-}
-.top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
-.section{font-size:12px;font-weight:750}
-.buttons{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px 14px}
-.field{display:flex;flex-direction:column;gap:5px;min-width:0}
-.field label{font-size:10px;color:var(--muted);font-weight:650}
+#view:fullscreen{width:100vw;height:100dvh;min-height:0;border:0;border-radius:0;background:var(--bg)}
+#view:fullscreen canvas{width:100%;height:100%}
+#view::backdrop{background:var(--bg)}
+.graph-caption{padding:18px 20px 19px;background:var(--panel)}
+.eyebrow{color:var(--accent);font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+h1{font-size:clamp(25px,3.5vw,38px);letter-spacing:-.035em;margin:5px 0 6px}
+.subtitle{max-width:850px;margin:0;color:var(--muted);font-size:13px;line-height:1.65}
+.legend{display:flex;flex-wrap:wrap;gap:13px;margin-top:13px;color:var(--muted);font-size:10px}
+.key{display:inline-flex;align-items:center;gap:6px}
+.swatch{width:9px;height:9px;border-radius:50%;display:inline-block}
+.controls-panel,.math-panel{margin-top:17px;border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:16px 18px;box-shadow:var(--shadow)}
+.panel-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px}
+.panel-heading h2,.math-panel h2{font-size:14px;margin:0}
+.panel-heading p{font-size:10px;color:var(--muted);margin:0}
+.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px 18px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:11px;color:var(--muted);font-weight:650}
 .field select{width:100%;min-width:0}
-select{font:inherit;color:var(--text);background:var(--control);border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:11px}
+select{font:inherit;color:var(--text);background:var(--control);border:1px solid var(--line);border-radius:8px;padding:8px 9px;font-size:11px}
 .range-head{display:flex;justify-content:space-between;font-size:10px;color:var(--muted)}
-.range-head output{color:var(--text);font-variant-numeric:tabular-nums;font-weight:700}
+.range-head output{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums}
 input[type=range]{width:100%;accent-color:var(--accent);margin:0}
-.legend{display:flex;flex-wrap:wrap;gap:11px;margin-top:9px;font-size:10px;color:var(--muted)}
-.key{display:flex;align-items:center;gap:5px}
-.swatch{width:8px;height:8px;border-radius:50%}
-#status{display:none;position:absolute;inset:62px 0 0;z-index:10;align-items:center;justify-content:center;padding:20px;background:color-mix(in srgb,var(--bg) 90%,transparent)}
+.panel-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:15px;padding-top:13px;border-top:1px solid var(--line)}
+.math-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}
+.math-panel p{font-size:12px;color:var(--muted);line-height:1.7;margin:8px 0}
+.math-panel details{width:100%}.math-panel summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;font-weight:750}.math-panel summary::-webkit-details-marker{display:none}.math-panel summary::after{content:"＋";color:var(--accent);font-size:18px;font-weight:500}.math-panel details[open] summary::after{content:"−"}.math-content{padding-top:12px}.math-note{margin-top:13px;padding:12px 14px;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:var(--panel2)}.math-note strong{font-size:12px}.math-note p{margin:5px 0 0}
+.formula{background:var(--panel2);border-radius:8px;padding:10px 12px;margin:8px 0;font-family:Georgia,serif;font-size:13px;line-height:1.8;overflow-wrap:anywhere}
+#status{display:none;position:fixed;inset:0;z-index:20;align-items:center;justify-content:center;padding:20px;background:color-mix(in srgb,var(--bg) 90%,transparent)}
 #status.show{display:flex}
-.message{max-width:550px;padding:18px;background:var(--panel-solid);border:1px solid var(--line);border-radius:12px;font-size:13px;line-height:1.55;box-shadow:var(--shadow)}
+.message{max-width:550px;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;font-size:13px;line-height:1.55;box-shadow:var(--shadow)}
 .message p{color:var(--muted)}
-@media(max-width:680px){
- header{height:56px;padding:0 9px}
- .brand{font-size:11px;gap:7px}.brand-mark{width:26px;height:26px}
- .brand small{font-size:8px}
- .head-actions{gap:4px}
- button,a.navbtn{padding:6px 7px;font-size:9px}
- #view{inset:56px 0 280px}
- #panel{bottom:6px;width:calc(100% - 12px);padding:9px;border-radius:12px}
- .top{align-items:flex-start;margin-bottom:7px}
- .section{font-size:11px}
- .buttons{justify-content:flex-end}
- .controls{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 10px}
- .field{gap:3px}
- .legend{gap:7px;margin-top:7px;font-size:9px}
- #status{inset:56px 0 0}
-}
-@media(max-height:560px) and (min-width:681px){
- #view{inset:56px 0 130px}
- #panel{padding:7px 10px;bottom:5px}
- .controls{gap:5px 10px}
- .legend{margin-top:5px}
+footer{text-align:center;color:var(--muted);font-size:10px;padding:22px 12px 5px}
+@media(max-width:850px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.math-grid{grid-template-columns:1fr}}
+@media(max-width:600px){
+ .topbar{min-height:56px;padding:8px 9px}.brand{font-size:11px;gap:7px}.brand-mark{width:26px;height:26px}.brand small{font-size:8px}
+ .top-actions{gap:4px}.btn,.navbtn{padding:6px 7px;font-size:9px}
+ main{padding:14px 9px 30px}.breadcrumbs{font-size:10px}
+ .graph-toolbar{align-items:flex-start;padding:9px}.graph-toolbar span{display:none}
+ #view{height:54vh;min-height:330px}
+ .graph-caption{padding:14px}.controls-panel,.math-panel{padding:13px 12px;margin-top:12px}
+ .controls{gap:10px}.field{gap:4px}.field label{font-size:10px}
+ .panel-heading{align-items:flex-start;flex-direction:column;gap:4px}
+ .panel-actions{justify-content:stretch}.panel-actions button{flex:1}
+ .legend{gap:9px;font-size:9px}
 }
 </style>
 <script type="importmap">
@@ -88,50 +93,96 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:0}
 </script>
 </head>
 <body>
-<div id="app">
-<header>
+<header class="topbar">
  <a class="brand" href="../../">
   <span class="brand-mark">∿</span>
   <span>Laboratório Visual de Geometria<small>Geometria · Topologia · Visualização</small></span>
  </a>
- <div class="head-actions">
+ <div class="top-actions">
   <a class="navbtn" href="../">← Superfícies</a>
-  <button id="theme" type="button">Alto contraste</button>
+  <button class="btn" id="theme" type="button">Alto contraste</button>
  </div>
 </header>
 
-<div id="view" aria-label="Visualização 3D interativa do toro pinçado"></div>
+<main>
+ <div class="breadcrumbs"><a href="../../">Início</a> / <a href="../">Superfícies</a> / Toro pinçado</div>
 
-<section id="panel">
- <div class="top">
-  <div class="section">Toro pinçado · parâmetros e campos</div>
-  <div class="buttons">
-   <button id="reset" type="button">↺ Reiniciar</button>
-   <button id="fullscreen" type="button">⛶ Tela inteira</button>
-   <button id="open" type="button" hidden>Abrir em nova aba ↗</button>
+ <section class="graph-card">
+  <div class="graph-toolbar">
+   <div><strong>Visualização tridimensional</strong><br><span>Arraste para girar · roda ou pinça para zoom</span></div>
+   <div class="graph-actions">
+    <button class="btn" id="fullscreen" type="button">⛶ Maximizar gráfico</button>
+    <button class="btn" id="open" type="button" hidden>Abrir em nova aba ↗</button>
+   </div>
   </div>
- </div>
- <div class="controls">
-  <div class="field"><label for="k">Número de pinçamentos k</label><select id="k">
-   <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
-  </select></div>
-  <div class="field"><label for="density">Densidade do campo vetorial</label><input id="density" type="range" min="4" max="40" step="2" value="14"><span class="range-head"><span>Esparso</span><output id="density-out">14</output></span></div>
-  <div class="field"><label for="tmax">Comprimento da curva integral t<sub>max</sub></label><input id="tmax" type="range" min="0" max="50" step=".5" value="10"><span class="range-head"><span>0</span><output id="tmax-out">10.0</output></span></div>
-  <div class="field"><label for="l1">λ₁</label><select id="l1"><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option><option value="sqrt2">√2</option><option value="pi">π</option><option value="e">e</option></select></div>
-  <div class="field"><label for="l2">λ₂</label><select id="l2"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="sqrt2">√2</option><option value="pi" selected>π</option><option value="e">e</option></select></div>
-  <div class="field"><label for="field-mode">Exibir campo vetorial</label><select id="field-mode"><option value="none">Nenhum</option><option value="x">Campo f_*X (vermelho)</option><option value="y">Campo f_*Y (azul)</option><option value="both" selected>Ambos</option></select></div>
-  <div class="field"><label for="flow-mode">Exibir curvas integrais</label><select id="flow-mode"><option value="none">Nenhum</option><option value="x">Curva integral de f_*X (vermelho)</option><option value="y">Curva integral de f_*Y (azul)</option><option value="both" selected>Ambos</option></select></div>
- </div>
- <div class="legend">
-  <span class="key"><i class="swatch" style="background:#f59a23"></i>Toro pinçado</span>
-  <span class="key"><i class="swatch" style="background:#f05252"></i>f_*X e fluxo X</span>
-  <span class="key"><i class="swatch" style="background:#559aff"></i>f_*Y e fluxo Y</span>
-  <span>Arraste para girar · roda/pinça para zoom</span>
- </div>
-</section>
+  <div id="view" aria-label="Visualização 3D interativa do toro pinçado"></div>
+  <div class="graph-caption">
+   <div class="eyebrow">Superfícies · Geometria diferencial</div>
+   <h1>Toro pinçado — campos e fluxos</h1>
+   <p class="subtitle">Explore a família parametrizada pelo número de pinçamentos, os campos vetoriais induzidos e as imagens de suas curvas integrais. A área gráfica pode ser maximizada independentemente dos controles.</p>
+   <div class="legend">
+    <span class="key"><i class="swatch" style="background:#f59a23"></i>Toro pinçado</span>
+    <span class="key"><i class="swatch" style="background:#f05252"></i>f<sub>*</sub>X e fluxo X</span>
+    <span class="key"><i class="swatch" style="background:#559aff"></i>f<sub>*</sub>Y e fluxo Y</span>
+   </div>
+  </div>
+ </section>
+
+ <section class="controls-panel">
+  <div class="panel-heading">
+   <h2>Parâmetros e visualização</h2>
+   <p>As alterações são aplicadas ao selecionar um novo valor.</p>
+  </div>
+  <div class="controls">
+   <div class="field"><label for="k">Número de pinçamentos k</label><select id="k">
+    <option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
+   </select></div>
+   <div class="field"><label for="density">Densidade do campo vetorial</label><input id="density" type="range" min="4" max="40" step="2" value="14"><span class="range-head"><span>Esparso</span><output id="density-out">14</output></span></div>
+   <div class="field"><label for="tmax">Comprimento da curva integral t<sub>max</sub></label><input id="tmax" type="range" min="0" max="50" step=".5" value="10"><span class="range-head"><span>0</span><output id="tmax-out">10.0</output></span></div>
+   <div class="field"><label for="l1">λ₁</label><select id="l1"><option value="1" selected>1</option><option value="2">2</option><option value="3">3</option><option value="sqrt2">√2</option><option value="pi">π</option><option value="e">e</option></select></div>
+   <div class="field"><label for="l2">λ₂</label><select id="l2"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="sqrt2">√2</option><option value="pi" selected>π</option><option value="e">e</option></select></div>
+   <div class="field"><label for="field-mode">Exibir campo vetorial</label><select id="field-mode"><option value="none">Nenhum</option><option value="x">Campo f<sub>*</sub>X (vermelho)</option><option value="y">Campo f<sub>*</sub>Y (azul)</option><option value="both" selected>Ambos</option></select></div>
+   <div class="field"><label for="flow-mode">Exibir curvas integrais</label><select id="flow-mode"><option value="none">Nenhum</option><option value="x">Curva integral de f<sub>*</sub>X (vermelho)</option><option value="y">Curva integral de f<sub>*</sub>Y (azul)</option><option value="both" selected>Ambos</option></select></div>
+  </div>
+  <div class="panel-actions">
+   <button class="btn" id="reset" type="button">↺ Restaurar parâmetros</button>
+  </div>
+ </section>
+
+ <section class="math-panel">
+  <details>
+   <summary>Parametrização e observação matemática</summary>
+   <div class="math-content">
+    <div class="math-grid">
+     <div>
+      <p>A superfície é gerada pelo mapa utilizado no experimento original, com R = 2:</p>
+      <div class="formula">
+       g(θ,φ) = 2 + sen(kθ/2) cos φ<br>
+       f(θ,φ) = (g cos θ, g sen θ, sen(kθ/2) sen φ)
+      </div>
+     </div>
+     <div>
+      <p>Os campos no espaço de parâmetros e suas imagens pelo diferencial são:</p>
+      <div class="formula">
+       X = λ₁ ∂<sub>θ</sub> + λ₂ ∂<sub>φ</sub><br>
+       Y = −λ₂ ∂<sub>θ</sub> + λ₁ ∂<sub>φ</sub><br>
+       f<sub>*</sub>X = λ₁ f<sub>θ</sub> + λ₂ f<sub>φ</sub><br>
+       f<sub>*</sub>Y = −λ₂ f<sub>θ</sub> + λ₁ f<sub>φ</sub>
+      </div>
+     </div>
+    </div>
+    <p>As curvas integrais são calculadas a partir do ponto inicial (θ₀, φ₀) = (π/4, π/4), seguindo os fluxos constantes no espaço de parâmetros.</p>
+    <div class="math-note">
+     <strong id="parity-title">Compatibilidade com o toro usual</strong>
+     <p id="parity-note">Para k par, a parametrização é suave e periódica nas variáveis angulares, definindo um mapa suave no toro usual.</p>
+    </div>
+   </div>
+  </details>
+ </section>
+ <footer>Laboratório Visual de Geometria · Experimento interativo sobre o toro pinçado</footer>
+</main>
 
 <div id="status"><div class="message"><strong>Não foi possível iniciar a visualização 3D.</strong><p id="err"></p></div></div>
-</div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -238,6 +289,13 @@ function update(){
  const p=getParams();
  $('density-out').textContent=p.a;
  $('tmax-out').textContent=p.tmax.toFixed(1);
+ if(p.k%2===0){
+  $('parity-title').textContent='k = '+p.k+' (par) — compatível com o toro usual';
+  $('parity-note').textContent='A função sen(kθ/2) é 2π-periódica. Os valores e as derivadas nas bordas θ = 0 e θ = 2π coincidem; portanto, a fórmula define um mapa suave no toro usual.';
+ }else{
+  $('parity-title').textContent='k = '+p.k+' (ímpar) — incompatibilidade C¹';
+  $('parity-note').textContent='Os valores f(0,φ) e f(2π,φ) coincidem, mas as componentes x e z de ∂f/∂θ mudam de sinal entre as bordas identificadas. Assim, a fórmula é contínua no toro usual, mas não é C¹ nele; os campos induzidos não são campos vetoriais suaves globais.';
+ }
  buildSurface(p.k);
  clearGroup(xField);clearGroup(yField);
  disposeObject(xFlow);disposeObject(yFlow);disposeObject(xArrow);disposeObject(yArrow);
@@ -287,11 +345,16 @@ const ro=new ResizeObserver(resize);ro.observe(view);resize();
 function animate(){requestAnimationFrame(animate);controls.update();renderer.render(scene,camera);}
 update();animate();
 const fs=$('fullscreen'),open=$('open');
-document.addEventListener('fullscreenchange',()=>fs.textContent=document.fullscreenElement?'⤢ Sair da tela inteira':'⛶ Tela inteira');
-fs.addEventListener('click',()=>{
- if(document.fullscreenElement){document.exitFullscreen?.().catch(()=>{});return;}
- if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen().then(()=>open.hidden=true).catch(()=>open.hidden=false);
- else open.hidden=false;
+document.addEventListener('fullscreenchange',()=>{
+  const active=document.fullscreenElement===view;
+  fs.textContent=active?'⤢ Sair da tela inteira':'⛶ Maximizar gráfico';
+});
+fs.addEventListener('click',async()=>{
+  if(document.fullscreenElement===view){try{await document.exitFullscreen();}catch(e){}return;}
+  if(view.requestFullscreen){
+    try{await view.requestFullscreen();open.hidden=true;}
+    catch(e){open.hidden=false;}
+  }else{open.hidden=false;}
 });
 if(window.self!==window.top)open.hidden=false;
 open.addEventListener('click',()=>{const w=window.open(location.href,'_blank','noopener,noreferrer');if(!w)open.textContent='Pop-up bloqueado';});
