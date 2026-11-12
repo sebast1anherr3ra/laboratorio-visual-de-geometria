@@ -144,6 +144,35 @@ body.high-contrast #surfaceGeneralInfo [style*="background"],body.high-contrast 
 body.high-contrast input[type="range"]{accent-color:#ffeb3b}
 body.high-contrast #stage:fullscreen,body.high-contrast #stage.stage-expanded{background:#000}
 
+
+/* Portal de categorias */
+.category-section{max-width:1160px;margin:0 auto}
+.category-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.category-card{min-height:230px;padding:20px;border:1px solid #d9e1e9;border-radius:15px;background:#fff;color:#172033;text-decoration:none;display:flex;flex-direction:column;box-shadow:0 4px 18px rgba(20,35,55,.045);transition:transform .18s,border-color .18s,box-shadow .18s}
+a.category-card:hover{transform:translateY(-3px);border-color:#6a9f99;box-shadow:0 9px 25px rgba(20,35,55,.09)}
+.category-topline{display:flex;align-items:center;justify-content:space-between}
+.category-icon{width:43px;height:43px;display:grid;place-items:center;border-radius:12px;background:#eaf4f2;color:#176b63;font-size:25px}
+.category-number{font-size:10px;letter-spacing:.14em;color:#8290a2;font-weight:800}
+.category-card h3{font-size:21px;margin:18px 0 8px;color:#172033}
+.category-card p{font-size:12px;line-height:1.7;color:#536176;margin:0 0 16px}
+.category-action{margin-top:auto;color:#176b63;font-size:11px;font-weight:800;display:flex;justify-content:space-between;align-items:center}
+.category-status{margin-top:auto;align-self:flex-start;padding:6px 9px;border:1px solid #d9e1e9;border-radius:30px;color:#68768a;font-size:10px}
+.category-coming-soon{background:#f8fafc;box-shadow:none}
+.home-quick-access{max-width:1160px;margin:26px auto 0;padding:22px 24px;border:1px solid #d9e1e9;border-radius:15px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:#f8fafc}
+.home-quick-access h2{font-size:18px;margin:7px 0 5px;color:#172033}
+.home-quick-access p{font-size:12px;line-height:1.6;color:#536176;margin:0;max-width:650px}
+.quick-access-link{flex:0 0 auto;text-decoration:none;border:1px solid #78aaa2;background:#e5f4f1;color:#145c55;padding:11px 14px;border-radius:9px;font-size:11px;font-weight:800}
+.quick-access-link:hover{background:#d8eeea}
+body.high-contrast .category-card,body.high-contrast .home-quick-access{background:#000;color:#fff;border:2px solid #fff;box-shadow:none}
+body.high-contrast .category-card h3,body.high-contrast .category-number{color:#ffeb3b}
+body.high-contrast .category-card p,body.high-contrast .home-quick-access p{color:#fff}
+body.high-contrast .category-icon{background:#111;color:#00ffff;border:1px solid #00ffff}
+body.high-contrast .category-action,body.high-contrast .quick-access-link{color:#00ffff}
+body.high-contrast .category-status{color:#fff;border-color:#fff}
+body.high-contrast .quick-access-link{background:#000;border:2px solid #00ffff}
+@media(max-width:850px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.category-grid{grid-template-columns:1fr}.category-card{min-height:190px}.home-quick-access{align-items:flex-start;flex-direction:column;padding:18px}.quick-access-link{width:100%;text-align:center}}
+
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
@@ -158,7 +187,8 @@ body.high-contrast #stage:fullscreen,body.high-contrast #stage.stage-expanded{ba
 <aside id="sidebar" class="sidebar" aria-label="Navegação principal">
  <div class="sidebar-top"><span>NAVEGAÇÃO</span><button id="menuClose" aria-label="Fechar menu">×</button></div>
  <a class="nav-link" href="#/" data-route="home"><span class="nav-icon">⌂</span>Página principal</a>
- <div class="nav-section">SUPERFÍCIES</div>
+ <a class="nav-link" href="./superficies/"><span class="nav-icon">◉</span>Galeria de superfícies</a>
+ <div class="nav-section">VISUALIZADOR INTERATIVO</div>
  <a class="nav-link" href="#/superficies/torus" data-surface="torus">Toro</a>
  <a class="nav-link" href="#/superficies/sphere" data-surface="sphere">Esfera</a>
  <a class="nav-link" href="#/superficies/spindle" data-surface="spindle">Spindle orbifold</a>
@@ -174,21 +204,49 @@ body.high-contrast #stage:fullscreen,body.high-contrast #stage.stage-expanded{ba
  <div class="hero">
   <div class="eyebrow">UM ESPAÇO DE EXPLORAÇÃO MATEMÁTICA</div>
   <h1>Laboratório Visual de Geometria</h1>
-  <p>Um ambiente interativo para explorar superfícies, suas parametrizações, triangulações, singularidades e invariantes topológicos. Selecione uma superfície para abrir seu laboratório individual.</p>
-  <button class="hero-button" id="exploreButton">Explorar as superfícies <span>→</span></button>
+  <p>Uma coleção de visualizações interativas, experimentos computacionais e explorações matemáticas. Escolha uma área para descobrir construções, exemplos e ferramentas visuais de geometria.</p>
+  <button class="hero-button" id="exploreButton">Explorar o laboratório <span>→</span></button>
  </div>
- <div class="home-section-head"><div><div class="eyebrow">COLEÇÃO</div><h2>Superfícies do laboratório</h2></div><p>Oito modelos · geometria diferencial e topologia</p></div>
- <div class="surface-cards">
-  <a class="surface-card" href="#/superficies/torus"><div class="card-index">01 · SUPERFÍCIE FECHADA</div><h3>Toro</h3><p>Superfície orientável de gênero 1. A triangulação permite observar vértices, arestas e faces e verificar a característica de Euler.</p><div class="formula">χ(T²) = V − E + F = 0</div><span class="card-link">Abrir laboratório →</span></a>
-  <a class="surface-card" href="#/superficies/sphere"><div class="card-index">02 · SUPERFÍCIE FECHADA</div><h3>Esfera</h3><p>Modelo de referência para uma superfície simplesmente conexa. A malha poliédrica permite examinar a fórmula de Euler para a esfera.</p><div class="formula">χ(S²) = V − E + F = 2</div><span class="card-link">Abrir laboratório →</span></a>
-  <a class="surface-card" href="#/superficies/spindle"><div class="card-index">03 · ORBIFOLD</div><h3>Spindle orbifold</h3><p>Superfície de revolução com dois pontos cônicos. O parâmetro de isotropia modifica o ângulo cônico e a característica de Euler orbifold.</p><div class="formula">χ<sub>orb</sub> = 2/m</div><span class="card-link">Abrir laboratório →</span></a>
-  <a class="surface-card" href="#/superficies/pinched"><div class="card-index">04 · ESPAÇO ESTRATIFICADO</div><h3>Toro pinçado</h3><p>Uma família de quocientes em que uma ou mais curvas são contraídas a pontos. A visualização acompanha os estratos regular e singular e a característica de Euler.</p><div class="formula">X = X₂ ⊔ X₀</div><span class="card-link">Abrir laboratório →</span></a>
-  <a class="surface-card" href="#/superficies/crosscap"><div class="card-index">05 · SINGULARIDADE</div><h3>Cross-cap · Whitney umbrella</h3><p>Imagem da aplicação F(u,v) = (u,v²,uv). Exibe uma curva dupla e um ponto de pinçamento; permite separar os estratos de dimensões 2, 1 e 0 e estudar Whitney A/B.</p><div class="formula">z² = x²y, &nbsp; y ≥ 0</div><span class="card-link">Abrir laboratório →</span></a>
-  <a class="surface-card" href="#/superficies/boy"><div class="card-index">06 · IMERSÃO</div><h3>Superfície de Boy</h3><p>Imersão do plano projetivo real em R³. As auto-interseções pertencem à imagem da imersão, enquanto o domínio permanece uma variedade suave.</p><div class="formula">χ(RP²) = 1</div><span class="card-link">Abrir laboratório →</span></a>
-  <a class="surface-card" href="#/superficies/steiner"><div class="card-index">07 · AUTO-INTERSEÇÕES</div><h3>Superfície romana de Steiner</h3><p>Imagem do plano projetivo real por uma aplicação quadrática. Apresenta três eixos de autointerseção, seis pontos de pinch e um ponto triplo.</p><div class="formula">F(u,v,w) = (uv,vw,wu)</div><span class="card-link">Abrir laboratório →</span></a>
-  <a class="surface-card" href="#/superficies/astroid"><div class="card-index">08 · CÚSPIDES</div><h3>Esfera astroidal</h3><p>Superfície homeomorfa à esfera, definida por uma equação com potências fracionárias. Possui seis cúspides nos extremos dos eixos coordenados.</p><div class="formula">|x|<sup>2/3</sup> + |y|<sup>2/3</sup> + |z|<sup>2/3</sup> = 1</div><span class="card-link">Abrir laboratório →</span></a>
+ <section class="category-section" aria-labelledby="categoryHeading">
+  <div class="home-section-head"><div><div class="eyebrow">ÁREAS DE EXPLORAÇÃO</div><h2 id="categoryHeading">Explore por categoria</h2></div><p>Um laboratório em expansão</p></div>
+  <div class="category-grid">
+   <a class="category-card category-card-featured" href="./superficies/">
+    <div class="category-topline"><span class="category-icon" aria-hidden="true">◉</span><span class="category-number">01</span></div>
+    <h3>Superfícies</h3>
+    <p>Parametrizações, curvatura, triangulações, singularidades, estratificações e invariantes topológicos.</p>
+    <span class="category-action">Acessar galeria <span aria-hidden="true">→</span></span>
+   </a>
+   <article class="category-card category-coming-soon">
+    <div class="category-topline"><span class="category-icon" aria-hidden="true">〰</span><span class="category-number">02</span></div>
+    <h3>Curvas</h3>
+    <p>Curvas planas e espaciais, triedro de Frenet, curvatura, torção e movimentos.</p>
+    <span class="category-status">Em preparação</span>
+   </article>
+   <article class="category-card category-coming-soon">
+    <div class="category-topline"><span class="category-icon" aria-hidden="true">⌁</span><span class="category-number">03</span></div>
+    <h3>Fibrados e fibrações</h3>
+    <p>Fibrados, seções, aplicações entre variedades e construções como a fibração de Hopf.</p>
+    <span class="category-status">Em preparação</span>
+   </article>
+   <article class="category-card category-coming-soon">
+    <div class="category-topline"><span class="category-icon" aria-hidden="true">◇</span><span class="category-number">04</span></div>
+    <h3>Topologia</h3>
+    <p>Espaços quocientes, identificações, estratificações e construções topológicas.</p>
+    <span class="category-status">Em preparação</span>
+   </article>
+   <article class="category-card category-coming-soon">
+    <div class="category-topline"><span class="category-icon" aria-hidden="true">✳</span><span class="category-number">05</span></div>
+    <h3>Experimentos</h3>
+    <p>Explorações computacionais, exemplos especiais e outras experiências geométricas.</p>
+    <span class="category-status">Em preparação</span>
+   </article>
+  </div>
+ </section>
+ <div class="home-quick-access">
+  <div><div class="eyebrow">AMBIENTE INTERATIVO</div><h2>Laboratório de superfícies</h2><p>Você também pode abrir diretamente o visualizador interativo que já está integrado ao site.</p></div>
+  <a href="#/superficies/torus" class="quick-access-link">Abrir visualizador <span aria-hidden="true">↗</span></a>
  </div>
- <footer class="home-footer">Laboratório Visual de Geometria · Geometria diferencial, singularidades e topologia</footer>
+ <footer class="home-footer">Laboratório Visual de Geometria · Geometria diferencial, topologia e experimentação computacional</footer>
 </section>
 <section id="viewerPage" class="viewer-page" hidden>
  <main id="stage"><div class="hud"><div class="chip">Arraste para <b>rotacionar</b></div><div class="chip">Scroll / pinça para <b>zoom</b></div></div><button id="graphMaximize" class="graph-maximize" type="button" aria-label="Maximizar gráfico">⛶ <span>Maximizar gráfico</span></button></main>
@@ -1072,7 +1130,7 @@ document.getElementById('menuToggle').addEventListener('click',()=>document.getE
 document.getElementById('menuClose').addEventListener('click',closeMenu);
 document.querySelectorAll('.nav-link').forEach(a=>a.addEventListener('click',closeMenu));
 document.getElementById('drawerBackdrop').addEventListener('click',closeMenu);
-document.getElementById('exploreButton').addEventListener('click',()=>{document.querySelector('.home-section-head').scrollIntoView({behavior:'smooth'});openMenu();});
+document.getElementById('exploreButton').addEventListener('click',()=>{document.querySelector('.category-section').scrollIntoView({behavior:'smooth'});});
 window.addEventListener('hashchange',navigate);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&stage.classList.contains('stage-expanded')){stage.classList.remove('stage-expanded');requestAnimationFrame(syncGraphSize);}});
 
