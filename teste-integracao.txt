@@ -1,0 +1,1 @@
+Teste de integração: VS Code, Codex e GitHub.
