@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Visualização 3D do triedro de Frenet e de aproximações de Taylor para curvas espaciais.">
+  <title>Triedro de Frenet e aproximações de Taylor — Laboratório Visual de Geometria</title>
+  <style>
+    :root{color-scheme:light;--bg:#f5f7fb;--panel:#fff;--line:#dce3ee;--text:#172033;--muted:#586579;--accent:#2563eb}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+    a{color:inherit}
+    .topbar{background:var(--panel);border-bottom:1px solid var(--line)}
+    .topbar-inner{max-width:1440px;margin:auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{font-weight:750;text-decoration:none}
+    .back{color:var(--accent);font-weight:650;text-decoration:none}
+    header.intro{max-width:1440px;margin:auto;padding:23px 20px 8px}
+    h1{font-size:clamp(1.55rem,3.3vw,2.25rem);line-height:1.2;margin:0 0 6px}
+    header p{max-width:900px;margin:0;color:var(--muted)}
+    .layout{max-width:1440px;margin:0 auto;padding:14px 20px 28px;display:grid;grid-template-columns:minmax(0,1fr) 315px;gap:14px}
+    .plot-card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0;box-shadow:0 5px 20px #17203308}
+    .plot-card{display:flex;flex-direction:column}
+    .plot-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;border-bottom:1px solid var(--line)}
+    .plot-head h2,.panel h2{font-size:1rem;margin:0}
+    .plot-head p{font-size:.8rem;color:var(--muted);margin:2px 0 0}
+    .plot-action,.action-btn{border:1px solid #c7d0df;border-radius:8px;background:#fff;color:var(--text);padding:7px 10px;cursor:pointer;font:inherit;font-size:.82rem;white-space:nowrap}
+    .plot-action:hover,.action-btn:hover{background:#eff6ff;border-color:#93c5fd}
+    #stage{height:min(70vh,740px);min-height:390px;background:#f8fafc}
+    #stage canvas{display:block;width:100%;height:100%}
+    .legend{display:flex;flex-wrap:wrap;gap:8px 13px;padding:10px 13px;color:var(--muted);font-size:.77rem}
+    .swatch{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+    .panel h2{padding:12px 14px;border-bottom:1px solid var(--line)}
+    .inside{padding:14px}
+    .control{margin-bottom:15px}
+    .control label{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:.88rem;font-weight:600}
+    output{font-variant-numeric:tabular-nums;color:#1d4ed8}
+    input[type=range],select{width:100%;accent-color:var(--accent)}
+    select{background:#fff;color:var(--text);border:1px solid #c7d0df;border-radius:8px;padding:8px;font:inherit}
+    .checks{display:grid;gap:8px;margin:13px 0}
+    .checks label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.87rem}
+    input[type=checkbox]{accent-color:var(--accent)}
+    .buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:13px 0}
+    .readout{padding:10px 11px;background:#f8fafc;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:.83rem;line-height:1.75}
+    .readout strong{color:var(--text)}
+    .math{margin:13px 0 0;color:var(--muted);font-size:.82rem;line-height:1.65}
+    .math strong{color:var(--text)}
+    details.math code{white-space:normal}
+    .layout:fullscreen{width:100vw;height:100vh;max-width:none;margin:0;padding:12px;grid-template-columns:minmax(0,1fr) 315px;overflow:hidden;background:var(--bg)}
+    .layout:fullscreen .plot-card{min-height:0}
+    .layout:fullscreen #stage{height:auto;min-height:0;flex:1}
+    .layout:fullscreen .panel{height:100%;overflow:auto}
+    .layout:fullscreen .legend{padding-bottom:14px}
+    #status{min-height:1.25em;margin:10px 0 0;color:var(--muted);font-size:.8rem}
+    @media(max-width:920px){.layout{grid-template-columns:1fr}#stage{height:60vh;min-height:360px}.layout:fullscreen{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(300px,55vh) auto;overflow:auto}.layout:fullscreen .panel{height:auto;overflow:visible}}
+    @media(max-width:560px){.topbar-inner,header.intro{padding-left:14px;padding-right:14px}.layout{padding:10px 10px 22px;gap:10px}#stage{height:55vh;min-height:320px}.plot-head{align-items:flex-start}.plot-action{padding:6px 8px;font-size:.76rem}}
+  </style>
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+  </script>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="../../">Laboratório Visual de Geometria</a>
+      <a class="back" href="../">Galeria de curvas</a>
+    </div>
+  </div>
+  <header class="intro">
+    <h1>Triedro de Frenet e aproximações de Taylor</h1>
+    <p>Observe a curva espacial, seu referencial móvel e as aproximações polinomiais em torno do parâmetro selecionado.</p>
+  </header>
+  <main class="layout" id="workspace">
+    <section class="plot-card" id="plotCard" aria-label="Visualização tridimensional da curva">
+      <div class="plot-head">
+        <div><h2>Curva espacial e aproximações locais</h2><p>Arraste para girar; use a roda do mouse ou o gesto de pinça para aproximar.</p></div>
+        <button class="plot-action" id="fullscreen" type="button">Tela cheia</button>
+      </div>
+      <div id="stage" aria-label="Cena tridimensional interativa"></div>
+      <div class="legend">
+        <span><i class="swatch" style="background:#4b9cff"></i>Curva original</span>
+        <span><i class="swatch" style="background:#ffad42"></i>Taylor 1</span>
+        <span><i class="swatch" style="background:#ff4f58"></i>Taylor 2</span>
+        <span><i class="swatch" style="background:#55b879"></i>Taylor 3</span>
+        <span><i class="swatch" style="background:#9b6bd3"></i>Taylor 4</span>
+        <span><i class="swatch" style="background:#94a3b8"></i>Plano osculador</span>
+      </div>
+    </section>
+    <aside class="panel">
+      <h2>Controles e dados</h2>
+      <div class="inside">
+        <div class="control"><label for="curveSelect">Curva</label><select id="curveSelect">
+          <option value="sphere">Curva esférica</option>
+          <option value="loxodrome">Loxodromia na esfera</option>
+          <option value="helix">Hélice circular</option>
+        </select></div>
+        <div class="control"><label for="tSlider">Parâmetro t₀ <output id="tOut">0,00</output></label><input id="tSlider" type="range" min="-6.3" max="6.3" step="0.05" value="0"></div>
+        <div class="control"><label for="degreeSlider">Grau máximo de Taylor <output id="degreeOut">4</output></label><input id="degreeSlider" type="range" min="1" max="4" step="1" value="4"></div>
+        <div class="control"><label for="scaleSlider">Escala dos vetores T, N, B <output id="scaleOut">1,00</output></label><input id="scaleSlider" type="range" min="0.25" max="2" step="0.05" value="1"></div>
+        <div class="control"><label for="planeSlider">Tamanho do plano osculador <output id="planeOut">0,50</output></label><input id="planeSlider" type="range" min="0.1" max="1" step="0.05" value="0.5"></div>
+        <div class="checks">
+          <label><input id="planeToggle" type="checkbox" checked> Mostrar plano osculador</label>
+          <label><input id="frenetToggle" type="checkbox" checked> Mostrar triedro de Frenet</label>
+          <label><input id="curveToggle" type="checkbox" checked> Mostrar curva original</label>
+        </div>
+        <div class="buttons">
+          <button class="action-btn" id="resetBtn" type="button">Resetar câmera</button>
+          <button class="action-btn" id="rotateBtn" type="button" aria-pressed="false">Iniciar rotação</button>
+        </div>
+        <div class="readout" aria-live="polite">
+          <div><strong>Velocidade ‖r′(t₀)‖:</strong> <span id="speedOut">—</span></div>
+          <div><strong>Curvatura κ(t₀):</strong> <span id="curvatureOut">—</span></div>
+        </div>
+        <p class="math"><strong>Referencial:</strong> nos pontos regulares com κ&gt;0, T=r′/‖r′‖, N=T′/‖T′‖ e B=T×N. A curvatura é κ=‖T′‖/‖r′‖=‖r′×r″‖/‖r′‖³; o plano osculador é gerado por T e N.</p>
+        <p class="math"><strong>Taylor:</strong> Pₙ(s)=Σₖ₌₀ⁿ r⁽ᵏ⁾(t₀)sᵏ/k!, com s=t−t₀. As derivadas até ordem 4 são aproximadas por diferenças finitas centradas (passo h=0,005); portanto, os polinômios exibidos são aproximações numéricas locais, não curvas idênticas à original.</p>
+        <details class="math">
+          <summary><strong>Curvas parametrizadas</strong></summary>
+          <div>Esférica: <code>r(t)=(cos t cos 2t, cos t sin 2t, sin t)</code>, na esfera unitária.</div>
+          <div>Loxodromia: <code>r(t)=2(cos φ cos λ, cos φ sin λ, sin φ)</code>, com <code>φ=atan(t/2)</code> e <code>λ=(10/π)asinh(t/2)</code>; λ é linear na latitude de Mercator.</div>
+          <div>Hélice: <code>r(t)=(sin t, cos t, t)</code>.</div>
+        </details>
+        <p id="status" role="status">Aproximações e referencial calculados no parâmetro selecionado.</p>
+      </div>
+    </aside>
+  </main>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const $ = id => document.getElementById(id);
+    const TWO_PI = 2 * Math.PI;
+    const T_MIN = -TWO_PI;
+    const T_MAX = TWO_PI;
+    const DIFFERENCE_STEP = 0.005;
+    const stage = $('stage');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf8fafc);
+    const camera = new THREE.PerspectiveCamera(43, 1, 0.01, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    stage.appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.07;
+    controls.autoRotate = false;
+    controls.autoRotateSpeed = 1.2;
+
+    function resetCamera() {
+      controls.target.set(0, 0, 0);
+      const kind = $('curveSelect').value;
+      const radius = kind === 'sphere' ? 1.8 : kind === 'loxodrome' ? 3.2 : Math.hypot(1, TWO_PI) + 0.4;
+      const distance = radius / Math.sin(THREE.MathUtils.degToRad(camera.fov / 2)) * 1.18;
+      camera.position.copy(new THREE.Vector3(1, 0.85, 1.15).normalize().multiplyScalar(distance));
+      controls.update();
+    }
+    resetCamera();
+
+    scene.add(new THREE.HemisphereLight(0xeaf2ff, 0x475569, 2));
+    const light = new THREE.DirectionalLight(0xffffff, 2);
+    light.position.set(5, 8, 7);
+    scene.add(light);
+    const grid = new THREE.GridHelper(8, 16, 0x94a3b8, 0xdbe3ee);
+    grid.position.y = -1.8;
+    scene.add(grid);
+    scene.add(new THREE.AxesHelper(1.3));
+
+    const dynamic = new THREE.Group();
+    scene.add(dynamic);
+    const colors = { original: 0x4b9cff, d1: 0xffad42, d2: 0xff4f58, d3: 0x55b879, d4: 0x9b6bd3, T: 0x14804a, N: 0xd12f43, B: 0x2563eb };
+
+    function curveData(kind, t) {
+      if (kind === 'sphere') return new THREE.Vector3(Math.cos(t) * Math.cos(2 * t), Math.cos(t) * Math.sin(2 * t), Math.sin(t));
+      if (kind === 'loxodrome') {
+        const phi = Math.atan(0.5 * t);
+        const lambda = (10 / Math.PI) * Math.asinh(0.5 * t);
+        const radius = 2;
+        return new THREE.Vector3(radius * Math.cos(phi) * Math.cos(lambda), radius * Math.cos(phi) * Math.sin(lambda), radius * Math.sin(phi));
+      }
+      return new THREE.Vector3(Math.sin(t), Math.cos(t), t);
+    }
+
+    function derivative(kind, t, order) {
+      const h = DIFFERENCE_STEP;
+      if (order === 1) return curveData(kind, t + h).sub(curveData(kind, t - h)).multiplyScalar(1 / (2 * h));
+      if (order === 2) {
+        return curveData(kind, t + h).add(curveData(kind, t - h)).addScaledVector(curveData(kind, t), -2).multiplyScalar(1 / (h * h));
+      }
+      if (order === 3) {
+        return curveData(kind, t + 2 * h).addScaledVector(curveData(kind, t + h), -2).addScaledVector(curveData(kind, t - h), 2).sub(curveData(kind, t - 2 * h)).multiplyScalar(1 / (2 * h ** 3));
+      }
+      if (order === 4) {
+        return curveData(kind, t + 2 * h).addScaledVector(curveData(kind, t + h), -4).addScaledVector(curveData(kind, t), 6).addScaledVector(curveData(kind, t - h), -4).add(curveData(kind, t - 2 * h)).multiplyScalar(1 / h ** 4);
+      }
+      return curveData(kind, t);
+    }
+
+    function frenetFrame(kind, t) {
+      const r = curveData(kind, t);
+      const first = derivative(kind, t, 1);
+      const second = derivative(kind, t, 2);
+      const speed = first.length();
+      if (!Number.isFinite(speed) || speed < 1e-8) return { r, speed, curvature: NaN };
+      const T = first.clone().multiplyScalar(1 / speed);
+      const normalPart = second.clone().addScaledVector(T, -second.dot(T));
+      const normalLength = normalPart.length();
+      const curvature = normalLength / (speed * speed);
+      if (!Number.isFinite(curvature) || normalLength < 1e-8) return { r, T, speed, curvature };
+      const N = normalPart.multiplyScalar(1 / normalLength);
+      const B = T.clone().cross(N).normalize();
+      N.copy(B.clone().cross(T).normalize());
+      return { r, T, N, B, speed, curvature };
+    }
+
+    function factorial(n) {
+      let value = 1;
+      for (let i = 2; i <= n; i++) value *= i;
+      return value;
+    }
+
+    function taylorPoint(degree, s, derivatives) {
+      const point = derivatives[0].clone();
+      for (let order = 1; order <= degree; order++) {
+        point.addScaledVector(derivatives[order], Math.pow(s, order) / factorial(order));
+      }
+      return point;
+    }
+
+    function lineFromPoints(points, color, width = 2) {
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      const material = new THREE.LineBasicMaterial({ color, linewidth: width });
+      return new THREE.Line(geometry, material);
+    }
+
+    function makeLabel(text, color) {
+      const canvas = document.createElement('canvas');
+      canvas.width = 256;
+      canvas.height = 96;
+      const context = canvas.getContext('2d');
+      context.font = 'bold 52px system-ui';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+      context.strokeStyle = '#f8fafc';
+      context.lineWidth = 5;
+      context.strokeText(text, 128, 48);
+      context.fillText(text, 128, 48);
+      const texture = new THREE.CanvasTexture(canvas);
+      const material = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+      const sprite = new THREE.Sprite(material);
+      sprite.scale.set(0.48, 0.18, 1);
+      return sprite;
+    }
+
+    function addArrow(origin, vector, color, label) {
+      const length = vector.length();
+      if (length < 1e-8) return;
+      const direction = vector.clone().normalize();
+      const shaftLength = length * 0.82;
+      const headLength = Math.min(0.16, length * 0.28);
+      const radius = Math.min(0.035, length * 0.08);
+      const material = new THREE.MeshStandardMaterial({ color });
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, shaftLength, 10), material);
+      shaft.position.copy(origin).addScaledVector(direction, shaftLength / 2);
+      shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+      dynamic.add(shaft);
+      const head = new THREE.Mesh(new THREE.ConeGeometry(radius * 2.5, headLength, 12), material.clone());
+      head.position.copy(origin).addScaledVector(direction, shaftLength + headLength / 2);
+      head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+      dynamic.add(head);
+      const sprite = makeLabel(label, color);
+      sprite.position.copy(origin).addScaledVector(vector, 1.13).add(new THREE.Vector3(0.04, 0.04, 0.04));
+      dynamic.add(sprite);
+    }
+
+    function buildPlane(origin, tangent, normal, size) {
+      const positions = [];
+      for (const [a, b] of [[-size, -size], [size, -size], [size, size], [-size, -size], [size, size], [-size, size]]) {
+        const point = origin.clone().addScaledVector(tangent, a).addScaledVector(normal, b);
+        positions.push(point.x, point.y, point.z);
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.computeVertexNormals();
+      return new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false }));
+    }
+
+    function disposeTree(object) {
+      object.traverse(child => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
+          for (const material of materials) {
+            if (material.map) material.map.dispose();
+            material.dispose();
+          }
+        }
+      });
+    }
+
+    function clearDynamic() {
+      while (dynamic.children.length) {
+        const object = dynamic.children[0];
+        dynamic.remove(object);
+        disposeTree(object);
+      }
+    }
+
+    function update() {
+      clearDynamic();
+      const kind = $('curveSelect').value;
+      const t0 = Number($('tSlider').value);
+      const degree = Number($('degreeSlider').value);
+      const scale = Number($('scaleSlider').value);
+      const planeSize = Number($('planeSlider').value);
+      const frame = frenetFrame(kind, t0);
+      $('tOut').textContent = t0.toFixed(2).replace('.', ',');
+      $('degreeOut').textContent = String(degree);
+      $('scaleOut').textContent = scale.toFixed(2).replace('.', ',');
+      $('planeOut').textContent = planeSize.toFixed(2).replace('.', ',');
+      $('speedOut').textContent = Number.isFinite(frame.speed) ? frame.speed.toFixed(4) : 'indefinida';
+      $('curvatureOut').textContent = Number.isFinite(frame.curvature) ? frame.curvature.toFixed(5) : 'indefinida';
+
+      if ($('curveToggle').checked) {
+        const points = [];
+        for (let i = 0; i <= 500; i++) points.push(curveData(kind, T_MIN + (T_MAX - T_MIN) * i / 500));
+        dynamic.add(lineFromPoints(points, colors.original));
+      }
+      const pointMaterial = new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0x3f1010 });
+      const point = new THREE.Mesh(new THREE.SphereGeometry(0.06, 18, 12), pointMaterial);
+      point.position.copy(frame.r);
+      dynamic.add(point);
+
+      const derivatives = [];
+      for (let order = 0; order <= degree; order++) derivatives.push(derivative(kind, t0, order));
+      const degreeColors = [null, colors.d1, colors.d2, colors.d3, colors.d4];
+      for (let order = 1; order <= degree; order++) {
+        const range = order <= 2 ? 0.5 : 1;
+        const points = [];
+        for (let i = 0; i <= 220; i++) {
+          const s = -range + 2 * range * i / 220;
+          points.push(taylorPoint(order, s, derivatives));
+        }
+        dynamic.add(lineFromPoints(points, degreeColors[order]));
+      }
+
+      if (frame.T && frame.N && frame.B) {
+        if ($('frenetToggle').checked) {
+          addArrow(frame.r, frame.T.clone().multiplyScalar(scale), colors.T, 'T');
+          addArrow(frame.r, frame.N.clone().multiplyScalar(scale), colors.N, 'N');
+          addArrow(frame.r, frame.B.clone().multiplyScalar(scale), colors.B, 'B');
+        }
+        const plane = buildPlane(frame.r, frame.T, frame.N, planeSize);
+        plane.visible = $('planeToggle').checked;
+        dynamic.add(plane);
+        $('status').textContent = `Curva selecionada · t₀=${t0.toFixed(2)} · κ(t₀)≈${frame.curvature.toFixed(5)}.`;
+      } else {
+        $('status').textContent = 'O triedro e o plano osculador não estão definidos neste parâmetro; as aproximações locais permanecem visíveis.';
+      }
+    }
+
+    $('curveSelect').addEventListener('change', () => { resetCamera(); update(); });
+    ['tSlider', 'degreeSlider', 'scaleSlider', 'planeSlider'].forEach(id => $(id).addEventListener('input', update));
+    ['planeToggle', 'frenetToggle', 'curveToggle'].forEach(id => $(id).addEventListener('change', update));
+    $('resetBtn').addEventListener('click', resetCamera);
+    $('rotateBtn').addEventListener('click', () => {
+      controls.autoRotate = !controls.autoRotate;
+      $('rotateBtn').textContent = controls.autoRotate ? 'Parar rotação' : 'Iniciar rotação';
+      $('rotateBtn').setAttribute('aria-pressed', String(controls.autoRotate));
+    });
+    $('fullscreen').addEventListener('click', async () => {
+      const target = $('workspace');
+      try {
+        if (document.fullscreenElement === target) await document.exitFullscreen();
+        else {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          await target.requestFullscreen();
+        }
+      } catch (error) {
+        $('status').textContent = `Não foi possível abrir o gráfico em tela cheia: ${error.message || error}`;
+      }
+    });
+    document.addEventListener('fullscreenchange', () => {
+      $('fullscreen').textContent = document.fullscreenElement === $('workspace') ? 'Sair da tela cheia' : 'Tela cheia';
+      setTimeout(resize, 100);
+    });
+
+    function resize() {
+      const width = Math.max(1, stage.clientWidth);
+      const height = Math.max(1, stage.clientHeight);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      renderer.setSize(width, height, false);
+    }
+    new ResizeObserver(resize).observe(stage);
+    window.addEventListener('resize', resize);
+    resize();
+    update();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
