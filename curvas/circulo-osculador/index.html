@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Visualização interativa do círculo osculador e da curvatura de curvas planas.">
+  <title>Círculo osculador e curvatura — Laboratório Visual de Geometria</title>
+  <style>
+    :root{color-scheme:light;--bg:#f5f7fb;--panel:#fff;--line:#dce3ee;--text:#172033;--muted:#586579;--accent:#4f46e5}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+    a{color:inherit}
+    .topbar{background:var(--panel);border-bottom:1px solid var(--line)}
+    .topbar-inner{max-width:1440px;margin:auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{font-weight:750;text-decoration:none}
+    .back{color:var(--accent);font-weight:650;text-decoration:none}
+    header.intro{max-width:1440px;margin:auto;padding:23px 20px 8px}
+    h1{font-size:clamp(1.55rem,3.3vw,2.25rem);line-height:1.2;margin:0 0 6px}
+    header p{max-width:850px;margin:0;color:var(--muted)}
+    .layout{max-width:1440px;margin:0 auto;padding:14px 20px 28px;display:grid;grid-template-columns:minmax(0,1fr) 315px;gap:14px}
+    .plots{display:grid;grid-template-rows:auto auto;gap:14px;min-width:0}
+    .plot-card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0;box-shadow:0 5px 20px #17203308}
+    .plot-card{display:flex;flex-direction:column}
+    .plot-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;border-bottom:1px solid var(--line)}
+    .plot-head h2{font-size:.98rem;margin:0}
+    .plot-head p{font-size:.8rem;color:var(--muted);margin:2px 0 0}
+    .full-btn,.action-btn{border:1px solid #c7d0df;border-radius:8px;background:#fff;color:var(--text);padding:7px 10px;cursor:pointer;font:inherit;font-size:.82rem;white-space:nowrap}
+    .full-btn:hover,.action-btn:hover{background:#eef2ff;border-color:#a5b4fc}
+    .canvas-wrap{height:min(54vh,510px);min-height:310px}
+    .plot-card.small .canvas-wrap{height:225px;min-height:190px}
+    canvas{display:block;width:100%;height:100%}
+    .legend{display:flex;flex-wrap:wrap;gap:8px 14px;padding:0 13px 10px;color:var(--muted);font-size:.78rem}
+    .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+    .panel h2{font-size:1rem;margin:0;padding:12px 14px;border-bottom:1px solid var(--line)}
+    .inside{padding:14px}
+    .control{margin-bottom:15px}
+    .control label{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:.88rem;font-weight:600}
+    output{font-variant-numeric:tabular-nums;color:#4338ca}
+    input[type=range],select{width:100%;accent-color:var(--accent)}
+    select{background:#fff;color:var(--text);border:1px solid #c7d0df;border-radius:8px;padding:8px;font:inherit}
+    .checks{display:grid;gap:8px;margin:13px 0}
+    .checks label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.87rem}
+    input[type=checkbox]{accent-color:var(--accent)}
+    .buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:13px 0}
+    .readout{padding:10px 11px;background:#f8fafc;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:.83rem;line-height:1.75;overflow-wrap:anywhere}
+    .readout strong{color:var(--text)}
+    .math{margin:13px 0 0;color:var(--muted);font-size:.82rem;line-height:1.65}
+    .math strong{color:var(--text)}
+    details.math code{white-space:normal}
+    .contrast-toggle{margin-top:11px;width:100%}
+    body.contrast{color-scheme:dark;--bg:#090909;--panel:#111;--line:#555;--text:#fff;--muted:#ddd;--accent:#a5b4fc}
+    body.contrast .topbar,body.contrast .plot-card,body.contrast .panel{background:var(--panel)}
+    body.contrast .full-btn,body.contrast .action-btn,body.contrast select{background:#1b1b1b;color:#fff;border-color:#777}
+    body.contrast .readout{background:#1b1b1b;border-color:#666;color:#eee}
+    body.contrast output{color:#c7d2fe}
+    .plot-card:fullscreen{width:100vw;height:100vh;border:0;border-radius:0;background:var(--panel)}
+    .plot-card:fullscreen .canvas-wrap{height:auto;min-height:0;flex:1}
+    .plot-card:fullscreen .legend{padding-bottom:14px}
+    #status{min-height:1.25em;margin:10px 0 0;color:var(--muted);font-size:.8rem}
+    @media(max-width:920px){.layout{grid-template-columns:1fr}.canvas-wrap{height:50vh;min-height:300px}}
+    @media(max-width:560px){.topbar-inner,header.intro{padding-left:14px;padding-right:14px}.layout{padding:10px 10px 22px;gap:10px}.plots{gap:10px}.canvas-wrap{height:390px;min-height:290px}.plot-card.small .canvas-wrap{height:205px;min-height:180px}.plot-head{align-items:flex-start}.full-btn{padding:6px 8px;font-size:.76rem}}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="../../">Laboratório Visual de Geometria</a>
+      <a class="back" href="../">Galeria de curvas</a>
+    </div>
+  </div>
+  <header class="intro">
+    <h1>Círculo osculador e curvatura</h1>
+    <p>Explore catenária, parábola e hipocicloides. Acompanhe o ponto móvel, o referencial de Frenet e a curvatura da curva escolhida.</p>
+  </header>
+  <main class="layout">
+    <div class="plots">
+      <section class="plot-card" id="curvePlot" aria-label="Curva e círculo osculador">
+        <div class="plot-head"><div><h2>Curva e círculo osculador</h2><p>O círculo, quando definido, tem contato de ordem pelo menos dois com a curva.</p></div><button class="full-btn" type="button" data-fullscreen="curvePlot">Tela cheia</button></div>
+        <div class="canvas-wrap"><canvas id="curveCanvas" aria-label="Gráfico da curva plana e do círculo osculador"></canvas></div>
+        <div class="legend">
+          <span><i class="dot" style="background:#2563eb"></i>Curva</span>
+          <span><i class="dot" style="background:#e11d48"></i>Círculo osculador</span>
+          <span><i class="dot" style="background:#10b981"></i>Ponto de contato</span>
+          <span><i class="dot" style="background:#d97706"></i>Centro de curvatura</span>
+        </div>
+      </section>
+      <section class="plot-card small" id="curvaturePlot" aria-label="Gráfico da curvatura">
+        <div class="plot-head"><div><h2>Função curvatura κ(t)</h2><p>O marcador indica o parâmetro selecionado.</p></div><button class="full-btn" type="button" data-fullscreen="curvaturePlot">Tela cheia</button></div>
+        <div class="canvas-wrap"><canvas id="kCanvas" aria-label="Gráfico da curvatura em função do parâmetro"></canvas></div>
+      </section>
+    </div>
+    <aside class="panel">
+      <h2>Controles e dados</h2>
+      <div class="inside">
+        <div class="control"><label for="curveSelect">Curva</label><select id="curveSelect">
+          <option value="cat">Catenária</option>
+          <option value="par">Parábola</option>
+          <option value="hyp3">Hipocicloide de 3 cúspides</option>
+          <option value="hyp4">Hipocicloide de 4 cúspides</option>
+          <option value="hyp5">Hipocicloide de 5 cúspides</option>
+        </select></div>
+        <div class="control"><label for="tSlider">Parâmetro t <output id="tOut">0,00</output></label><input id="tSlider" type="range" min="-3.2" max="3.2" step="0.01" value="0"></div>
+        <div class="control"><label for="speedSlider">Velocidade <output id="speedOut">1,0×</output></label><input id="speedSlider" type="range" min="0.2" max="3" step="0.1" value="1"></div>
+        <div class="checks">
+          <label><input id="circleToggle" type="checkbox" checked> Círculo osculador</label>
+          <label><input id="centerToggle" type="checkbox" checked> Centro de curvatura</label>
+          <label><input id="tangentToggle" type="checkbox" checked> Vetor tangente</label>
+          <label><input id="normalToggle" type="checkbox" checked> Vetor normal principal</label>
+          <label><input id="gridToggle" type="checkbox" checked> Grade cartesiana</label>
+          <label><input id="autoToggle" type="checkbox"> Animar automaticamente</label>
+        </div>
+        <div class="buttons">
+          <button class="action-btn" id="playBtn" type="button">▶ Animar</button>
+          <button class="action-btn" id="resetBtn" type="button">Reiniciar t</button>
+          <button class="action-btn" id="fitBtn" type="button">Ajustar enquadramento</button>
+          <button class="action-btn contrast-toggle" id="contrastBtn" type="button" aria-pressed="false">Alto contraste</button>
+        </div>
+        <div class="readout" aria-live="polite">
+          <div><strong>Ponto P(t):</strong> <span id="pOut">—</span></div>
+          <div><strong>Curvatura κ:</strong> <span id="kapOut">—</span></div>
+          <div><strong>Raio osculador ρ:</strong> <span id="rhoOut">—</span></div>
+          <div><strong>Centro C(t):</strong> <span id="cOut">—</span></div>
+        </div>
+        <p class="math"><strong>Convenção geométrica:</strong> para uma curva regular r(t)=(x(t),y(t)), P=r(t) é o ponto móvel e T=r′/‖r′‖ é a tangente unitária. A curvatura é κ=|x′y″−y′x″|/‖r′‖³. Quando κ&gt;0, o normal principal N aponta para o centro de curvatura; o raio e o centro do círculo osculador são ρ=1/κ e C=P+ρN. O círculo vermelho tem contato de segunda ordem com a curva em P.</p>
+        <p class="math"><strong>Casos singulares:</strong> se κ=0, o raio é infinito e não há círculo osculador finito. Se r′=0 — como em uma cúspide — a curva não é regular nesse parâmetro, e a curvatura e o referencial de Frenet não estão definidos; por isso, o círculo é omitido.</p>
+        <p class="math">Nas hipocicloides, os círculos gerador e fixo têm raios 1 e n, respectivamente; a parametrização usa o intervalo mostrado no controle t.</p>
+        <details class="math">
+          <summary><strong>Parametrizações utilizadas</strong></summary>
+          <div>Catenária: <code>r(t)=(t, cosh t)</code>; parábola: <code>r(t)=(t, t²)</code>.</div>
+          <div>Hipocicloide com n=3, 4 ou 5: <code>rₙ(t)=((n−1)cos t + cos((n−1)t), (n−1)sin t − sin((n−1)t))</code>.</div>
+        </details>
+        <p id="status" role="status">Arraste os controles para explorar a curva e sua curvatura.</p>
+      </div>
+    </aside>
+  </main>
+  <script>
+    (() => {
+      const $ = id => document.getElementById(id);
+      const curveCanvas = $('curveCanvas');
+      const kCanvas = $('kCanvas');
+      const curveContext = curveCanvas.getContext('2d');
+      const kContext = kCanvas.getContext('2d');
+      const TAU = 2 * Math.PI;
+      const TMIN = -3.2;
+      const TMAX = 3.2;
+      let animating = false;
+      let lastFrame = 0;
+
+      function curve(t, kind) {
+        if (kind === 'cat') return { x: t, y: Math.cosh(t) };
+        if (kind === 'par') return { x: t, y: t * t };
+        const n = kind === 'hyp3' ? 3 : kind === 'hyp4' ? 4 : 5;
+        const R = n - 1;
+        return { x: R * Math.cos(t) + Math.cos(R * t), y: R * Math.sin(t) - Math.sin(R * t) };
+      }
+
+      function derivative(t, kind) {
+        if (kind === 'cat') return { x: 1, y: Math.sinh(t) };
+        if (kind === 'par') return { x: 1, y: 2 * t };
+        const n = kind === 'hyp3' ? 3 : kind === 'hyp4' ? 4 : 5;
+        const R = n - 1;
+        return { x: -R * Math.sin(t) - R * Math.sin(R * t), y: R * Math.cos(t) - R * Math.cos(R * t) };
+      }
+
+      function secondDerivative(t, kind) {
+        if (kind === 'cat') return { x: 0, y: Math.cosh(t) };
+        if (kind === 'par') return { x: 0, y: 2 };
+        const n = kind === 'hyp3' ? 3 : kind === 'hyp4' ? 4 : 5;
+        const R = n - 1;
+        return { x: -R * Math.cos(t) - R * R * Math.cos(R * t), y: -R * Math.sin(t) + R * R * Math.sin(R * t) };
+      }
+
+      function frame(t, kind) {
+        const p = curve(t, kind);
+        const v = derivative(t, kind);
+        const a = secondDerivative(t, kind);
+        const speed = Math.hypot(v.x, v.y);
+        if (speed < 1e-8) return { p, k: NaN, rho: Infinity };
+        const determinant = v.x * a.y - v.y * a.x;
+        const k = Math.abs(determinant) / Math.pow(speed, 3);
+        if (!Number.isFinite(k)) return { p, k: NaN, rho: Infinity };
+        const T = { x: v.x / speed, y: v.y / speed };
+        if (Math.abs(determinant) < 1e-12 || k < 1e-7) return { p, T, k, rho: Infinity };
+        const sign = determinant > 0 ? 1 : -1;
+        const N = { x: -T.y * sign, y: T.x * sign };
+        const rho = 1 / k;
+        const c = { x: p.x + rho * N.x, y: p.y + rho * N.y };
+        return { p, T, N, k, rho, c };
+      }
+
+      function selectedCurve() {
+        return $('curveSelect').value;
+      }
+
+      function sizeCanvas(canvas, context) {
+        const rect = canvas.getBoundingClientRect();
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.max(1, Math.round(rect.width * dpr));
+        canvas.height = Math.max(1, Math.round(rect.height * dpr));
+        context.setTransform(dpr, 0, 0, dpr, 0, 0);
+        return { w: rect.width, h: rect.height };
+      }
+
+      function getPalette() {
+        if (document.body.classList.contains('contrast')) {
+          return { bg: '#000', grid: '#3e3e3e', text: '#fff', curve: '#65aaff', circle: '#ff5964', point: '#39e6a3', center: '#ffd166', tangent: '#39e6a3', normal: '#ffd166', marker: '#d8b4fe' };
+        }
+        return { bg: '#f8fafc', grid: '#dce3ee', text: '#64748b', curve: '#2563eb', circle: '#e11d48', point: '#10b981', center: '#d97706', tangent: '#059669', normal: '#d97706', marker: '#7c3aed' };
+      }
+
+      function getBounds(kind) {
+        let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
+        for (let i = 0; i <= 800; i++) {
+          const t = TMIN + (TMAX - TMIN) * i / 800;
+          const p = curve(t, kind);
+          xmin = Math.min(xmin, p.x); xmax = Math.max(xmax, p.x);
+          ymin = Math.min(ymin, p.y); ymax = Math.max(ymax, p.y);
+        }
+        const padX = (xmax - xmin) * 0.12 || 1;
+        const padY = (ymax - ymin) * 0.12 || 1;
+        xmin -= padX; xmax += padX; ymin -= padY; ymax += padY;
+        return { xmin, xmax, ymin, ymax };
+      }
+
+      function createMap(bounds, w, h) {
+        const pad = 34;
+        const sx = (w - 2 * pad) / (bounds.xmax - bounds.xmin);
+        const sy = (h - 2 * pad) / (bounds.ymax - bounds.ymin);
+        const scale = Math.max(0.01, Math.min(sx, sy));
+        const ox = (w - (bounds.xmax - bounds.xmin) * scale) / 2 - bounds.xmin * scale;
+        const oy = (h - (bounds.ymax - bounds.ymin) * scale) / 2 + bounds.ymax * scale;
+        return { scale, map: p => ({ x: ox + p.x * scale, y: oy - p.y * scale }) };
+      }
+
+      function niceStep(value) {
+        const power = Math.pow(10, Math.floor(Math.log10(Math.max(value, 1e-9))));
+        const ratio = value / power;
+        return (ratio < 1.5 ? 1 : ratio < 3.5 ? 2 : ratio < 7.5 ? 5 : 10) * power;
+      }
+
+      function drawGrid(context, w, h, mapData, bounds, palette) {
+        if (!$('gridToggle').checked) return;
+        context.strokeStyle = palette.grid;
+        context.fillStyle = palette.text;
+        context.lineWidth = 1;
+        context.font = '11px system-ui';
+        const stepX = niceStep((bounds.xmax - bounds.xmin) / 8);
+        for (let x = Math.ceil(bounds.xmin / stepX) * stepX; x <= bounds.xmax; x += stepX) {
+          const q = mapData.map({ x, y: 0 });
+          context.beginPath(); context.moveTo(q.x, 0); context.lineTo(q.x, h); context.stroke();
+          if (q.x > 20 && q.x < w - 12) context.fillText(Number(x.toPrecision(3)).toString(), q.x + 3, h - 7);
+        }
+        const stepY = niceStep((bounds.ymax - bounds.ymin) / 7);
+        for (let y = Math.ceil(bounds.ymin / stepY) * stepY; y <= bounds.ymax; y += stepY) {
+          const q = mapData.map({ x: 0, y });
+          context.beginPath(); context.moveTo(0, q.y); context.lineTo(w, q.y); context.stroke();
+          if (q.y > 12 && q.y < h - 10) context.fillText(Number(y.toPrecision(3)).toString(), 5, q.y - 3);
+        }
+      }
+
+      function drawArrow(context, map, from, to, color, label) {
+        const a = map(from), b = map(to);
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const length = Math.hypot(dx, dy);
+        if (length < 1) return;
+        context.strokeStyle = color; context.fillStyle = color; context.lineWidth = 2.2;
+        context.beginPath(); context.moveTo(a.x, a.y); context.lineTo(b.x, b.y); context.stroke();
+        const angle = Math.atan2(dy, dx), head = 8;
+        context.beginPath();
+        context.moveTo(b.x, b.y);
+        context.lineTo(b.x - head * Math.cos(angle - 0.45), b.y - head * Math.sin(angle - 0.45));
+        context.lineTo(b.x - head * Math.cos(angle + 0.45), b.y - head * Math.sin(angle + 0.45));
+        context.closePath(); context.fill();
+        context.font = 'bold 13px system-ui'; context.fillText(label, b.x + 5, b.y - 5);
+      }
+
+      function drawCurve() {
+        const { w, h } = sizeCanvas(curveCanvas, curveContext);
+        const palette = getPalette();
+        const context = curveContext;
+        context.fillStyle = palette.bg; context.fillRect(0, 0, w, h);
+        const bounds = getBounds(selectedCurve());
+        const mapData = createMap(bounds, w, h);
+        drawGrid(context, w, h, mapData, bounds, palette);
+        context.strokeStyle = palette.curve; context.lineWidth = 2.5; context.beginPath();
+        for (let i = 0; i <= 1000; i++) {
+          const t = TMIN + (TMAX - TMIN) * i / 1000;
+          const q = mapData.map(curve(t, selectedCurve()));
+          if (i === 0) context.moveTo(q.x, q.y); else context.lineTo(q.x, q.y);
+        }
+        context.stroke();
+
+        const t = Number($('tSlider').value);
+        const f = frame(t, selectedCurve());
+        const P = mapData.map(f.p);
+        if ($('circleToggle').checked && Number.isFinite(f.rho) && f.rho < 1e5 && f.c) {
+          const C = mapData.map(f.c), radius = f.rho * mapData.scale;
+          if (Number.isFinite(radius) && radius < 1e5) {
+            context.strokeStyle = palette.circle; context.lineWidth = 2;
+            context.beginPath(); context.arc(C.x, C.y, radius, 0, TAU); context.stroke();
+          }
+        }
+        if ($('centerToggle').checked && Number.isFinite(f.rho) && f.rho < 1e5 && f.c) {
+          const C = mapData.map(f.c); context.fillStyle = palette.center;
+          context.beginPath(); context.arc(C.x, C.y, 4.5, 0, TAU); context.fill();
+        }
+        if (f.T && $('tangentToggle').checked) drawArrow(context, mapData.map, f.p, { x: f.p.x + f.T.x * 0.65, y: f.p.y + f.T.y * 0.65 }, palette.tangent, 'T');
+        if (f.N && $('normalToggle').checked) drawArrow(context, mapData.map, f.p, { x: f.p.x + f.N.x * 0.65, y: f.p.y + f.N.y * 0.65 }, palette.normal, 'N');
+        context.fillStyle = palette.point; context.beginPath(); context.arc(P.x, P.y, 5.5, 0, TAU); context.fill();
+        context.strokeStyle = palette.bg; context.lineWidth = 1.5; context.stroke();
+
+        $('tOut').textContent = t.toFixed(2).replace('.', ',');
+        $('pOut').textContent = `(${f.p.x.toFixed(3)}, ${f.p.y.toFixed(3)})`;
+        $('kapOut').textContent = Number.isFinite(f.k) ? f.k.toFixed(5) : 'indefinida';
+        $('rhoOut').textContent = Number.isFinite(f.rho) ? f.rho.toFixed(5) : '∞';
+        $('cOut').textContent = f.c && Number.isFinite(f.c.x + f.c.y) ? `(${f.c.x.toFixed(3)}, ${f.c.y.toFixed(3)})` : 'indefinido';
+      }
+
+      function drawCurvature() {
+        const { w, h } = sizeCanvas(kCanvas, kContext);
+        const palette = getPalette();
+        const context = kContext;
+        context.fillStyle = palette.bg; context.fillRect(0, 0, w, h);
+        const left = 50, right = 14, top = 14, bottom = 29;
+        const plotWidth = Math.max(1, w - left - right), plotHeight = Math.max(1, h - top - bottom);
+        const values = [];
+        let maxK = 0;
+        for (let i = 0; i <= 700; i++) {
+          const t = TMIN + (TMAX - TMIN) * i / 700;
+          const k = frame(t, selectedCurve()).k;
+          values.push({ t, k });
+          if (Number.isFinite(k)) maxK = Math.max(maxK, k);
+        }
+        const ymax = Math.max(maxK * 1.12, 0.1);
+        const X = t => left + (t - TMIN) / (TMAX - TMIN) * plotWidth;
+        const Y = k => top + plotHeight - k / ymax * plotHeight;
+        context.strokeStyle = palette.grid; context.fillStyle = palette.text; context.font = '11px system-ui'; context.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) {
+          const k = ymax * i / 4;
+          context.beginPath(); context.moveTo(left, Y(k)); context.lineTo(w - right, Y(k)); context.stroke();
+          context.textAlign = 'right'; context.fillText(k.toFixed(3), left - 7, Y(k) + 4);
+        }
+        for (let i = 0; i <= 4; i++) {
+          const t = TMIN + (TMAX - TMIN) * i / 4;
+          context.beginPath(); context.moveTo(X(t), top); context.lineTo(X(t), h - bottom); context.stroke();
+          context.textAlign = 'center'; context.fillText(t.toFixed(1), X(t), h - 9);
+        }
+        context.strokeStyle = palette.circle; context.lineWidth = 2.3; context.beginPath();
+        let started = false;
+        for (const value of values) {
+          if (!Number.isFinite(value.k)) { started = false; continue; }
+          if (!started) { context.moveTo(X(value.t), Y(value.k)); started = true; }
+          else context.lineTo(X(value.t), Y(value.k));
+        }
+        context.stroke();
+        const t = Number($('tSlider').value), k = frame(t, selectedCurve()).k;
+        if (Number.isFinite(k)) {
+          context.strokeStyle = palette.marker; context.setLineDash([4, 4]);
+          context.beginPath(); context.moveTo(X(t), top); context.lineTo(X(t), h - bottom); context.stroke(); context.setLineDash([]);
+          context.fillStyle = palette.marker; context.beginPath(); context.arc(X(t), Y(k), 4, 0, TAU); context.fill();
+        }
+        context.fillStyle = palette.text; context.textAlign = 'left'; context.fillText('κ(t)', left, 12);
+      }
+
+      function render() {
+        drawCurve();
+        drawCurvature();
+      }
+
+      function setAnimating(value) {
+        animating = value;
+        $('autoToggle').checked = value;
+        $('playBtn').textContent = value ? '❚❚ Pausar' : '▶ Animar';
+      }
+
+      $('curveSelect').addEventListener('change', render);
+      $('tSlider').addEventListener('input', render);
+      ['circleToggle', 'centerToggle', 'tangentToggle', 'normalToggle', 'gridToggle'].forEach(id => $(id).addEventListener('change', render));
+      $('speedSlider').addEventListener('input', () => { $('speedOut').textContent = Number($('speedSlider').value).toFixed(1).replace('.', ',') + '×'; });
+      $('playBtn').addEventListener('click', () => setAnimating(!animating));
+      $('autoToggle').addEventListener('change', event => setAnimating(event.target.checked));
+      $('resetBtn').addEventListener('click', () => { $('tSlider').value = '0'; render(); });
+      $('fitBtn').addEventListener('click', render);
+      $('contrastBtn').addEventListener('click', () => {
+        const enabled = document.body.classList.toggle('contrast');
+        $('contrastBtn').setAttribute('aria-pressed', String(enabled));
+        render();
+      });
+      document.querySelectorAll('[data-fullscreen]').forEach(button => {
+        button.addEventListener('click', async () => {
+          const target = $(button.dataset.fullscreen);
+          try {
+            if (document.fullscreenElement === target) await document.exitFullscreen();
+            else {
+              if (document.fullscreenElement) await document.exitFullscreen();
+              await target.requestFullscreen();
+            }
+          } catch (error) {
+            $('status').textContent = `Não foi possível abrir o gráfico em tela cheia: ${error.message || error}`;
+          }
+        });
+      });
+      document.addEventListener('fullscreenchange', () => {
+        document.querySelectorAll('[data-fullscreen]').forEach(button => {
+          button.textContent = document.fullscreenElement === $(button.dataset.fullscreen) ? 'Sair da tela cheia' : 'Tela cheia';
+        });
+        setTimeout(render, 100);
+      });
+      const observer = new ResizeObserver(render);
+      observer.observe(curveCanvas.parentElement);
+      observer.observe(kCanvas.parentElement);
+      window.addEventListener('resize', render);
+
+      function tick(now) {
+        requestAnimationFrame(tick);
+        if (!animating) return;
+        if (lastFrame === 0) lastFrame = now;
+        const delta = Math.min((now - lastFrame) / 1000, 0.05);
+        lastFrame = now;
+        let t = Number($('tSlider').value) + delta * 0.65 * Number($('speedSlider').value);
+        if (t > TMAX) t = TMIN;
+        $('tSlider').value = t.toFixed(3);
+        render();
+      }
+
+      render();
+      requestAnimationFrame(tick);
+    })();
+  </script>
+</body>
+</html>
