@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Visualizações interativas de fibrados e fibrações no Laboratório Visual de Geometria.">
+  <title>Fibrados e fibrações | Laboratório Visual de Geometria</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #ffffff;
+      --panel: #f7f9fc;
+      --text: #182230;
+      --muted: #64748b;
+      --line: #dce3ec;
+      --accent: #285d91;
+      --accent-soft: #e7f0fa;
+    }
+    body.contrast {
+      color-scheme: dark;
+      --bg: #080b10;
+      --panel: #111925;
+      --text: #f5f8fc;
+      --muted: #c1cede;
+      --line: #46566b;
+      --accent: #68d9ff;
+      --accent-soft: #132b3b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      transition: background .2s, color .2s;
+    }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    .topbar {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px clamp(16px, 4vw, 52px);
+      border-bottom: 1px solid var(--line);
+      background: var(--bg);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; font-weight: 700; }
+    .brand-mark {
+      width: 30px; height: 30px; border: 2px solid var(--accent); border-radius: 50%;
+      display: grid; place-items: center; color: var(--accent); font-size: 17px;
+    }
+    .brand small {
+      display: block; color: var(--muted); font-weight: 500; font-size: 11px;
+      letter-spacing: .08em; text-transform: uppercase;
+    }
+    .top-actions { display: flex; gap: 8px; align-items: center; }
+    .btn {
+      border: 1px solid var(--line); background: var(--panel); color: var(--text);
+      border-radius: 9px; padding: 9px 12px; cursor: pointer; font-size: 12px;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .page { max-width: 1160px; margin: 0 auto; padding: 30px clamp(16px, 4vw, 52px) 42px; }
+    .breadcrumbs { color: var(--muted); font-size: 12px; margin-bottom: 16px; }
+    .breadcrumbs a:hover { color: var(--accent); }
+    .eyebrow { color: var(--accent); font-size: 11px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 7px 0 8px; font-size: clamp(30px, 5vw, 44px); letter-spacing: -.035em; }
+    .intro { max-width: 760px; margin: 0; color: var(--muted); line-height: 1.7; font-size: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 30px; }
+    .card {
+      min-height: 230px; display: flex; flex-direction: column; overflow: hidden;
+      border: 1px solid var(--line); border-radius: 14px; background: var(--panel);
+      transition: transform .18s, border-color .18s;
+    }
+    .card:hover { transform: translateY(-3px); border-color: var(--accent); }
+    .visual {
+      min-height: 96px; display: grid; place-items: center; border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, var(--accent-soft), var(--bg)); color: var(--accent); font-size: 44px;
+    }
+    .content { padding: 18px; display: flex; flex: 1; flex-direction: column; align-items: flex-start; }
+    h2 { margin: 0 0 8px; font-size: 19px; }
+    .content p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+    .formula { margin-top: auto; padding-top: 15px; color: var(--accent); font-family: Georgia, serif; font-size: 13px; }
+    .card-link { margin-top: 12px; color: var(--accent); font-size: 12px; font-weight: 700; }
+    .footer { margin-top: 32px; border-top: 1px solid var(--line); padding: 18px 0 0; color: var(--muted); font-size: 11px; text-align: center; }
+    @media (max-width: 520px) {
+      .topbar { align-items: flex-start; }
+      .brand { font-size: 12px; }
+      .top-actions .btn { padding: 8px; font-size: 10px; }
+      .card { min-height: 205px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../">
+      <span class="brand-mark" aria-hidden="true">∿</span>
+      <span>Laboratório Visual de Geometria<small>Geometria · Topologia · Visualização</small></span>
+    </a>
+    <div class="top-actions">
+      <a class="btn" href="../">← Início</a>
+      <button class="btn" id="themeButton" type="button" aria-pressed="false">Alto contraste</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="breadcrumbs"><a href="../">Início</a> / Fibrados e fibrações</div>
+    <div class="eyebrow">Área de exploração</div>
+    <h1>Fibrados e fibrações</h1>
+    <p class="intro">
+      Explore aplicações entre variedades, seus espaços-base e fibras. A primeira experiência
+      acompanha uma região da esfera, a preimagem de suas bordas em ℝ³ e as fibras sobre pontos selecionados.
+    </p>
+
+    <section class="grid" aria-label="Experiências disponíveis">
+      <a class="card" href="hopf/">
+        <span class="visual" aria-hidden="true">⌁</span>
+        <span class="content">
+          <strong class="eyebrow">01 · Disponível</strong>
+          <h2>Fibração de Hopf</h2>
+          <span class="intro">Veja uma região de S², a preimagem de ∂U em ℝ³ pela projeção estereográfica e duas fibras com parâmetros ajustáveis.</span>
+          <span class="formula">S¹ ↪ S³ → S²</span>
+          <span class="card-link">Abrir visualização →</span>
+        </span>
+      </a>
+    </section>
+
+    <footer class="footer">Laboratório Visual de Geometria · Fibrados e fibrações</footer>
+  </main>
+
+  <script>
+    const themeButton = document.getElementById("themeButton");
+
+    themeButton.addEventListener("click", () => {
+      const contrast = document.body.classList.toggle("contrast");
+      themeButton.textContent = contrast ? "Tema claro" : "Alto contraste";
+      themeButton.setAttribute("aria-pressed", String(contrast));
+    });
+  </script>
+</body>
+</html>

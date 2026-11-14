@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Visualização da fibração de Hopf: região na esfera, preimagem em R³ e fibras circulares.">
+  <title>Fibração de Hopf | Laboratório Visual de Geometria</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #ffffff;
+      --panel: #f7f9fc;
+      --panel-2: #eef2f7;
+      --text: #182230;
+      --muted: #64748b;
+      --line: #dce3ec;
+      --accent: #285d91;
+      --accent-soft: #e7f0fa;
+      --shadow: 0 12px 32px rgba(20, 35, 55, .08);
+    }
+    body.contrast {
+      color-scheme: dark;
+      --bg: #080b10;
+      --panel: #111925;
+      --panel-2: #1a2635;
+      --text: #f5f8fc;
+      --muted: #c1cede;
+      --line: #46566b;
+      --accent: #68d9ff;
+      --accent-soft: #132b3b;
+      --shadow: 0 12px 32px rgba(0, 0, 0, .3);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); }
+    body { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; transition: background .2s, color .2s; }
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+    .topbar {
+      min-height: 64px; display: flex; align-items: center; justify-content: space-between;
+      padding: 9px clamp(14px, 4vw, 52px); border-bottom: 1px solid var(--line); background: var(--bg); gap: 14px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; font-weight: 700; }
+    .brand-mark { width: 30px; height: 30px; border: 2px solid var(--accent); border-radius: 50%; display: grid; place-items: center; color: var(--accent); font-size: 17px; }
+    .brand small { display: block; color: var(--muted); font-weight: 500; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    .top-actions { display: flex; gap: 8px; align-items: center; }
+    .btn {
+      border: 1px solid var(--line); background: var(--panel); color: var(--text); border-radius: 9px;
+      padding: 9px 12px; cursor: pointer; transition: .15s ease; font-size: 12px; white-space: nowrap;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .btn:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .page { max-width: 1500px; margin: 0 auto; padding: 20px clamp(14px, 3vw, 36px) 36px; }
+    .breadcrumbs { color: var(--muted); font-size: 12px; margin-bottom: 14px; }
+    .breadcrumbs a:hover { color: var(--accent); }
+    .heading { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 18px; }
+    .eyebrow { color: var(--accent); font-size: 11px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
+    h1 { margin: 6px 0 5px; font-size: clamp(28px, 4vw, 40px); letter-spacing: -.035em; }
+    .subtitle { margin: 0; color: var(--muted); max-width: 780px; line-height: 1.6; font-size: 14px; }
+    .workspace { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .visual-card, .panel { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); overflow: hidden; }
+    .visual-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+    .visual-head strong { font-size: 13px; }
+    .visual-head span { color: var(--muted); font-size: 11px; }
+    .visual-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+    .plot-fullscreen { padding: 7px 9px; font-size: 11px; }
+    .fullscreen-note { color: var(--muted); font-size: 10px; }
+    .scene { position: relative; height: clamp(320px, 46vh, 570px); min-height: 290px; background: #f7f9fc; }
+    .scene canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+    .visual-card:fullscreen { width: 100vw; height: 100dvh; max-width: none; display: flex; flex-direction: column; border: 0; border-radius: 0; background: var(--panel); }
+    .visual-card:fullscreen .scene { flex: 1; height: auto; min-height: 0; }
+    .scene-label { position: absolute; top: 12px; left: 12px; z-index: 1; pointer-events: none; padding: 7px 10px; border: 1px solid var(--line); border-radius: 9px; background: color-mix(in srgb, var(--bg) 88%, transparent); color: var(--text); font-size: 12px; }
+    .scene-label small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .hint { padding: 8px 12px; border-top: 1px solid var(--line); color: var(--muted); font-size: 10px; }
+    .panel { padding: 15px; margin-top: 16px; }
+    .panel h2 { margin: 0 0 12px; font-size: 15px; }
+    .controls-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 7px; }
+    .actions .btn.primary { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 700; }
+    .sliders { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    .control { min-width: 0; }
+    .control-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; color: var(--text); font-size: 12px; }
+    output { color: var(--accent); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    input[type="range"] { width: 100%; accent-color: var(--accent); cursor: pointer; }
+    .legend { display: flex; align-items: center; gap: 13px; flex-wrap: wrap; margin-top: 12px; color: var(--muted); font-size: 11px; }
+    .key { display: inline-flex; align-items: center; gap: 6px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .math-panel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .math-panel p { margin: 6px 0; color: var(--muted); font-size: 12px; line-height: 1.65; }
+    .formula { padding: 11px 12px; border-radius: 9px; background: var(--panel-2); color: var(--text); font-family: Georgia, "Times New Roman", serif; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+    .map-sequence { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 17px; }
+    .map-arrow { display: inline-flex; flex-direction: column; align-items: center; font-size: 20px; line-height: 1; }
+    .map-arrow small { font-size: 10px; line-height: 1.2; }
+    .footer { margin-top: 24px; padding: 16px 8px 0; border-top: 1px solid var(--line); color: var(--muted); text-align: center; font-size: 11px; }
+    #status { position: fixed; z-index: 20; inset: 0; display: none; align-items: center; justify-content: center; padding: 24px; background: rgba(8, 11, 16, .86); color: #fff; text-align: center; }
+    #status.visible { display: flex; }
+    .status-card { max-width: 560px; padding: 18px; border: 1px solid #526174; border-radius: 14px; background: #111925; }
+    .status-card p { color: #c1cede; font-size: 13px; line-height: 1.55; }
+    @media (max-width: 850px) {
+      .workspace { grid-template-columns: 1fr; }
+      .scene { height: min(56vh, 500px); }
+      .math-panel { grid-template-columns: 1fr; }
+    }
+    @media (min-width: 851px) and (max-width: 1100px) {
+      .math-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 600px) {
+      .topbar { align-items: flex-start; }
+      .brand { font-size: 12px; }
+      .brand small { font-size: 9px; }
+      .top-actions { flex-wrap: wrap; justify-content: flex-end; }
+      .top-actions .btn { padding: 8px; font-size: 10px; }
+      .heading { align-items: flex-start; flex-direction: column; }
+      .visual-head { align-items: flex-start; flex-wrap: wrap; }
+      .visual-actions { flex-wrap: wrap; justify-content: flex-start; }
+      .scene { height: 42vh; min-height: 270px; }
+      .controls-head { align-items: flex-start; flex-direction: column; }
+      .sliders { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
+      .legend { gap: 9px; }
+    }
+    @media (max-width: 380px) {
+      .topbar { gap: 7px; padding-inline: 9px; }
+      .brand { gap: 7px; font-size: 10px; }
+      .brand-mark { width: 26px; height: 26px; }
+      .top-actions { gap: 5px; }
+    }
+  </style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../../">
+      <span class="brand-mark" aria-hidden="true">∿</span>
+      <span>Laboratório Visual de Geometria<small>Geometria · Topologia · Visualização</small></span>
+    </a>
+    <div class="top-actions">
+      <a class="btn" href="../">← Fibrações</a>
+      <button class="btn" id="themeButton" type="button" aria-pressed="false">Alto contraste</button>
+    </div>
+  </header>
+
+  <main class="page">
+    <div class="breadcrumbs"><a href="../../">Início</a> / <a href="../">Fibrados e fibrações</a> / Fibração de Hopf</div>
+    <section class="heading">
+      <div>
+        <div class="eyebrow">Fibrados · Projeção estereográfica</div>
+        <h1>Fibração de Hopf</h1>
+        <p class="subtitle">
+          A visualização busca ilustrar a fibração localmente trivial <i>S¹ ↪ S³ → S²</i>:
+          à esquerda está uma região retangular da base e, à direita, a preimagem de sua borda
+          após projeção estereográfica. Os controles movem dois pontos e suas fibras.
+        </p>
+      </div>
+    </section>
+
+    <section class="workspace" aria-label="Visualizações da fibração de Hopf">
+      <article class="visual-card" id="basePlot">
+        <div class="visual-head">
+          <strong>Base <i>S²</i></strong>
+          <div class="visual-actions">
+            <span>Região U e dois pontos</span>
+            <button class="btn plot-fullscreen" type="button" data-plot="basePlot" aria-controls="basePlot" aria-label="Abrir a visualização da base em tela inteira" aria-pressed="false">⛶ Tela inteira</button>
+            <span class="fullscreen-note" id="baseFullscreenNote" role="status" hidden></span>
+          </div>
+        </div>
+        <div class="scene" id="baseScene" aria-label="Esfera base com região parametrizada e pontos móveis">
+          <div class="scene-label">Base <i>S²</i><small>η ∈ [0,35; 0,65] · φ ∈ [−0,50; 0,50]</small></div>
+        </div>
+        <div class="hint">Arraste para girar · roda ou pinça para zoom</div>
+      </article>
+      <article class="visual-card" id="totalPlot">
+        <div class="visual-head">
+          <strong>Preimagem em <i>ℝ³</i></strong>
+          <div class="visual-actions">
+            <span>Quatro paredes e duas fibras</span>
+            <button class="btn plot-fullscreen" type="button" data-plot="totalPlot" aria-controls="totalPlot" aria-label="Abrir a visualização da preimagem em tela inteira" aria-pressed="false">⛶ Tela inteira</button>
+            <span class="fullscreen-note" id="totalFullscreenNote" role="status" hidden></span>
+          </div>
+        </div>
+        <div class="scene" id="totalScene" aria-label="Preimagem das bordas da região e duas fibras em R3">
+          <div class="scene-label">Preimagem de ∂U<small>Fibras sobre os pontos azul e amarelo</small></div>
+        </div>
+        <div class="hint">Arraste para girar · roda ou pinça para zoom</div>
+      </article>
+    </section>
+
+    <section class="panel" aria-labelledby="controlsTitle">
+      <div class="controls-head">
+        <h2 id="controlsTitle">Parâmetros dos pontos na base</h2>
+        <div class="actions">
+          <button class="btn" id="resetButton" type="button">↺ Reiniciar</button>
+        </div>
+      </div>
+      <div class="sliders">
+        <label class="control"><span class="control-top"><span>η azul</span><output id="eta0Output">0,45</output></span><input id="eta0" type="range" min="0.35" max="0.65" step="0.01" value="0.45"></label>
+        <label class="control"><span class="control-top"><span>φ azul</span><output id="phi0Output">−0,20</output></span><input id="phi0" type="range" min="-0.50" max="0.50" step="0.01" value="-0.20"></label>
+        <label class="control"><span class="control-top"><span>η amarelo</span><output id="eta1Output">0,55</output></span><input id="eta1" type="range" min="0.35" max="0.65" step="0.01" value="0.55"></label>
+        <label class="control"><span class="control-top"><span>φ amarelo</span><output id="phi1Output">0,25</output></span><input id="phi1" type="range" min="-0.50" max="0.50" step="0.01" value="0.25"></label>
+      </div>
+      <div class="legend" aria-label="Legenda">
+        <span class="key"><i class="dot" style="background:#254fbd"></i>Ponto e fibra azul</span>
+        <span class="key"><i class="dot" style="background:#d2a000"></i>Ponto e fibra amarela</span>
+        <span class="key"><i class="dot" style="background:#35b96d"></i>Bordas η constante</span>
+        <span class="key"><i class="dot" style="background:#df555d"></i>Bordas φ constante</span>
+      </div>
+    </section>
+
+    <section class="panel math-panel" aria-label="Definição e interpretação matemática da visualização">
+      <div>
+        <h2>Definição da fibração</h2>
+        <p>A sequência representa a inclusão de uma fibra sobre <i>q ∈ S²</i>, seguida pela aplicação de Hopf:</p>
+        <div class="formula map-sequence">
+          S¹ <span class="map-arrow">↪<small>ι<sub>q</sub></small></span> S³
+          <span class="map-arrow">⟶<small>h</small></span> S².
+        </div>
+        <p>Com <i>0 ≤ η ≤ π/2</i> e ângulos <i>t, φ</i>, a inclusão e o ponto da base são:</p>
+        <div class="formula">
+          ι<sub>q</sub>(e<sup>it</sup>) = (cosη e<sup>it</sup>, sinη e<sup>i(t+φ)</sup>) ∈ S³<br>
+          h(z₁,z₂) = (2 Re(z̄₁z₂), 2 Im(z̄₁z₂), |z₁|²−|z₂|²)<br>
+          = q(η,φ) = (sin(2η)cosφ, sin(2η)sinφ, cos(2η)).
+        </div>
+        <p>Assim, <i>h ∘ ι<sub>q</sub></i> é constante igual a <i>q</i>; variar <i>t</i> percorre a fibra <i>h<sup>−1</sup>(q) ≅ S¹</i>.</p>
+      </div>
+      <div>
+        <h2>Trivialização local</h2>
+        <p>O gráfico da esquerda mostra o retângulo de parâmetros <i>U ⊂ S²</i>. Como <i>U</i> é contrátil, a fibração restrita é trivial:</p>
+        <div class="formula">
+          h<sup>−1</sup>(U) ≅ U × S¹.
+        </div>
+        <p>A preimagem completa é um toro sólido. Para torná-la legível, o gráfico da direita mostra apenas as quatro folhas anulares sobre <i>∂U</i>, isto é, <i>h<sup>−1</sup>(∂U)</i>, e não o interior. A parametrização explícita acima dá a trivialização sobre <i>U</i>; a figura é uma ilustração, não uma prova da propriedade.</p>
+        <p>A fibração de Hopf é localmente trivial, mas globalmente não é um produto <i>S² × S¹</i>.</p>
+      </div>
+      <div>
+        <h2>Projeção e enlace das fibras</h2>
+        <p>Para representar <i>S³</i> em <i>ℝ³</i>, retiramos o polo <i>N = (0,0,0,1)</i> e usamos a projeção estereográfica:</p>
+        <div class="formula">
+          σ: S³ \ {N} → ℝ³<br>
+          σ(x₁,x₂,x₃,x₄) = (x₁,x₂,x₃)/(1−x₄).
+        </div>
+        <p>Os pontos azul e amarelo da base determinam duas fibras <i>h<sup>−1</sup>(q)</i>. Quando são distintos, elas são círculos ligados (um enlace de Hopf) em <i>S³</i>. Como <i>h(N) = (0,0,−1)</i> não pertence a <i>U</i>, as fibras escolhidas não passam pelo polo removido e suas imagens continuam sendo círculos ligados em <i>ℝ³</i>.</p>
+        <p>Se os dois pares de parâmetros coincidirem, as fibras também coincidem; o enlace corresponde ao caso de pontos distintos.</p>
+      </div>
+    </section>
+    <footer class="footer">Laboratório Visual de Geometria · Fibrados e fibrações</footer>
+  </main>
+
+  <div id="status" role="alert" aria-live="polite">
+    <div class="status-card">
+      <strong>Não foi possível iniciar a visualização 3D.</strong>
+      <p id="statusMessage">Verifique a conexão com a internet; Three.js é carregado por CDN.</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+    const $ = id => document.getElementById(id);
+    const etaMin = 0.35;
+    const etaMax = 0.65;
+    const phiMin = -0.5;
+    const phiMax = 0.5;
+    const defaults = { eta0: 0.45, phi0: -0.2, eta1: 0.55, phi1: 0.25 };
+    const status = $("status");
+    const scenes = [];
+
+    function showError(message) {
+      $("statusMessage").textContent = message;
+      status.classList.add("visible");
+    }
+
+    function vector3(point) {
+      return new THREE.Vector3(point[0], point[1], point[2]);
+    }
+
+    function basePoint(eta, phi) {
+      return [
+        Math.sin(2 * eta) * Math.cos(phi),
+        Math.sin(2 * eta) * Math.sin(phi),
+        Math.cos(2 * eta)
+      ];
+    }
+
+    function projectHopf(eta, phi, t) {
+      const x1 = Math.cos(eta) * Math.cos(t);
+      const x2 = Math.cos(eta) * Math.sin(t);
+      const x3 = Math.sin(eta) * Math.cos(t + phi);
+      const x4 = Math.sin(eta) * Math.sin(t + phi);
+      const denominator = 1 - x4;
+      if (Math.abs(denominator) < 1e-9) return null;
+      return [x1 / denominator, x2 / denominator, x3 / denominator];
+    }
+
+    function makeMaterial(color, opacity = 1) {
+      return new THREE.MeshStandardMaterial({
+        color,
+        transparent: opacity < 1,
+        opacity,
+        side: THREE.DoubleSide,
+        roughness: 0.7,
+        metalness: 0.02,
+        depthWrite: opacity >= 0.95
+      });
+    }
+
+    function makeScene(host, isBase) {
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color("#f7f9fc");
+      const camera = new THREE.PerspectiveCamera(42, 1, 0.01, 1000);
+      camera.position.set(isBase ? 2.7 : 3.8, isBase ? 2.1 : 2.5, isBase ? 3 : 4.4);
+      const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.15;
+      host.appendChild(renderer.domElement);
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.07;
+      controls.enablePan = true;
+      controls.minDistance = isBase ? 1.4 : 0.7;
+      controls.maxDistance = isBase ? 8 : 30;
+      scene.add(new THREE.HemisphereLight(0xc9e5ff, 0x162236, 2));
+      const keyLight = new THREE.DirectionalLight(0xffffff, 2);
+      keyLight.position.set(4, 5, 6);
+      scene.add(keyLight);
+      const rimLight = new THREE.DirectionalLight(0x5c9eff, 1.1);
+      rimLight.position.set(-4, -2, -5);
+      scene.add(rimLight);
+      const resize = () => {
+        const width = Math.max(1, host.clientWidth);
+        const height = Math.max(1, host.clientHeight);
+        camera.aspect = width / height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(width, height, false);
+      };
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(host);
+      resize();
+      return { host, scene, camera, renderer, controls, resizeObserver, isBase };
+    }
+
+    function addLine(scene, points, color, radius = 0.009, closed = false) {
+      const curve = new THREE.CatmullRomCurve3(points.map(vector3), closed, "centripetal");
+      const mesh = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, Math.max(80, points.length * 2), radius, 6, closed),
+        new THREE.MeshStandardMaterial({ color, roughness: 0.48, metalness: 0.03 })
+      );
+      scene.add(mesh);
+      return mesh;
+    }
+
+    function addParamSurface(scene, fn, u0, u1, nu, v0, v1, nv, color, opacity) {
+      const positions = [];
+      const indices = [];
+      for (let i = 0; i <= nu; i++) {
+        for (let j = 0; j <= nv; j++) {
+          const point = fn(u0 + (u1 - u0) * i / nu, v0 + (v1 - v0) * j / nv);
+          positions.push(...(point || [0, 0, 0]));
+        }
+      }
+      for (let i = 0; i < nu; i++) {
+        for (let j = 0; j < nv; j++) {
+          const a = i * (nv + 1) + j;
+          const b = a + nv + 1;
+          const pa = fn(u0 + (u1 - u0) * i / nu, v0 + (v1 - v0) * j / nv);
+          const pb = fn(u0 + (u1 - u0) * (i + 1) / nu, v0 + (v1 - v0) * j / nv);
+          const pc = fn(u0 + (u1 - u0) * i / nu, v0 + (v1 - v0) * (j + 1) / nv);
+          const pd = fn(u0 + (u1 - u0) * (i + 1) / nu, v0 + (v1 - v0) * (j + 1) / nv);
+          if (pa && pb && pc && pd) indices.push(a, b, a + 1, b, b + 1, a + 1);
+        }
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      const mesh = new THREE.Mesh(geometry, makeMaterial(color, opacity));
+      scene.add(mesh);
+      return mesh;
+    }
+
+    function makePoint(scene, color, radius) {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(radius, 24, 16),
+        new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.16, roughness: 0.35 })
+      );
+      scene.add(mesh);
+      return mesh;
+    }
+
+    function makeSphere(scene, radius, opacity, color) {
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 48, 32), makeMaterial(color, opacity));
+      scene.add(mesh);
+      return mesh;
+    }
+
+    try {
+      const base = makeScene($("baseScene"), true);
+      const total = makeScene($("totalScene"), false);
+      scenes.push(base, total);
+
+      makeSphere(base.scene, 1, 0.19, "#aab7c8");
+      addParamSurface(base.scene, (eta, phi) => basePoint(eta, phi), etaMin, etaMax, 40, phiMin, phiMax, 32, "#9ecdf0", 0.88);
+      for (const eta of [etaMin, etaMax]) {
+        const points = [];
+        for (let i = 0; i <= 120; i++) points.push(basePoint(eta, phiMin + (phiMax - phiMin) * i / 120));
+        addLine(base.scene, points, "#24a65a", 0.009);
+      }
+      for (const phi of [phiMin, phiMax]) {
+        const points = [];
+        for (let i = 0; i <= 90; i++) points.push(basePoint(etaMin + (etaMax - etaMin) * i / 90, phi));
+        addLine(base.scene, points, "#df555d", 0.009);
+      }
+      const bluePoint = makePoint(base.scene, "#254fbd", 0.035);
+      const goldPoint = makePoint(base.scene, "#d2a000", 0.035);
+      const axes = new THREE.AxesHelper(1.22);
+      axes.material.transparent = true;
+      axes.material.opacity = 0.42;
+      base.scene.add(axes);
+
+      const wallSpecs = [
+        { fn: (u, v) => projectHopf(etaMin, v, u), u0: 0, u1: 2 * Math.PI, nu: 88, v0: phiMin, v1: phiMax, nv: 30 },
+        { fn: (u, v) => projectHopf(etaMax, v, u), u0: 0, u1: 2 * Math.PI, nu: 88, v0: phiMin, v1: phiMax, nv: 30 },
+        { fn: (u, v) => projectHopf(v, phiMin, u), u0: 0, u1: 2 * Math.PI, nu: 88, v0: etaMin, v1: etaMax, nv: 30 },
+        { fn: (u, v) => projectHopf(v, phiMax, u), u0: 0, u1: 2 * Math.PI, nu: 88, v0: etaMin, v1: etaMax, nv: 30 }
+      ];
+      for (const wall of wallSpecs) {
+        addParamSurface(total.scene, wall.fn, wall.u0, wall.u1, wall.nu, wall.v0, wall.v1, wall.nv, "#aab7c8", 0.16);
+      }
+      addParamSurface(total.scene, wallSpecs[0].fn, 0, 2 * Math.PI, 88, phiMin, phiMax, 30, "#8bc8a3", 0.68);
+      addParamSurface(total.scene, wallSpecs[1].fn, 0, 2 * Math.PI, 88, phiMin, phiMax, 30, "#8bc8a3", 0.68);
+      addParamSurface(total.scene, wallSpecs[2].fn, 0, 2 * Math.PI, 88, etaMin, etaMax, 30, "#ef9da1", 0.68);
+      addParamSurface(total.scene, wallSpecs[3].fn, 0, 2 * Math.PI, 88, etaMin, etaMax, 30, "#ef9da1", 0.68);
+      const blueFiber = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: "#254fbd", roughness: 0.35, metalness: 0.08 }));
+      const goldFiber = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: "#d2a000", roughness: 0.35, metalness: 0.08 }));
+      total.scene.add(blueFiber, goldFiber);
+
+      function setFiber(mesh, eta, phi) {
+        const points = [];
+        for (let i = 0; i <= 400; i++) {
+          const point = projectHopf(eta, phi, 2 * Math.PI * i / 400);
+          if (point) points.push(vector3(point));
+        }
+        if (points.length < 4) {
+          showError("A fibra não pôde ser calculada para estes parâmetros.");
+          return;
+        }
+        const curve = new THREE.CatmullRomCurve3(points, true, "centripetal");
+        const oldGeometry = mesh.geometry;
+        mesh.geometry = new THREE.TubeGeometry(curve, 500, 0.012, 8, true);
+        oldGeometry.dispose();
+      }
+
+      const inputKeys = ["eta0", "phi0", "eta1", "phi1"];
+      function update() {
+        const values = Object.fromEntries(inputKeys.map(key => [key, Number($(key).value)]));
+        for (const key of inputKeys) {
+          $(key + "Output").textContent = values[key].toFixed(2).replace("-", "−").replace(".", ",");
+        }
+        bluePoint.position.copy(vector3(basePoint(values.eta0, values.phi0)));
+        goldPoint.position.copy(vector3(basePoint(values.eta1, values.phi1)));
+        setFiber(blueFiber, values.eta0, values.phi0);
+        setFiber(goldFiber, values.eta1, values.phi1);
+      }
+
+      for (const key of inputKeys) $(key).addEventListener("input", update);
+      $("resetButton").addEventListener("click", () => {
+        for (const [key, value] of Object.entries(defaults)) $(key).value = String(value);
+        update();
+      });
+
+      function applyTheme() {
+        const background = document.body.classList.contains("contrast") ? "#080b10" : "#f7f9fc";
+        for (const item of scenes) {
+          item.scene.background.set(background);
+          item.renderer.render(item.scene, item.camera);
+        }
+      }
+      $("themeButton").addEventListener("click", event => {
+        const contrast = document.body.classList.toggle("contrast");
+        event.currentTarget.textContent = contrast ? "Tema claro" : "Alto contraste";
+        event.currentTarget.setAttribute("aria-pressed", String(contrast));
+        applyTheme();
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        for (const item of scenes) {
+          item.controls.update();
+          item.renderer.render(item.scene, item.camera);
+        }
+      }
+      update();
+      animate();
+    } catch (error) {
+      showError("Falha ao inicializar a visualização: " + (error instanceof Error ? error.message : String(error)));
+      throw error;
+    }
+
+    function syncFullscreenButtons() {
+      document.querySelectorAll(".plot-fullscreen").forEach(button => {
+        const active = document.fullscreenElement?.id === button.dataset.plot;
+        const plotName = button.dataset.plot === "basePlot" ? "base" : "preimagem";
+        button.textContent = active ? "⤢ Sair da tela inteira" : "⛶ Tela inteira";
+        button.setAttribute("aria-label", active
+          ? `Sair da tela inteira da ${plotName}`
+          : `Abrir a visualização da ${plotName} em tela inteira`);
+        button.setAttribute("aria-pressed", String(active));
+      });
+    }
+
+    document.querySelectorAll(".plot-fullscreen").forEach(button => {
+      button.addEventListener("click", async () => {
+        const plot = $(button.dataset.plot);
+        const note = $(button.dataset.plot === "basePlot" ? "baseFullscreenNote" : "totalFullscreenNote");
+        note.hidden = true;
+        try {
+          if (document.fullscreenElement === plot) {
+            await document.exitFullscreen();
+            return;
+          }
+          if (!plot.requestFullscreen) {
+            note.textContent = "Este navegador não oferece tela inteira para o gráfico.";
+            note.hidden = false;
+            return;
+          }
+          await plot.requestFullscreen();
+        } catch (error) {
+          note.textContent = "Não foi possível abrir este gráfico em tela inteira.";
+          note.hidden = false;
+          console.error(error);
+        }
+      });
+    });
+    document.addEventListener("fullscreenchange", syncFullscreenButtons);
+  </script>
+</body>
+</html>
