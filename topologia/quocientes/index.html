@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore a identificação das bordas de um quadrado para construir o toro e a garrafa de Klein.">
+  <title>Identificação do quadrado — Laboratório Visual de Geometria</title>
+  <style>
+    :root{color-scheme:light;--bg:#f5f7fb;--panel:#fff;--line:#dce3ee;--text:#172033;--muted:#586579;--accent:#0f766e;--green:#15803d;--red:#dc2626}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+    a{color:inherit}
+    .topbar{background:var(--panel);border-bottom:1px solid var(--line)}
+    .topbar-inner{max-width:1600px;margin:auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{font-weight:750;text-decoration:none}
+    .back{color:var(--accent);font-weight:650;text-decoration:none}
+    header.intro{max-width:1600px;margin:auto;padding:20px 20px 7px}
+    h1{font-size:clamp(1.5rem,3.2vw,2.2rem);line-height:1.2;margin:0 0 6px}
+    header p{max-width:980px;margin:0;color:var(--muted)}
+    .layout{max-width:1600px;margin:0 auto;padding:13px 20px 25px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px}
+    .visual,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0;box-shadow:0 5px 20px #17203308}
+    .visual{display:flex;flex-direction:column;min-height:640px}
+    .view-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;border-bottom:1px solid var(--line)}
+    .view-head h2,.panel h2{font-size:1rem;margin:0}
+    .view-head p{font-size:.8rem;color:var(--muted);margin:2px 0 0}
+    button,select{border:1px solid #c7d0df;border-radius:8px;background:#fff;color:var(--text);padding:7px 10px;font:inherit;font-size:.82rem}
+    button{cursor:pointer;white-space:nowrap}
+    button:hover{background:#f0fdfa;border-color:#99d5cc}
+    .plots{flex:1;min-height:0;display:grid;grid-template-columns:minmax(260px,.78fr) minmax(0,1.22fr);gap:10px;padding:10px}
+    .plot-card{display:flex;flex-direction:column;min-width:0;min-height:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#f8fafc}
+    .plot-card h3{margin:0;padding:8px 10px;border-bottom:1px solid var(--line);font-size:.83rem}
+    #squareWrap{flex:1;min-height:300px;display:grid;place-items:center;padding:10px}
+    #square{width:min(100%,390px);height:auto;overflow:visible}
+    #view3d{position:relative;flex:1;min-height:300px;touch-action:none}
+    #view3d canvas{display:block;width:100%;height:100%}
+    .plot-hint{margin:0;padding:8px 10px;border-top:1px solid var(--line);color:var(--muted);font-size:.75rem}
+    .legend{display:flex;flex-wrap:wrap;gap:8px 13px;padding:0 12px 11px;color:var(--muted);font-size:.76rem}
+    .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+    .panel h2{padding:12px 14px;border-bottom:1px solid var(--line)}
+    .inside{padding:14px}
+    .control{margin-bottom:14px}
+    .control label{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:.87rem;font-weight:600}
+    output{color:var(--accent);font-variant-numeric:tabular-nums}
+    select{width:100%;padding:8px}
+    input[type=range]{width:100%;accent-color:var(--accent)}
+    .buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+    .readout{padding:10px 11px;background:#f8fafc;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:.82rem;line-height:1.65}
+    .readout strong{color:var(--text)}
+    .math{margin:12px 0 0;color:var(--muted);font-size:.81rem;line-height:1.65}
+    .math strong{color:var(--text)}
+    details.math code{white-space:normal;overflow-wrap:anywhere}
+    #status{min-height:1.2em;margin:10px 0 0;color:var(--muted);font-size:.78rem}
+    #workspace:fullscreen{width:100vw;height:100vh;max-width:none;margin:0;padding:12px;grid-template-columns:minmax(0,1fr) 340px;overflow:hidden;background:var(--bg)}
+    #workspace:fullscreen .visual{min-height:0}
+    #workspace:fullscreen .panel{height:100%;overflow:auto}
+    @media(max-width:1050px){.layout{grid-template-columns:1fr}.visual{min-height:620px}}
+    @media(max-width:1050px){#workspace:fullscreen{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(340px,58vh) auto;overflow:auto}#workspace:fullscreen .panel{height:auto;overflow:visible}}
+    @media(max-width:700px){.plots{grid-template-columns:1fr;grid-template-rows:minmax(340px,.9fr) minmax(360px,1.1fr)}.visual{min-height:900px}#squareWrap{min-height:280px}.view-head{align-items:flex-start}}
+    @media(max-width:560px){.topbar-inner,header.intro{padding-left:14px;padding-right:14px}.layout{padding:9px 9px 20px;gap:10px}.visual{min-height:880px}.plots{padding:8px;gap:8px;grid-template-rows:minmax(320px,.9fr) minmax(340px,1.1fr)}#squareWrap{min-height:250px}.panel h2{padding:11px 12px}.inside{padding:12px}}
+  </style>
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+  </script>
+</head>
+<body>
+  <div class="topbar"><div class="topbar-inner"><a class="brand" href="../../">Laboratório Visual de Geometria</a><a class="back" href="../">Galeria de topologia</a></div></div>
+  <header class="intro">
+    <h1>Identificação do quadrado: toro e garrafa de Klein</h1>
+    <p>Acompanhe a colagem das bordas em um diagrama do quadrado e em uma representação tridimensional. O toro é uma superfície embutida; a garrafa de Klein aparece por uma imersão com autointerseções.</p>
+  </header>
+  <main class="layout" id="workspace">
+    <section class="visual" aria-label="Diagramas da identificação do quadrado">
+      <div class="view-head"><div><h2 id="surfaceTitle">Toro</h2><p id="stageTitle">Quadrado inicial</p></div><button id="fullscreen" type="button">Tela cheia</button></div>
+      <div class="plots">
+        <section class="plot-card" aria-label="Quadrado de identificação">
+          <h3>Quadrado de identificação</h3>
+          <div id="squareWrap">
+            <svg id="square" viewBox="0 0 400 400" role="img" aria-label="Bordas do quadrado com setas de identificação"></svg>
+          </div>
+          <p class="plot-hint">O ponto azul acompanha as coordenadas (u,v).</p>
+        </section>
+        <section class="plot-card" aria-label="Superfície tridimensional">
+          <h3>Superfície em ℝ³</h3>
+          <div id="view3d" aria-label="Modelo tridimensional rotacionável"></div>
+          <p class="plot-hint">Arraste para girar; use a roda ou o gesto de pinça para zoom.</p>
+        </section>
+      </div>
+      <div class="legend"><span><i class="dot" style="background:#15803d"></i>Bordas verdes</span><span><i class="dot" style="background:#dc2626"></i>Bordas vermelhas</span><span><i class="dot" style="background:#316dff"></i>Ponto móvel</span></div>
+    </section>
+    <aside class="panel">
+      <h2>Controles e convenções</h2>
+      <div class="inside">
+        <div class="control"><label for="surfaceSelect">Superfície</label><select id="surfaceSelect"><option value="torus">Toro</option><option value="klein">Garrafa de Klein</option></select></div>
+        <div class="control"><label for="greenJoin">1. Fechar bordas verdes <output id="greenOut">0.00</output></label><input id="greenJoin" type="range" min="0" max="1" step="0.02" value="0"></div>
+        <div class="control"><label for="redJoin">2. Identificar bordas vermelhas <output id="redOut">0.00</output></label><input id="redJoin" type="range" min="0" max="1" step="0.02" value="0"></div>
+        <div class="control"><label for="uPoint">Posição horizontal u <output id="uOut">0.35</output></label><input id="uPoint" type="range" min="0" max="1" step="0.01" value="0.35"></div>
+        <div class="control"><label for="vPoint">Posição vertical v <output id="vOut">0.60</output></label><input id="vPoint" type="range" min="0" max="1" step="0.01" value="0.60"></div>
+        <div class="buttons">
+          <button id="resetCamera" type="button">Reiniciar câmera</button>
+          <button id="resetAll" type="button">Reiniciar controles</button>
+          <button id="newTab" type="button">Abrir em nova aba</button>
+        </div>
+        <div class="readout"><strong id="stageReadout">Quadrado inicial.</strong> Quando uma etapa de colagem está completa, os pontos correspondentes das bordas coincidem.</div>
+        <p class="math">As bordas verdes superior e inferior são identificadas no mesmo sentido. Para o toro, as bordas vermelhas também têm o mesmo sentido; para a garrafa de Klein, uma delas é invertida.</p>
+        <details class="math">
+          <summary><strong>Quocientes e parametrizações</strong></summary>
+          <p>Seja Q=[0,1]². Para o toro, (u,0)~(u,1) e (0,v)~(1,v). Na parametrização de Klein usada aqui, (u,0)~(u,1) e (0,v)~(1,(1/2−v) mod 1): a borda vermelha é invertida com um deslocamento de meia volta no parâmetro periódico. Esse deslocamento é uma escolha de parametrização; o espaço quociente é a garrafa de Klein.</p>
+          <p>A interpolação visual usa P₀(u,v)=(2u−1,2v−1,0), C(u,v)=(2u−1,r cos(2πv),r sin(2πv)), com r=0,25, e o mapa final T ou K. A aplicação exibida é (1−t)((1−s)P₀+sC)+t(T ou K), com s,t∈[0,1].</p>
+          <p>Para o toro, T(u,v)=((R+r cos V)cos U,(R+r cos V)sin U,r sin V), U=2πu, V=2πv, R=1,4. O mapa K é uma imersão de garrafa de Klein em ℝ³; as autointerseções são necessárias na representação e não fazem parte do espaço abstrato.</p>
+          <p>Na parametrização de Klein, U=πu, V=2πv, c=r<sub>K</sub>cos V e w=r<sub>K</sub>sin V, com r<sub>K</sub>=1,25:</p>
+          <p><code>x=−(4/15)cos U(3c−30sin U+90cos⁴U sin U−60cos⁶U sin U+5cos U c sin U)</code><br>
+          <code>y=−(2/15)sin U(3c−3cos²U c−48cos⁴U c+48cos⁶U c−60sin U+5cos U c sin U−5cos³U c sin U−80cos⁵U c sin U+80cos⁷U c sin U)</code><br>
+          <code>z=(4/15)(3+5cos U sin U)w</code>.</p>
+          <p>As formas intermediárias servem para visualizar a deformação da parametrização; em geral, não respeitam todas as identificações do quociente. A identificação completa ocorre no estágio final. A malha é uma amostragem numérica da parametrização.</p>
+        </details>
+        <p id="status" role="status">Arraste no modelo 3D para ajustar a câmera.</p>
+      </div>
+    </aside>
+  </main>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const $ = id => document.getElementById(id);
+    const view = $('view3d');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf8fafc);
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    view.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.minDistance = 2.7;
+    controls.maxDistance = 22;
+    controls.target.set(0, 0, 0);
+
+    scene.add(new THREE.HemisphereLight(0xc7e7ff, 0x586579, 2));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    keyLight.position.set(4, 6, 5);
+    scene.add(keyLight);
+    const fillLight = new THREE.DirectionalLight(0x7bbcff, 0.8);
+    fillLight.position.set(-5, -2, -4);
+    scene.add(fillLight);
+    let surfaceGroup = null;
+    const red = 0xdc2626, green = 0x15803d, blue = 0x316dff;
+    const majorRadius = 1.4, minorRadius = 0.25, kleinRadius = 1.25;
+    const initialCamera = new THREE.Vector3(4.4, 5, 6.2);
+    const kleinCameraOffset = new THREE.Vector3(7.2, 8.2, 10.2);
+    const kleinCenterY = 4.25;
+    camera.position.copy(initialCamera);
+    controls.update();
+
+    function torusPoint(u, v) {
+      const U = 2 * Math.PI * u, V = 2 * Math.PI * v;
+      return new THREE.Vector3(
+        (majorRadius + minorRadius * Math.cos(V)) * Math.cos(U),
+        (majorRadius + minorRadius * Math.cos(V)) * Math.sin(U),
+        minorRadius * Math.sin(V)
+      );
+    }
+
+    function kleinPoint(u, v) {
+      const U = Math.PI * u, V = 2 * Math.PI * v;
+      const c = Math.cos(U), sn = Math.sin(U), cv = kleinRadius * Math.cos(V), sv = kleinRadius * Math.sin(V);
+      const x = -(4 / 15) * c * (3 * cv - 30 * sn + 90 * Math.pow(c, 4) * sn - 60 * Math.pow(c, 6) * sn + 5 * c * cv * sn);
+      const y = -(2 / 15) * sn * (3 * cv - 3 * c * c * cv - 48 * Math.pow(c, 4) * cv + 48 * Math.pow(c, 6) * cv - 60 * sn + 5 * c * cv * sn - 5 * Math.pow(c, 3) * cv * sn - 80 * Math.pow(c, 5) * cv * sn + 80 * Math.pow(c, 7) * cv * sn);
+      const z = (4 / 15) * (3 + 5 * c * sn) * sv;
+      return new THREE.Vector3(x, y, z);
+    }
+
+    function mapPoint(u, v) {
+      const square = new THREE.Vector3(2 * u - 1, 2 * v - 1, 0);
+      const cylinder = new THREE.Vector3(2 * u - 1, minorRadius * Math.cos(2 * Math.PI * v), minorRadius * Math.sin(2 * Math.PI * v));
+      const target = $('surfaceSelect').value === 'torus' ? torusPoint(u, v) : kleinPoint(u, v);
+      const s = Number($('greenJoin').value), t = Number($('redJoin').value);
+      return square.lerp(cylinder, s).lerp(target, t);
+    }
+
+    function makeLine(points, color) {
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      return new THREE.Line(geometry, new THREE.LineBasicMaterial({ color }));
+    }
+
+    function makeCurve(fn, color, segments = 180) {
+      const points = [];
+      for (let i = 0; i <= segments; i++) points.push(fn(i / segments));
+      return makeLine(points, color);
+    }
+
+    function addArrow(group, start, end, color, head = 0.1) {
+      const direction = end.clone().sub(start), length = direction.length();
+      if (length < 1e-6) return;
+      direction.normalize();
+      const shaftLength = Math.max(0.001, length - head * 0.7);
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, shaftLength, 7), new THREE.MeshBasicMaterial({ color }));
+      shaft.position.copy(start).addScaledVector(direction, shaftLength / 2);
+      shaft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+      group.add(shaft);
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(head * 0.42, head, 9), new THREE.MeshBasicMaterial({ color }));
+      cone.position.copy(start).addScaledVector(direction, shaftLength + head * 0.45);
+      cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+      group.add(cone);
+    }
+
+    function addBoundaryArrows(group) {
+      const positions = [0.18, 0.38, 0.62, 0.82], epsilon = 0.035;
+      const type = $('surfaceSelect').value;
+      for (const a of positions) {
+        addArrow(group, mapPoint(a - epsilon, 0), mapPoint(a + epsilon, 0), green);
+        addArrow(group, mapPoint(a - epsilon, 1), mapPoint(a + epsilon, 1), green);
+        addArrow(group, mapPoint(0, a - epsilon), mapPoint(0, a + epsilon), red);
+        const paired = value => ((0.5 - value) % 1 + 1) % 1;
+        const rightStart = type === 'torus' ? a - epsilon : paired(a - epsilon);
+        const rightEnd = type === 'torus' ? a + epsilon : paired(a + epsilon);
+        addArrow(group, mapPoint(1, rightStart), mapPoint(1, rightEnd), red);
+      }
+    }
+
+    function disposeTree(root) {
+      root.traverse(object => {
+        if (object.geometry) object.geometry.dispose();
+        if (object.material) {
+          const materials = Array.isArray(object.material) ? object.material : [object.material];
+          for (const material of materials) material.dispose();
+        }
+      });
+    }
+
+    function rebuildSurface() {
+      if (surfaceGroup) {
+        scene.remove(surfaceGroup);
+        disposeTree(surfaceGroup);
+      }
+      surfaceGroup = new THREE.Group();
+      const segments = 100, positions = [], indices = [];
+      for (let i = 0; i <= segments; i++) {
+        for (let j = 0; j <= segments; j++) {
+          const point = mapPoint(i / segments, j / segments);
+          positions.push(point.x, point.y, point.z);
+        }
+      }
+      for (let i = 0; i < segments; i++) {
+        for (let j = 0; j < segments; j++) {
+          const a = i * (segments + 1) + j, b = a + segments + 1;
+          indices.push(a, b, a + 1, b, b + 1, a + 1);
+        }
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0x58a99a, side: THREE.DoubleSide, transparent: true, opacity: 0.82, roughness: 0.48 }));
+      surfaceGroup.add(mesh);
+      surfaceGroup.add(
+        makeCurve(u => mapPoint(u, 0), green),
+        makeCurve(u => mapPoint(u, 1), green),
+        makeCurve(v => mapPoint(0, v), red),
+        makeCurve(v => mapPoint(1, v), red)
+      );
+      addBoundaryArrows(surfaceGroup);
+      const marker = new THREE.Mesh(new THREE.SphereGeometry(0.075, 20, 14), new THREE.MeshStandardMaterial({ color: blue, emissive: 0x102dff, roughness: 0.3 }));
+      marker.position.copy(mapPoint(Number($('uPoint').value), Number($('vPoint').value)));
+      surfaceGroup.add(marker);
+      scene.add(surfaceGroup);
+    }
+
+    function drawSquare() {
+      const type = $('surfaceSelect').value, u = Number($('uPoint').value), v = Number($('vPoint').value);
+      const markerX = 50 + 300 * u, markerY = 350 - 300 * v;
+      let svg = '<defs><marker id="greenArrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6z" fill="#15803d"/></marker><marker id="redArrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0L6 3L0 6z" fill="#dc2626"/></marker></defs>';
+      svg += '<rect x="50" y="50" width="300" height="300" fill="#58a99a" fill-opacity=".12" stroke="#64748b" stroke-width="2"/>';
+      svg += '<path d="M50 50H350M50 350H350" stroke="#15803d" stroke-width="5"/><path d="M50 50V350M350 50V350" stroke="#dc2626" stroke-width="5"/>';
+      for (const a of [0.18, 0.38, 0.62, 0.82]) {
+        const x = 50 + 300 * a;
+        svg += `<path d="M${x - 11} 50h26M${x - 11} 350h26" stroke="#15803d" stroke-width="2.5" marker-end="url(#greenArrow)"/>`;
+        const y = 350 - 300 * a;
+        svg += `<path d="M50 ${y + 13}V${y - 13}" stroke="#dc2626" stroke-width="2.5" marker-end="url(#redArrow)"/>`;
+        const paired = type === 'torus' ? a : ((0.5 - a) % 1 + 1) % 1;
+        const rightY = 350 - 300 * paired;
+        const rightStart = type === 'torus' ? rightY + 13 : rightY - 13;
+        const rightEnd = type === 'torus' ? rightY - 13 : rightY + 13;
+        svg += `<path d="M350 ${rightStart}V${rightEnd}" stroke="#dc2626" stroke-width="2.5" marker-end="url(#redArrow)"/>`;
+      }
+      svg += '<text x="200" y="30" text-anchor="middle" fill="#15803d" font-size="13">mesmo sentido</text>';
+      svg += `<text x="24" y="200" transform="rotate(-90 24 200)" text-anchor="middle" fill="#dc2626" font-size="12">${type === 'torus' ? 'mesmo sentido' : 'sentido invertido'}</text>`;
+      svg += `<circle cx="${markerX}" cy="${markerY}" r="8" fill="#316dff" stroke="#fff" stroke-width="2"/>`;
+      $('square').innerHTML = svg;
+      $('square').setAttribute('aria-label', `Quadrado com identificação para ${type === 'torus' ? 'toro' : 'garrafa de Klein'} e ponto em u=${u.toFixed(2)}, v=${v.toFixed(2)}`);
+    }
+
+    function updateText() {
+      const s = Number($('greenJoin').value), t = Number($('redJoin').value);
+      const type = $('surfaceSelect').value;
+      const name = type === 'torus' ? 'Toro' : 'Garrafa de Klein';
+      $('surfaceTitle').textContent = name;
+      $('greenOut').textContent = s.toFixed(2);
+      $('redOut').textContent = t.toFixed(2);
+      $('uOut').textContent = Number($('uPoint').value).toFixed(2);
+      $('vOut').textContent = Number($('vPoint').value).toFixed(2);
+      let stage = 'Interpolação geométrica';
+      let explanation = 'Forma intermediária da parametrização; as identificações ainda podem não estar completas.';
+      if (s === 0 && t === 0) {
+        stage = 'Quadrado inicial';
+        explanation = 'Quadrado no plano, antes de identificar as bordas.';
+      } else if (s === 1 && t === 0) {
+        stage = 'Cilindro: bordas verdes coladas';
+        explanation = 'As bordas verdes coincidem; as bordas vermelhas ainda permanecem abertas.';
+      } else if (t === 1) {
+        stage = `${name}: quociente final`;
+        explanation = type === 'torus'
+          ? 'As duas famílias de bordas estão identificadas; a superfície resultante é o toro.'
+          : 'As bordas vermelhas são identificadas com inversão; a imagem 3D é uma imersão com autointerseções.';
+      } else if (s === 1) {
+        stage = 'Bordas verdes identificadas';
+        explanation = 'A primeira identificação está completa; a segunda ainda está em interpolação.';
+      }
+      $('stageTitle').textContent = stage;
+      $('stageReadout').textContent = explanation;
+      $('status').textContent = `Ponto azul: (u,v)=(${Number($('uPoint').value).toFixed(2)}, ${Number($('vPoint').value).toFixed(2)}). Malha 100 × 100; parâmetros de colagem s=${s.toFixed(2)}, t=${t.toFixed(2)}.`;
+    }
+
+    function update() {
+      const desiredCenterY = $('surfaceSelect').value === 'klein' ? kleinCenterY * Number($('redJoin').value) : 0;
+      const targetShift = desiredCenterY - controls.target.y;
+      if (Math.abs(targetShift) > 1e-8) {
+        camera.position.y += targetShift;
+        controls.target.y = desiredCenterY;
+        controls.update();
+      }
+      drawSquare();
+      rebuildSurface();
+      updateText();
+    }
+
+    function resize() {
+      const width = Math.max(1, view.clientWidth), height = Math.max(1, view.clientHeight);
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+
+    function resetCamera() {
+      const isKlein = $('surfaceSelect').value === 'klein';
+      controls.target.set(0, isKlein ? kleinCenterY * Number($('redJoin').value) : 0, 0);
+      camera.position.copy(isKlein ? controls.target.clone().add(kleinCameraOffset) : initialCamera);
+      controls.update();
+    }
+
+    $('surfaceSelect').addEventListener('change', () => {
+      resetCamera();
+      update();
+    });
+    for (const id of ['greenJoin', 'redJoin', 'uPoint', 'vPoint']) $(id).addEventListener('input', update);
+    $('resetCamera').addEventListener('click', resetCamera);
+    $('resetAll').addEventListener('click', () => {
+      $('surfaceSelect').value = 'torus';
+      $('greenJoin').value = '0';
+      $('redJoin').value = '0';
+      $('uPoint').value = '0.35';
+      $('vPoint').value = '0.60';
+      resetCamera();
+      update();
+    });
+    $('newTab').addEventListener('click', () => {
+      if (!window.open(window.location.href, '_blank', 'noopener')) $('status').textContent = 'O navegador bloqueou a nova aba; abra a página diretamente.';
+    });
+    $('fullscreen').addEventListener('click', async () => {
+      const target = $('workspace');
+      try {
+        if (document.fullscreenElement === target) await document.exitFullscreen();
+        else {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          await target.requestFullscreen();
+        }
+      } catch (error) {
+        $('status').textContent = `Não foi possível abrir a visualização em tela cheia: ${error.message || error}`;
+      }
+    });
+    document.addEventListener('fullscreenchange', () => {
+      $('fullscreen').textContent = document.fullscreenElement === $('workspace') ? 'Sair da tela cheia' : 'Tela cheia';
+      setTimeout(resize, 100);
+    });
+    new ResizeObserver(resize).observe(view);
+    window.addEventListener('resize', resize);
+
+    update();
+    resize();
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
