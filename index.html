@@ -173,6 +173,11 @@ body.high-contrast .quick-access-link{background:#000;border:2px solid #00ffff}
 @media(max-width:850px){.category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.category-grid{grid-template-columns:1fr}.category-card{min-height:190px}.home-quick-access{align-items:flex-start;flex-direction:column;padding:18px}.quick-access-link{width:100%;text-align:center}}
 
+/* Controles específicos da garrafa de Klein, mantidos no fluxo do painel para não cobrir o gráfico. */
+.klein-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:9px}.klein-controls label{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}.klein-controls input[type="number"]{width:58px;padding:6px;border:1px solid #4b5d78;border-radius:7px;background:#0d1829;color:var(--text);font:600 12px ui-monospace,monospace}.klein-controls input[type="range"]{width:min(180px,46vw);accent-color:#8b5cf6}.klein-phase{display:block;width:100%;max-width:600px;height:auto;margin-top:10px;border:1px solid #46536d;border-radius:8px;background:#0e1929}.klein-status{font-size:11px;color:var(--muted);line-height:1.55;margin-top:8px}.klein-status strong{color:#c4b5fd}
+body[data-theme="light"] #kleinPanel{background:#f7f4ff!important;border-color:#cfc4ee!important;color:#172033!important}body[data-theme="light"] #kleinPanel div,body[data-theme="light"] #kleinPanel label{color:#45546a!important}body[data-theme="light"] #kleinPanel strong{color:#5b3c9a!important}body[data-theme="light"] #kleinPanel input[type="number"]{background:#fff;color:#172033;border-color:#bfc6d5}.klein-phase{background:#0e1929}body.high-contrast #kleinPanel{background:#000!important;border:2px solid #fff!important;color:#fff!important}body.high-contrast #kleinPanel div,body.high-contrast #kleinPanel label{color:#fff!important}body.high-contrast #kleinPanel strong{color:#ffeb3b!important}body.high-contrast #kleinPanel input[type="number"]{background:#000;color:#fff;border:1px solid #fff}
+@media(max-width:560px){.klein-controls{gap:7px}.klein-controls input[type="range"]{width:125px}.klein-phase{margin-top:8px}}
+
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 </head>
@@ -197,6 +202,8 @@ body.high-contrast .quick-access-link{background:#000;border:2px solid #00ffff}
  <a class="nav-link" href="#/superficies/boy" data-surface="boy">Superfície de Boy</a>
  <a class="nav-link" href="#/superficies/steiner" data-surface="steiner">Superfície romana de Steiner</a>
  <a class="nav-link" href="#/superficies/astroid" data-surface="astroid">Esfera astroidal</a>
+ <a class="nav-link" href="#/superficies/bour" data-surface="bour">Superfície de Bour · Maeder’s Owl</a>
+ <a class="nav-link" href="#/superficies/klein" data-surface="klein">Garrafa de Klein</a>
  <div class="sidebar-note">Cada superfície possui sua própria página, descrição e ambiente de exploração.</div>
 </aside>
 
@@ -275,7 +282,7 @@ body.high-contrast .quick-access-link{background:#000;border:2px solid #00ffff}
   <strong style="color:#9bded5">Condições de Whitney para a estratificação exibida</strong>
   <div id="whitneySummary" style="margin-top:4px"></div>
   <div id="whitneyDetails" style="color:var(--muted);margin-top:4px"></div>
-  <div style="color:var(--muted);font-size:10px;margin-top:5px">A classificação é baseada nos modelos locais analíticos (pinch point e ponto triplo), não em um teste numérico executado pelo navegador.</div>
+  <div id="whitneyNote" style="color:var(--muted);font-size:10px;margin-top:5px">A classificação é baseada nos modelos locais analíticos (pinch point e ponto triplo), não em um teste numérico executado pelo navegador.</div>
  </div>
 </details>
 <div id="orbifoldPanel" style="display:none;margin-top:10px;padding:12px 14px;border:1px solid #8b5cf6;border-radius:10px;background:#17152b;color:var(--text);font-size:12px;line-height:1.7">
@@ -350,6 +357,31 @@ body.high-contrast .quick-access-link{background:#000;border:2px solid #00ffff}
  <div style="font-size:14px;color:#9cf3e5"><strong>χ(S²) = V − E + F = 2</strong></div>
  <div style="color:var(--muted);font-size:11px;margin-top:5px">A malha adaptativa inclui exatamente os seis pontos de cúspide, mesmo em resoluções baixas.</div>
 </div>
+<div id="bourPanel" style="display:none;margin-top:10px;padding:12px 14px;border:1px solid #55c9b5;border-radius:10px;background:#142b31;color:var(--text);font-size:12px;line-height:1.7">
+ <strong style="color:#9cf3e5;font-size:13px">Superfície de Bour · Maeder’s Owl</strong>
+ <div style="margin-top:5px">Parametrização clássica:</div>
+ <div style="font-size:13px;color:#9cf3e5"><strong>x = v cos u − ½v² cos(2u)</strong></div>
+ <div style="font-size:13px;color:#9cf3e5"><strong>y = −v sin u − ½v² sin(2u)</strong></div>
+ <div style="font-size:13px;color:#9cf3e5"><strong>z = ⁴⁄₃ v<sup>3/2</sup> cos(3u/2)</strong></div>
+ <div>Parâmetros: 0 ≤ u ≤ 4π e 0 ≤ v ≤ 1. A imagem é uma porção da superfície mínima de Bour.</div>
+ <div style="margin-top:5px">Estratos visíveis: parte regular 2D, curvas duplas e bordo 1D, além da origem e dos três encontros das curvas duplas com o bordo, em dimensão 0.</div>
+ <div style="margin-top:5px">A característica de Euler exibida é a do domínio parametrizador, triangulado como disco: <strong style="color:#9cf3e5">χ = V − E + F = 1</strong>.</div>
+ <div style="color:var(--muted);font-size:11px;margin-top:5px">A imagem pode ter auto-interseções; a decomposição em estratos descreve a imagem, enquanto a contagem celular refere-se ao domínio parametrizador.</div>
+</div>
+<div id="kleinPanel" style="display:none;margin-top:10px;padding:12px 14px;border:1px solid #8b5cf6;border-radius:10px;background:#1a1630;color:var(--text);font-size:12px;line-height:1.7">
+ <strong style="color:#d8b4fe;font-size:13px">Garrafa de Klein · curvas racionais no recobrimento</strong>
+ <div style="margin-top:5px">A malha usa a colagem <strong>(0,v) ∼ (π,π−v)</strong>. A imagem em ℝ³ se auto-intersecta, mas o domínio quociente é uma variedade suave não orientável.</div>
+ <div class="klein-controls">
+  <label for="kleinP">p <input id="kleinP" type="number" min="-8" max="8" step="1" value="2" inputmode="numeric"></label>
+  <label for="kleinQ">q <input id="kleinQ" type="number" min="-8" max="8" step="1" value="1" inputmode="numeric"></label>
+  <label for="kleinProgress">Percurso <input id="kleinProgress" type="range" min="0" max="1" step="0.001" value="0"></label>
+  <strong id="kleinProgressValue">0%</strong>
+  <button id="kleinPlay" type="button" class="primary">▶ Percorrer</button>
+ </div>
+ <div id="kleinCurveStatus" class="klein-status">γ(t)=F(2t,t).</div>
+ <canvas id="kleinPhase" class="klein-phase" width="600" height="230" aria-label="Levantamento da curva racional no toro de recobrimento"></canvas>
+ <div style="color:var(--muted);font-size:10px;margin-top:5px">O diagrama mostra o levantamento no toro T². O período indicado é o da curva projetada na garrafa de Klein, não necessariamente o período mínimo no recobrimento.</div>
+</div>
 </div></footer>
 </section>
 </div>
@@ -358,7 +390,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const infoExtras=document.getElementById('surfaceInfoExtras');
-['orbifoldPanel','pinchedPanel','crosscapPanel','boyPanel','steinerPanel','astroidPanel'].forEach(id=>{
+['orbifoldPanel','pinchedPanel','crosscapPanel','boyPanel','steinerPanel','astroidPanel','bourPanel','kleinPanel'].forEach(id=>{
  const panel=document.getElementById(id);
  if(panel)infoExtras.appendChild(panel);
 });
@@ -390,6 +422,105 @@ const atlasCell=32,atlasCols=32;
 let active={group:null,mesh:null,lines:null,labels:null,counts:null};
 let showNumbers=false,showVertexNumbers=false,showEdgeNumbers=false,displayMode='both';
 let showStratum2=true,showStratum1=true,showStratum0=true;
+const kleinState={p:2,q:1,progress:0,playing:false};
+
+function positiveGcd(a,b){
+ a=Math.abs(Math.trunc(a));b=Math.abs(Math.trunc(b));
+ while(b){const rest=a%b;a=b;b=rest;}
+ return a||1;
+}
+function kleinCurveData(p=kleinState.p,q=kleinState.q){
+ const d=positiveGcd(p,q),pr=p/d,qr=q/d;
+ // τ(u,v)=(u+π,π−v) is the deck involution of T² → K.
+ // The lifted line reaches τ(0,0) halfway through precisely when p/d and q/d are odd.
+ const halfPeriod=Math.abs(pr)%2===1&&Math.abs(qr)%2===1;
+ const numerator=halfPeriod?1:2;
+ return {d,pr,qr,halfPeriod,T:numerator*Math.PI/d,coverT:2*Math.PI/d};
+}
+function formatPi(numerator,denominator){
+ if(denominator===1)return numerator===1?'π':`${numerator}π`;
+ return numerator===1?`π/${denominator}`:`${numerator}π/${denominator}`;
+}
+function kleinPoint(u,v){
+ // Nordstrand's classical immersion. It is invariant under (u,v) ↦ (u+π,π−v).
+ const cu=Math.cos(u),su=Math.sin(u),cv=Math.cos(v),sv=Math.sin(v);
+ const c2=cu*cu,c4=c2*c2,c6=c4*c2;
+ const A=3*cv-30*su+90*c4*su-60*c6*su+5*cu*cv*su;
+ const B=3*cv-3*c2*cv-48*c4*cv+48*c6*cv-60*su
+  +5*cu*cv*su-5*c2*cu*cv*su-80*c4*cu*cv*su+80*c6*cu*cv*su;
+ const scale=1.25;
+ return new THREE.Vector3(scale*(-2/15)*cu*A,scale*(-1/15)*su*B,scale*(2/15)*(3+5*cu*su)*sv);
+}
+function makeKleinCurve(){
+ const data=kleinCurveData();
+ const samples=Math.max(320,Math.min(2800,220*Math.max(2,Math.abs(kleinState.p)+Math.abs(kleinState.q))));
+ const points=[];
+ for(let i=0;i<samples;i++){
+  const t=data.T*i/samples;
+  points.push(kleinPoint(kleinState.p*t,kleinState.q*t));
+ }
+ const group=new THREE.Group();
+ const curve=new THREE.CatmullRomCurve3(points,true,'centripetal');
+ const tube=new THREE.Mesh(
+  new THREE.TubeGeometry(curve,samples,.025,8,true),
+  new THREE.MeshStandardMaterial({color:0xd28b24,roughness:.3,metalness:.12,emissive:0x3d2000,emissiveIntensity:.22})
+ );
+ const start=new THREE.Mesh(new THREE.SphereGeometry(.065,20,15),new THREE.MeshBasicMaterial({color:0x249b72}));
+ const moving=new THREE.Mesh(new THREE.SphereGeometry(.078,24,18),new THREE.MeshStandardMaterial({color:0x287eae,roughness:.25,metalness:.08,emissive:0x07355c,emissiveIntensity:.3}));
+ start.position.copy(kleinPoint(0,0));moving.position.copy(start.position);
+ group.add(tube,start,moving);
+ return {group,moving,data};
+}
+function disposeThreeObject(object){
+ if(!object)return;
+ object.traverse(node=>{
+  if(node.geometry)node.geometry.dispose();
+  if(node.material){const materials=Array.isArray(node.material)?node.material:[node.material];materials.forEach(material=>material.dispose());}
+ });
+}
+function updateKleinMovingPoint(){
+ if(currentSurface!=='klein'||!active.kleinCurve)return;
+ const data=active.kleinCurve.data,t=data.T*kleinState.progress;
+ active.kleinCurve.moving.position.copy(kleinPoint(kleinState.p*t,kleinState.q*t));
+}
+function rebuildKleinCurve(){
+ if(currentSurface!=='klein'||!active.kleinCurve)return;
+ const previous=active.kleinCurve;
+ active.group.remove(previous.group);disposeThreeObject(previous.group);
+ active.kleinCurve=makeKleinCurve();active.group.add(active.kleinCurve.group);
+ updateKleinPanel();
+}
+function drawKleinPhase(){
+ const canvas=document.getElementById('kleinPhase');if(!canvas)return;
+ const ctx=canvas.getContext('2d');if(!ctx)return;
+ const W=canvas.width,H=canvas.height,highContrast=document.body.classList.contains('high-contrast');
+ const data=kleinCurveData(),xEnd=kleinState.p*data.T/(2*Math.PI),yEnd=kleinState.q*data.T/(2*Math.PI);
+ const minX=Math.min(-.6,xEnd-.6),maxX=Math.max(.6,xEnd+.6),minY=Math.min(-.6,yEnd-.6),maxY=Math.max(.6,yEnd+.6);
+ const scale=Math.min((W-76)/(maxX-minX),(H-58)/(maxY-minY));
+ const ox=(W-scale*(maxX-minX))/2-scale*minX,oy=H/2+scale*(minY+maxY)/2;
+ const X=x=>ox+scale*x,Y=y=>oy-scale*y;
+ ctx.fillStyle=highContrast?'#000':'#0e1929';ctx.fillRect(0,0,W,H);
+ ctx.strokeStyle=highContrast?'#6b7280':'#30445f';ctx.lineWidth=1;
+ for(let x=Math.ceil(minX);x<=Math.floor(maxX);x++){ctx.beginPath();ctx.moveTo(X(x),Y(minY));ctx.lineTo(X(x),Y(maxY));ctx.stroke();}
+ for(let y=Math.ceil(minY);y<=Math.floor(maxY);y++){ctx.beginPath();ctx.moveTo(X(minX),Y(y));ctx.lineTo(X(maxX),Y(y));ctx.stroke();}
+ ctx.strokeStyle=highContrast?'#fff':'#70839c';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(X(minX),Y(0));ctx.lineTo(X(maxX),Y(0));ctx.moveTo(X(0),Y(minY));ctx.lineTo(X(0),Y(maxY));ctx.stroke();
+ ctx.strokeStyle=highContrast?'#00ffff':'#d28b24';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(X(0),Y(0));ctx.lineTo(X(xEnd),Y(yEnd));ctx.stroke();
+ const x=kleinState.p*data.T*kleinState.progress/(2*Math.PI),y=kleinState.q*data.T*kleinState.progress/(2*Math.PI);
+ ctx.fillStyle=highContrast?'#ffeb3b':'#249b72';ctx.beginPath();ctx.arc(X(0),Y(0),6,0,2*Math.PI);ctx.fill();
+ ctx.fillStyle=highContrast?'#00ffff':'#287eae';ctx.beginPath();ctx.arc(X(x),Y(y),6,0,2*Math.PI);ctx.fill();
+ ctx.fillStyle=highContrast?'#fff':'#cbd8ed';ctx.font='15px system-ui';ctx.fillText('u/2π',W-53,H-10);ctx.fillText('v/2π',8,18);
+}
+function updateKleinPanel(){
+ const pInput=document.getElementById('kleinP'),qInput=document.getElementById('kleinQ');if(!pInput||!qInput)return;
+ pInput.value=String(kleinState.p);qInput.value=String(kleinState.q);
+ const data=kleinCurveData(),period=formatPi(data.halfPeriod?1:2,data.d),coverPeriod=formatPi(2,data.d);
+ document.getElementById('kleinProgress').value=String(kleinState.progress);
+ document.getElementById('kleinProgressValue').textContent=`${Math.round(100*kleinState.progress)}%`;
+ document.getElementById('kleinPlay').textContent=kleinState.playing?'Ⅱ Pausar':'▶ Percorrer';
+ const slope=kleinState.p===0?'vertical':`${data.qr}/${data.pr}`;
+ document.getElementById('kleinCurveStatus').innerHTML=`γ(t)=F(${kleinState.p}t,${kleinState.q}t) · inclinação <strong>${slope}</strong> · período em K: <strong>${period}</strong> · no recobrimento T²: ${coverPeriod}. ${data.halfPeriod?'Os dois extremos diferem pela involução τ, por isso a projeção fecha na metade do período do levantamento.':'O extremo só retorna ao ponto inicial após o período do levantamento.'}`;
+ drawKleinPhase();updateKleinMovingPoint();
+}
 
 function makeAtlas(faceCount,textColor='#fff36b'){
  const atlasRows=Math.ceil(faceCount/atlasCols);
@@ -409,11 +540,30 @@ function makeAtlas(faceCount,textColor='#fff36b'){
 
 function makeSurface(type){
  const group=new THREE.Group();
- let positions=[],indices=[];
+ let positions=[],indices=[],kleinCurve=null;
  if(type==='torus'){
   for(let i=0;i<M;i++){const u=2*Math.PI*i/M;for(let j=0;j<N;j++){const v=2*Math.PI*j/N,q=R+r*Math.cos(v);positions.push(q*Math.cos(u),r*Math.sin(v),q*Math.sin(u));}}
   for(let i=0;i<M;i++)for(let j=0;j<N;j++){
    const a=i*N+j,b=((i+1)%M)*N+j,c=((i+1)%M)*N+(j+1)%N,d=i*N+(j+1)%N;
+   indices.push(a,b,d,b,c,d);
+  }
+ }else if(type==='klein'){
+  // Fundamental polygon [0,π] × [0,2π], with the vertical sides glued by
+  // (0,v) ~ (π,π−v).  The number of v-samples is made even so π−v is a mesh vertex.
+  const uSteps=M,vSteps=2*Math.ceil(N/2);
+  const index=(i,j)=>i*vSteps+((j%vSteps)+vSteps)%vSteps;
+  for(let i=0;i<uSteps;i++){
+   const u=Math.PI*i/uSteps;
+   for(let j=0;j<vSteps;j++){
+    const v=2*Math.PI*j/vSteps,P=kleinPoint(u,v);positions.push(P.x,P.y,P.z);
+   }
+  }
+  for(let i=0;i<uSteps;i++)for(let j=0;j<vSteps;j++){
+   const nextV=(j+1)%vSteps,a=index(i,j),d=index(i,nextV);
+   let b,c;
+   if(i===uSteps-1){
+    b=index(0,vSteps/2-j);c=index(0,vSteps/2-nextV);
+   }else{b=index(i+1,j);c=index(i+1,nextV);}
    indices.push(a,b,d,b,c,d);
   }
  }else if(type==='spindle'){
@@ -558,6 +708,29 @@ function makeSurface(type){
    indices.push(a,b,d,b,c,d);
   }
   for(let i=0;i<uCount;i++)indices.push(ring(radialSteps-1,i),ring(radialSteps-1,i+1),centerIndex);
+ }else if(type==='bour'){
+  // Classical Bour minimal surface over the disk 0 <= v <= 1.
+  // The 4pi angular period is retained; v=0 is collapsed to one vertex.
+  const uCount=2*M, radialSteps=N;
+  const bourPoint=(u,v)=>[
+   v*Math.cos(u)-.5*v*v*Math.cos(2*u),
+   -v*Math.sin(u)-.5*v*v*Math.sin(2*u),
+   (4/3)*Math.pow(v,1.5)*Math.cos(1.5*u)
+  ];
+  positions.push(0,0,0);
+  for(let j=1;j<=radialSteps;j++){
+   const v=j/radialSteps;
+   for(let i=0;i<uCount;i++){
+    const [x,y,z]=bourPoint(4*Math.PI*i/uCount,v);
+    positions.push(x,y,z);
+   }
+  }
+  const ring=(j,i)=>1+(j-1)*uCount+((i%uCount)+uCount)%uCount;
+  for(let i=0;i<uCount;i++)indices.push(0,ring(1,i),ring(1,i+1));
+  for(let j=1;j<radialSteps;j++)for(let i=0;i<uCount;i++){
+   const a=ring(j,i),b=ring(j,i+1),c=ring(j+1,i+1),d=ring(j+1,i);
+   indices.push(a,b,d,b,c,d);
+  }
  }else if(type==='astroid'){
   // Astroidal sphere from the screenshot:
   // x=(cos u cos v)^3, y=(sin u cos v)^3, z=(sin v)^3.
@@ -611,7 +784,7 @@ function makeSurface(type){
   const ia=indices[k],ib=indices[k+1],ic=indices[k+2];
   // For the Whitney umbrella preserve the parameter-domain orientation.
   // It is singular and has a self-intersection, so no global outward normal exists.
-  if(type==='crosscap'||type==='boy'||type==='steiner') continue;
+  if(type==='crosscap'||type==='boy'||type==='steiner'||type==='bour'||type==='klein') continue;
   const A=new THREE.Vector3(...positions.slice(3*ia,3*ia+3));
   const B=new THREE.Vector3(...positions.slice(3*ib,3*ib+3));
   const C=new THREE.Vector3(...positions.slice(3*ic,3*ic+3));
@@ -639,8 +812,9 @@ function makeSurface(type){
   if(normal.dot(target)<0){const tmp=indices[k+1];indices[k+1]=indices[k+2];indices[k+2]=tmp;}
  }
  const geom=new THREE.BufferGeometry();geom.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geom.setIndex(indices);geom.computeVertexNormals();
- const surfaceMat=(type==='boy'||type==='steiner'||type==='astroid')?new THREE.MeshStandardMaterial({color:type==='boy'?0x70d6c2:type==='steiner'?0xb78ae8:0x13b9e8,metalness:.08,roughness:.48,side:THREE.DoubleSide,flatShading:true}):mat;
+ const surfaceMat=type==='klein'?new THREE.MeshStandardMaterial({color:0x71bce1,metalness:.06,roughness:.43,side:THREE.DoubleSide,flatShading:true}):(type==='boy'||type==='steiner'||type==='astroid'||type==='bour')?new THREE.MeshStandardMaterial({color:type==='boy'?0x70d6c2:type==='steiner'?0xb78ae8:type==='astroid'?0x13b9e8:0xd8d5ce,metalness:.08,roughness:.48,side:THREE.DoubleSide,flatShading:true}):mat;
  const mesh=new THREE.Mesh(geom,surfaceMat);group.add(mesh);
+ if(type==='klein'){kleinCurve=makeKleinCurve();group.add(kleinCurve.group);}
 
  const edgeSet=new Set(),edgePositions=[],edgeList=[];
  for(let k=0;k<indices.length;k+=3){
@@ -686,7 +860,7 @@ function makeSurface(type){
  // Vertex labels: separate atlas and contrasting cyan color.
  const vertexTexture=makeAtlas(positions.length/3,'#58e6ff');
  const vertexLabelPositions=[],vertexLabelUVs=[],vertexLabelIndices=[];
- const vertexOffset=(type==='steiner'||type==='astroid')?.13:.075,vertexSize=.055;
+ const vertexOffset=(type==='steiner'||type==='astroid'||type==='bour')?.13:.075,vertexSize=.055;
  for(let vi=0;vi<positions.length/3;vi++){
   const P=new THREE.Vector3(...positions.slice(3*vi,3*vi+3));
   let normal;
@@ -698,7 +872,7 @@ function makeSurface(type){
    normal=new THREE.Vector3(-2*v*v,-u,2*v).normalize();
   }else if(type==='boy'){
    normal=P.clone().sub(new THREE.Vector3(0,0,.72)).normalize();
-  }else if(type==='steiner'||type==='astroid'){
+  }else if(type==='steiner'||type==='astroid'||type==='bour'||type==='klein'){
    // A direção radial não é normal à superfície. Usamos a normal local
    // da folha parametrizada, calculada pela triangulação.
    normal=new THREE.Vector3().fromBufferAttribute(geom.getAttribute('normal'),vi);
@@ -741,7 +915,7 @@ function makeSurface(type){
  // Edge labels: one numbered marker at the midpoint of each unique edge.
  const edgeTexture=makeAtlas(edgeList.length,'#a8ff75');
  const edgeLabelPositions=[],edgeLabelUVs=[],edgeLabelIndices=[];
- const edgeOffset=(type==='steiner'||type==='astroid')?.16:.095,edgeSize=.047;
+ const edgeOffset=(type==='steiner'||type==='astroid'||type==='bour')?.16:.095,edgeSize=.047;
  for(let ei=0;ei<edgeList.length;ei++){
   const [ia,ib]=edgeList[ei];
   const A=new THREE.Vector3(...positions.slice(3*ia,3*ia+3));
@@ -757,7 +931,7 @@ function makeSurface(type){
    normal=new THREE.Vector3(-2*v*v,-u,2*v).normalize();
   }else if(type==='boy'){
    normal=P.clone().sub(new THREE.Vector3(0,0,.72)).normalize();
-  }else if(type==='steiner'||type==='astroid'){
+  }else if(type==='steiner'||type==='astroid'||type==='bour'||type==='klein'){
    // Average the local normals at the endpoints so the label stays on its sheet.
    const na=new THREE.Vector3().fromBufferAttribute(geom.getAttribute('normal'),ia);
    const nb=new THREE.Vector3().fromBufferAttribute(geom.getAttribute('normal'),ib);
@@ -902,6 +1076,47 @@ function makeSurface(type){
    const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pair),axisMat);line.renderOrder=11;stratum1D.add(line);
   });
   group.add(singularMarker);
+ }else if(type==='bour'){
+  singularMarker=new THREE.Group();stratum1D=new THREE.Group();stratum0D=new THREE.Group();singularMarker.add(stratum1D,stratum0D);
+  const bourPoint=(u,v)=>[
+   v*Math.cos(u)-.5*v*v*Math.cos(2*u),
+   -v*Math.sin(u)-.5*v*v*Math.sin(2*u),
+   (4/3)*Math.pow(v,1.5)*Math.cos(1.5*u)
+  ];
+  const lineMat=new THREE.LineBasicMaterial({color:0xffa45b,transparent:true,opacity:.95,depthTest:false});
+  for(let k=0;k<3;k++){
+   const u=Math.PI/3+2*Math.PI*k/3, points=[];
+   const samples=Math.max(16,N*3);
+   for(let j=1;j<=samples;j++)points.push(new THREE.Vector3(...bourPoint(u,j/samples)));
+   const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints(points),lineMat);
+   line.renderOrder=11;stratum1D.add(line);
+  }
+  const boundary=[],boundarySamples=Math.max(64,4*M);
+  for(let i=0;i<=boundarySamples;i++){
+   boundary.push(new THREE.Vector3(...bourPoint(4*Math.PI*i/boundarySamples,1)));
+  }
+  const boundaryLine=new THREE.Line(
+   new THREE.BufferGeometry().setFromPoints(boundary),
+   new THREE.LineBasicMaterial({color:0x65d6c4,depthTest:false})
+  );
+  boundaryLine.renderOrder=11;stratum1D.add(boundaryLine);
+  const addPoint=(point,label)=>{
+   const dot=new THREE.Mesh(new THREE.SphereGeometry(.055,18,12),new THREE.MeshBasicMaterial({color:0xffb86b,depthTest:false}));
+   dot.position.copy(point);dot.renderOrder=12;stratum0D.add(dot);
+   const canvas=document.createElement('canvas');canvas.width=160;canvas.height=64;
+   const ctx=canvas.getContext('2d');ctx.font='bold 30px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
+   ctx.fillStyle='#ffb86b';ctx.shadowColor='#111827';ctx.shadowBlur=5;ctx.fillText(label,80,32);
+   const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
+   const labelSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:texture,transparent:true,depthTest:false}));
+   labelSprite.position.copy(point).add(new THREE.Vector3(.12,.12,.12));
+   labelSprite.scale.set(.3,.13,1);labelSprite.renderOrder=13;stratum0D.add(labelSprite);
+  };
+  addPoint(new THREE.Vector3(0,0,0),'p₀');
+  for(let k=0;k<3;k++){
+   const u=Math.PI/3+2*Math.PI*k/3;
+   addPoint(new THREE.Vector3(...bourPoint(u,1)),`p${k+1}`);
+  }
+  group.add(singularMarker);
  }else if(type==='astroid'){
   singularMarker=new THREE.Group();stratum1D=new THREE.Group();stratum0D=new THREE.Group();singularMarker.add(stratum1D,stratum0D);
   const markerMat=new THREE.MeshBasicMaterial({color:0xffa45b,depthTest:false});
@@ -919,7 +1134,7 @@ function makeSurface(type){
   }
   group.add(singularMarker);
  }
- return {group,mesh,lines,labels,vertexLabels,edgeLabels,singularMarker,stratum1D,stratum0D,counts:{V:positions.length/3,E:edgeSet.size,F:faceCount,chi:positions.length/3-edgeSet.size+faceCount}};
+ return {group,mesh,lines,labels,vertexLabels,edgeLabels,singularMarker,stratum1D,stratum0D,kleinCurve,counts:{V:positions.length/3,E:edgeSet.size,F:faceCount,chi:positions.length/3-edgeSet.size+faceCount}};
 }
 
 function updateMetrics(counts){
@@ -938,15 +1153,17 @@ function faceCountFor(type){
   const ns=Math.max(4,2*Math.ceil(N/2)), ms=2*ns;
   return 2*ms*(ns-1);
  }
+ if(type==='klein')return 2*M*(2*Math.ceil(N/2));
+ if(type==='bour')return 4*N*(2*N-1);
  return type==='torus' ? 2*M*N : type==='pinched' ? pinchCount*2*N*(2*N-1) : type==='crosscap' ? 2*M*N : type==='boy' ? 2*M*N-M : 2*M*(N-1);
 }
 function updateResolutionReadout(){
  document.getElementById('resolutionValue').textContent=String(faceCountFor(currentSurface));
- const displayN=currentSurface==='steiner'?Math.max(8,4*Math.ceil(N/4)):currentSurface==='astroid'?Math.max(4,2*Math.ceil(N/2)):N;
- const displayM=(currentSurface==='steiner'||currentSurface==='astroid')?2*displayN:M;
- const adaptiveNote=(currentSurface==='steiner'||currentSurface==='astroid')&&displayN!==N?' · resolução adaptativa':'';
+ const displayN=currentSurface==='steiner'?Math.max(8,4*Math.ceil(N/4)):currentSurface==='astroid'?Math.max(4,2*Math.ceil(N/2)):currentSurface==='klein'?2*Math.ceil(N/2):N;
+ const displayM=currentSurface==='bour'?4*displayN:(currentSurface==='steiner'||currentSurface==='astroid')?2*displayN:M;
+ const adaptiveNote=(currentSurface==='steiner'||currentSurface==='astroid'||currentSurface==='klein')&&displayN!==N?' · resolução adaptativa':'';
  document.querySelector('.hint').textContent=
-  `Triangulação: ${displayM} × ${displayN} ${currentSurface==='torus'?'· toro':currentSurface==='spindle'?'· spindle':currentSurface==='pinched'?'· toro pinçado':currentSurface==='crosscap'?'· cross-cap':currentSurface==='boy'?'· plano projetivo (Boy)':currentSurface==='steiner'?'· superfície romana de Steiner':currentSurface==='astroid'?'· esfera astroidal':'· esfera'}${adaptiveNote} · ${faceCountFor(currentSurface)} faces`;
+  `Triangulação: ${displayM} × ${displayN} ${currentSurface==='torus'?'· toro':currentSurface==='spindle'?'· spindle':currentSurface==='pinched'?'· toro pinçado':currentSurface==='crosscap'?'· cross-cap':currentSurface==='boy'?'· plano projetivo (Boy)':currentSurface==='steiner'?'· superfície romana de Steiner':currentSurface==='astroid'?'· esfera astroidal':currentSurface==='bour'?'· superfície de Bour (Maeder’s Owl)':currentSurface==='klein'?'· garrafa de Klein':'· esfera'}${adaptiveNote} · ${faceCountFor(currentSurface)} faces`;
 }
 function updatePinchReadout(){
  const slider=document.getElementById('pinchCount');
@@ -973,11 +1190,13 @@ function updateStrataPanel(type){
   crosscap:"X₂: parte regular da imagem (as duas folhas são separadas ao retirar a curva dupla). X₁: semieixo duplo sem a origem. X₀: ponto de pinçamento na origem.",
   boy:"No domínio, RP² é um único estrato X₂. As auto-interseções são fenômenos da imagem da imersão, não estratos singulares do domínio.",
   steiner:"X₂: imagem regular fora dos eixos duplos. X₁: seis semieixos dos três eixos coordenados, retirando origem e extremos. X₀: seis pontos de pinch e o ponto triplo.",
-  astroid:"X₂ é a parte regular; X₀ contém os seis pontos de cúspide. Não há estrato de dimensão 1 na estratificação por cúspides."
+  astroid:"X₂ é a parte regular; X₀ contém os seis pontos de cúspide. Não há estrato de dimensão 1 na estratificação por cúspides.",
+  bour:"X₂: parte regular da imagem fora das três curvas duplas e do bordo. X₁: curvas duplas e bordo v=1. X₀: origem e três pontos em que as curvas duplas encontram o bordo.",
+  klein:"Estratificação trivial no domínio: K é uma variedade suave e todo o espaço é o estrato X₂. A curva de auto-interseção pertence apenas à imagem da imersão em ℝ³."
  };
  document.getElementById('strataDescription').textContent=descriptions[type]||"Estratificação da superfície selecionada.";
- const has1D=type==='crosscap'||type==='steiner';
- const has0D=!!active.stratum0D && !['torus','sphere','boy'].includes(type);
+ const has1D=type==='crosscap'||type==='steiner'||type==='bour';
+ const has0D=!!active.stratum0D && !['torus','sphere','boy','klein'].includes(type);
  document.getElementById('showStratum1').disabled=!has1D;
  document.getElementById('showStratum0').disabled=!has0D;
  document.getElementById('showStratum1').parentElement.style.opacity=has1D?'1':'.4';
@@ -994,6 +1213,9 @@ function updateStrataPanel(type){
  if(active.stratum0D)active.stratum0D.visible=has0D&&showStratum0;
  const wp=document.getElementById('whitneyPanel');
  const ws=document.getElementById('whitneySummary'), wd=document.getElementById('whitneyDetails');
+ document.getElementById('whitneyNote').textContent=type==='bour'
+  ?'O navegador exibe esta decomposição geométrica, mas não realiza um teste numérico das condições de Whitney.'
+  :'A classificação é baseada nos modelos locais analíticos (pinch point e ponto triplo), não em um teste numérico executado pelo navegador.';
  if(type==='crosscap'){
   wp.style.display='block';
   ws.innerHTML='<strong style="color:#86d9a8">Condições (A) e (B): satisfeitas</strong> para a estratificação refinada X₂ ⊔ X₁ ⊔ X₀.';
@@ -1002,11 +1224,16 @@ function updateStrataPanel(type){
   wp.style.display='block';
   ws.innerHTML='<strong style="color:#86d9a8">Condições (A) e (B): satisfeitas</strong> para a decomposição refinada descrita, com os pontos de pinch e o ponto triplo em estratos 0D.';
   wd.textContent='Cada semieixo duplo é um estrato 1D separado; seus extremos (pinch points) e o ponto triplo são estratos 0D. Localmente, nos pinch points, o modelo é o guarda-chuva de Whitney; no ponto triplo, os ramos são separados pelos estratos 1D incidentes.';
+ }else if(type==='bour'){
+  wp.style.display='block';
+  ws.innerHTML='<strong style="color:#86d9a8">Estratificação refinada da imagem</strong>: partes regulares 2D, loci duplos e bordo 1D, com seus encontros em estratos 0D.';
+  wd.textContent='As três curvas desenhadas são os loci duplos da imagem; o bordo parametrizado é mostrado separadamente. A origem e os três pontos de encontro com o bordo são marcados como estratos 0D.';
  }else{
   wp.style.display='none';
  }
 }
 function selectSurface(type){
+ if(type!=='klein')kleinState.playing=false;
  currentSurface=type;
  updateSurfaceGeneralInfo(type);
  if(active.group)rootGroup.remove(active.group);
@@ -1019,10 +1246,13 @@ function selectSurface(type){
  document.getElementById('boyPanel').style.display=type==='boy'?'block':'none';
  document.getElementById('steinerPanel').style.display=type==='steiner'?'block':'none';
  document.getElementById('astroidPanel').style.display=type==='astroid'?'block':'none';
+ document.getElementById('bourPanel').style.display=type==='bour'?'block':'none';
+ document.getElementById('kleinPanel').style.display=type==='klein'?'block':'none';
  updateStrataPanel(type);
  updatePinchReadout();
  updateResolutionReadout();
  updateOrbifoldEuler();
+ if(type==='klein')updateKleinPanel();
 }
 function updateOrbifoldEuler(){
  const m=Number(document.getElementById('isotropyOrder').value);
@@ -1091,7 +1321,18 @@ const surfaceGeneralInfo={
   <p><strong style="color:#9bded5">Parametrização usada.</strong></p>
   <div style="color:#bdeee5;padding:5px 8px;background:#0c1727;border-radius:7px">P(u,θ)=((cos u sinθ)³, (sin u sinθ)³, (cosθ)³),<br>0≤u≤2π, 0≤θ≤π.</div>
   <p><strong style="color:#9bded5">Equação implícita.</strong> |x|<sup>2/3</sup>+|y|<sup>2/3</sup>+|z|<sup>2/3</sup>=1.</p>
-  <p><strong style="color:#9bded5">Cálculo de Euler.</strong> A malha adaptativa triangula uma esfera, incluindo os seis pontos de cúspide como vértices. Logo, a contagem celular da malha fechada fornece V−E+F=χ(S²)=2.</p>`
+  <p><strong style="color:#9bded5">Cálculo de Euler.</strong> A malha adaptativa triangula uma esfera, incluindo os seis pontos de cúspide como vértices. Logo, a contagem celular da malha fechada fornece V−E+F=χ(S²)=2.</p>`,
+ bour:`
+  <p><strong style="color:#dbeafe">Modelo geométrico.</strong> Porção da superfície mínima de Bour, também conhecida como Maeder’s Owl. A parametrização mantém o domínio angular de 0 a 4π e o raio v entre 0 e 1.</p>
+  <p><strong style="color:#9bded5">Parametrização clássica.</strong></p>
+  <div style="color:#bdeee5;padding:5px 8px;background:#0c1727;border-radius:7px">x=v cos u−½v² cos(2u),<br>y=−v sin u−½v² sin(2u),<br>z=⁴⁄₃v<sup>3/2</sup>cos(3u/2),<br>0≤u≤4π, 0≤v≤1.</div>
+  <p><strong style="color:#9bded5">Cálculo de Euler.</strong> A malha triangula o domínio parametrizador como um disco, com v=0 colapsado a um vértice; portanto, V−E+F=1. Essa contagem é do domínio, não da imagem auto-intersectante.</p>`,
+ klein:`
+  <p><strong style="color:#dbeafe">Modelo geométrico.</strong> A garrafa de Klein é uma superfície compacta, conexa e não orientável. A figura exibida é uma <em>imersão</em> em ℝ³, portanto a curva de auto-interseção pertence à imagem e não é uma singularidade do domínio.</p>
+  <p><strong style="color:#9bded5">Domínio quociente.</strong> A malha usa o retângulo [0,π]×[0,2π] com (u,0)∼(u,2π) e (0,v)∼(π,π−v). Equivalentemente, a imersão de Nordstrand no toro de recobrimento satisfaz F(u+π,π−v)=F(u,v).</p>
+  <p><strong style="color:#9bded5">Imersão de Nordstrand.</strong> Escrevendo c=cos u, s=sin u, C=cos v e S=sin v,</p>
+  <div style="color:#bdeee5;padding:5px 8px;background:#0c1727;border-radius:7px;font-size:10px;line-height:1.55;overflow-wrap:anywhere">F(u,v)=(-2cA/15,−sB/15,2(3+5cs)S/15),<br>A=3C−30s+90c⁴s−60c⁶s+5cCs,<br>B=3C−3c²C−48c⁴C+48c⁶C−60s+5cCs−5c³Cs−80c⁵Cs+80c⁷Cs.</div>
+  <p><strong style="color:#9bded5">Cálculo de Euler.</strong> Com M faixas na direção u e N′ faixas pares na direção v, a colagem invertida produz V=MN′, E=3MN′ e F=2MN′. Portanto, V−E+F=χ(K)=0. A orientação dos triângulos não é globalmente consistente — como deve ocorrer numa superfície não orientável.</p>`
 };
 function updateSurfaceGeneralInfo(type){
  const target=document.getElementById('surfaceGeneralInfo');
@@ -1106,7 +1347,9 @@ const pageInfo={
  crosscap:{title:'Cross-cap · Whitney umbrella',kicker:'SINGULARIDADES · ESTRATIFICAÇÃO DE WHITNEY',description:'Imagem da aplicação F(u,v) = (u,v²,uv), cuja equação é z² = x²y, com y ≥ 0. A curva dupla e o ponto de pinçamento são separados em estratos de dimensões 1 e 0. O painel permite examinar as condições de Whitney A e B para a estratificação refinada.',formula:'F(u,v) = (u,v²,uv)'},
  boy:{title:'Superfície de Boy',kicker:'IMERSÃO · PLANO PROJETIVO REAL',description:'A superfície de Boy é uma imersão suave de RP² em R³. A imagem apresenta auto-interseções, mas o domínio parametrizador permanece uma variedade suave; a triangulação é construída respeitando a identificação antipodal.',formula:'χ(RP²) = 1'},
  steiner:{title:'Superfície romana de Steiner',kicker:'AUTO-INTERSEÇÕES · PLANO PROJETIVO REAL',description:'Imagem do plano projetivo real pela aplicação quadrática (u,v,w) ↦ (uv,vw,wu). A imagem possui três eixos de autointerseção, seis pontos de pinch e um ponto triplo. Os estratos 2D, 1D e 0D podem ser visualizados separadamente.',formula:'F(u,v,w) = (uv,vw,wu)'},
- astroid:{title:'Esfera astroidal',kicker:'SUPERFÍCIE COM SEIS CÚSPIDES',description:'Superfície definida por uma equação com potências fracionárias e parametrizada por coordenadas cúbicas. É homeomorfa a S² e apresenta seis cúspides nos extremos dos eixos coordenados.',formula:'|x|²ᐟ³ + |y|²ᐟ³ + |z|²ᐟ³ = 1'}
+ astroid:{title:'Esfera astroidal',kicker:'SUPERFÍCIE COM SEIS CÚSPIDES',description:'Superfície definida por uma equação com potências fracionárias e parametrizada por coordenadas cúbicas. É homeomorfa a S² e apresenta seis cúspides nos extremos dos eixos coordenados.',formula:'|x|²ᐟ³ + |y|²ᐟ³ + |z|²ᐟ³ = 1'},
+ bour:{title:'Superfície de Bour · Maeder’s Owl',kicker:'SUPERFÍCIE MÍNIMA · ESTRATIFICAÇÃO',description:'Porção parametrizada da superfície mínima de Bour, com triangulação do disco de parâmetros, resolução ajustável e visualização dos estratos 0D, 1D e 2D.',formula:'z = ⁴⁄₃ v³ᐟ² cos(3u/2)'},
+ klein:{title:'Garrafa de Klein',kicker:'NÃO ORIENTÁVEL · IMERSÃO EM ℝ³',description:'A garrafa de Klein é construída por uma colagem com inversão. A superfície abstrata é suave e não orientável; a curva de auto-interseção pertence à imagem da imersão de Nordstrand em ℝ³. Explore também curvas racionais no toro de recobrimento.',formula:'χ(K) = V − E + F = 0'}
 };
 function closeMenu(){document.getElementById('sidebar').classList.remove('open');document.getElementById('drawerBackdrop').classList.remove('open');document.getElementById('menuToggle').setAttribute('aria-expanded','false');}
 function openMenu(){document.getElementById('sidebar').classList.add('open');document.getElementById('drawerBackdrop').classList.add('open');document.getElementById('menuToggle').setAttribute('aria-expanded','true');}
@@ -1163,6 +1406,22 @@ $('resolution').oninput=e=>{
  N=Number(e.target.value);M=2*N;
  selectSurface(currentSurface);
 };
+function refreshKleinCurve(){
+ let p=Math.max(-8,Math.min(8,Math.trunc(Number($('kleinP').value)||0)));
+ let q=Math.max(-8,Math.min(8,Math.trunc(Number($('kleinQ').value)||0)));
+ if(p===0&&q===0)q=1;
+ kleinState.p=p;kleinState.q=q;kleinState.progress=0;kleinState.playing=false;
+ if(currentSurface==='klein')rebuildKleinCurve();else updateKleinPanel();
+}
+$('kleinP').addEventListener('change',refreshKleinCurve);
+$('kleinQ').addEventListener('change',refreshKleinCurve);
+$('kleinProgress').addEventListener('input',event=>{
+ kleinState.progress=Number(event.target.value);updateKleinPanel();
+});
+$('kleinPlay').addEventListener('click',()=>{
+ if(kleinState.progress>=1)kleinState.progress=0;
+ kleinState.playing=!kleinState.playing;updateKleinPanel();
+});
 $('rotate').onclick=()=>{auto=!auto;$('rotate').classList.toggle('active',auto)};
 $('reset').onclick=()=>{camera.position.set(4.8,3.1,5.8);controls.target.set(0,0,0);controls.update()};
 const graphMaximize=$('graphMaximize');
@@ -1188,5 +1447,17 @@ document.addEventListener('fullscreenchange',()=>{
 });
 window.addEventListener('resize',()=>requestAnimationFrame(syncGraphSize));
 $('newtab').onclick=()=>window.open(window.location.href,'_blank','noopener');
-function animate(){requestAnimationFrame(animate);if(auto)rootGroup.rotation.y+=.0025;controls.update();renderer.render(scene,camera)}animate();
+let lastAnimationTime=0;
+function animate(time=0){
+ requestAnimationFrame(animate);
+ const delta=lastAnimationTime?Math.min((time-lastAnimationTime)/1000,.05):0;lastAnimationTime=time;
+ if(auto)rootGroup.rotation.y+=.0025;
+ if(currentSurface==='klein'&&kleinState.playing){
+  kleinState.progress+=delta*.12;
+  if(kleinState.progress>=1){kleinState.progress=1;kleinState.playing=false;}
+  updateKleinPanel();
+ }
+ controls.update();renderer.render(scene,camera);
+}
+animate();
 </script></body></html>
