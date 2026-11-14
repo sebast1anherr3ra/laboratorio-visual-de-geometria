@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Triangulações interativas de toro e esfera e a característica de Euler.">
+  <title>Poliedros e característica de Euler — Laboratório Visual de Geometria</title>
+  <style>
+    :root{color-scheme:light;--bg:#f5f7fb;--panel:#fff;--line:#dce3ee;--text:#172033;--muted:#586579;--accent:#0f766e}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+    a{color:inherit}
+    .topbar{background:var(--panel);border-bottom:1px solid var(--line)}
+    .topbar-inner{max-width:1500px;margin:auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{font-weight:750;text-decoration:none}
+    .back{color:var(--accent);font-weight:650;text-decoration:none}
+    header.intro{max-width:1500px;margin:auto;padding:20px 20px 7px}
+    h1{font-size:clamp(1.5rem,3.2vw,2.2rem);line-height:1.2;margin:0 0 6px}
+    header p{max-width:900px;margin:0;color:var(--muted)}
+    .layout{max-width:1500px;margin:0 auto;padding:13px 20px 25px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px}
+    .visual,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0;box-shadow:0 5px 20px #17203308}
+    .visual{display:flex;flex-direction:column;min-height:580px}
+    .view-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;border-bottom:1px solid var(--line)}
+    .view-head h2,.panel h2{font-size:1rem;margin:0}
+    .view-head p{font-size:.8rem;color:var(--muted);margin:2px 0 0}
+    button,select{border:1px solid #c7d0df;border-radius:8px;background:#fff;color:var(--text);padding:7px 10px;font:inherit;font-size:.82rem}
+    button{cursor:pointer;white-space:nowrap}
+    button:hover{background:#f0fdfa;border-color:#99d5cc}
+    button.active{background:#ecfdf5;border-color:#6db9a9;color:#115e59}
+    #stage{position:relative;flex:1;min-height:350px;background:#f8fafc;touch-action:none}
+    #stage canvas{display:block;width:100%;height:100%}
+    .hud{position:absolute;left:12px;top:12px;z-index:1;display:grid;gap:6px;pointer-events:none}
+    .chip{padding:6px 9px;border:1px solid #dce3ee;border-radius:8px;background:#ffffffd9;color:#586579;font-size:.75rem;backdrop-filter:blur(5px)}
+    .chip strong{color:#0f766e}
+    .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
+    .metric{min-width:0;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:#f8fafc}
+    .metric span{display:block;color:var(--muted);font-size:.68rem;font-weight:650;letter-spacing:.06em;text-transform:uppercase}
+    .metric strong{display:block;margin-top:2px;font-size:1.05rem;font-variant-numeric:tabular-nums}
+    .metric.result strong{color:#0f766e}
+    .panel h2{padding:12px 14px;border-bottom:1px solid var(--line)}
+    .inside{padding:14px}
+    .control{margin-bottom:14px}
+    .control label{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:.87rem;font-weight:600}
+    output{color:#0f766e;font-variant-numeric:tabular-nums}
+    select{width:100%;padding:8px}
+    input[type=range]{width:100%;accent-color:#0f766e}
+    .mode-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0}
+    .mode-buttons button{padding:8px 5px}
+    .checks{display:grid;gap:8px;margin:12px 0}
+    .checks label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.85rem}
+    input[type=checkbox]{accent-color:#0f766e}
+    .buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+    .readout{padding:10px 11px;background:#f8fafc;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:.82rem;line-height:1.7}
+    .readout strong{color:var(--text)}
+    .math{margin:12px 0 0;color:var(--muted);font-size:.81rem;line-height:1.65}
+    .math strong{color:var(--text)}
+    details.math code{white-space:normal}
+    #status{min-height:1.2em;margin:10px 0 0;color:var(--muted);font-size:.78rem}
+    .legend{display:flex;flex-wrap:wrap;gap:8px 13px;padding:0 13px 11px;color:var(--muted);font-size:.76rem}
+    .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+    #workspace:fullscreen{width:100vw;height:100vh;max-width:none;margin:0;padding:12px;grid-template-columns:minmax(0,1fr) 340px;overflow:hidden;background:var(--bg)}
+    #workspace:fullscreen .visual{min-height:0}
+    #workspace:fullscreen #stage{min-height:0}
+    #workspace:fullscreen .panel{height:100%;overflow:auto}
+    @media(max-width:1000px){.layout{grid-template-columns:1fr}.visual{min-height:480px}#stage{min-height:340px}}
+    @media(max-width:1000px){#workspace:fullscreen{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(300px,55vh) auto;overflow:auto}#workspace:fullscreen .panel{height:auto;overflow:visible}}
+    @media(max-width:560px){.topbar-inner,header.intro{padding-left:14px;padding-right:14px}.layout{padding:9px 9px 20px;gap:10px}.visual{min-height:440px}#stage{min-height:300px}.metrics{gap:5px;padding:8px}.metric{padding:7px 6px}.metric span{font-size:.58rem}.metric strong{font-size:.92rem}.view-head{align-items:flex-start}.view-head p{max-width:230px}}
+  </style>
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+  </script>
+</head>
+<body>
+  <div class="topbar"><div class="topbar-inner"><a class="brand" href="../../">Laboratório Visual de Geometria</a><a class="back" href="../">Galeria de topologia</a></div></div>
+  <header class="intro">
+    <h1>Poliedros e característica de Euler</h1>
+    <p>Compare triangulações de toro e esfera. O modelo geométrico é uma aproximação poligonal; as contagens combinatórias de vértices, arestas e faces são exatas para cada malha construída.</p>
+  </header>
+  <main class="layout" id="workspace">
+    <section class="visual" aria-label="Visualização da triangulação">
+      <div class="view-head"><div><h2 id="surfaceTitle">Toro triangulado</h2><p id="surfaceSubtitle">Superfície fechada orientável de gênero 1</p></div><button id="fullscreen" type="button">Tela cheia</button></div>
+      <div id="stage" aria-label="Modelo tridimensional rotacionável">
+        <div class="hud"><div class="chip">Arraste para <strong>rotacionar</strong></div><div class="chip">Scroll ou pinça para <strong>zoom</strong></div></div>
+      </div>
+      <div class="metrics" aria-live="polite">
+        <div class="metric"><span>Vértices (V)</span><strong id="vertexCount">—</strong></div>
+        <div class="metric"><span>Arestas (E)</span><strong id="edgeCount">—</strong></div>
+        <div class="metric"><span>Faces (F)</span><strong id="faceCount">—</strong></div>
+        <div class="metric result"><span>Euler χ=V−E+F</span><strong id="chi">—</strong></div>
+      </div>
+      <div class="legend"><span><i class="dot" style="background:#58a99a"></i>Faces</span><span><i class="dot" style="background:#263244"></i>Arestas</span><span><i class="dot" style="background:#d97706"></i>Rótulos das faces</span><span><i class="dot" style="background:#0284c7"></i>Rótulos dos vértices</span></div>
+    </section>
+    <aside class="panel">
+      <h2>Controles e convenções</h2>
+      <div class="inside">
+        <div class="control"><label for="surfaceSelect">Superfície</label><select id="surfaceSelect"><option value="torus">Toro · gênero 1</option><option value="sphere">Esfera · gênero 0</option></select></div>
+        <div class="control"><label for="resolution">Resolução N <output id="resolutionOut">16</output></label><input id="resolution" type="range" min="3" max="32" step="1" value="16"></div>
+        <div class="mode-buttons" role="group" aria-label="Modo de visualização">
+          <button id="wireBtn" class="active" type="button" aria-pressed="true">Arestas</button>
+          <button id="surfaceBtn" type="button" aria-pressed="false">Superfície</button>
+          <button id="bothBtn" type="button" aria-pressed="false">Ambos</button>
+        </div>
+        <div class="checks">
+          <label><input id="faceNumbers" type="checkbox"> Numerar faces</label>
+          <label><input id="vertexNumbers" type="checkbox"> Numerar vértices</label>
+          <label><input id="edgeNumbers" type="checkbox"> Numerar arestas</label>
+          <label><input id="autoRotate" type="checkbox" checked> Rotação automática</label>
+        </div>
+        <div class="buttons">
+          <button id="resetCamera" type="button">Reiniciar câmera</button>
+          <button id="newTab" type="button">Abrir em nova aba</button>
+        </div>
+        <div class="readout"><strong>Invariante:</strong> para uma superfície fechada e orientável de gênero g, χ=V−E+F=2−2g. O toro tem χ=0; a esfera, χ=2.</div>
+        <p class="math">Cada quadrilátero do toro é dividido em dois triângulos. A esfera é construída com dois polos, anéis de vértices e faces triangulares. A resolução altera a malha, não o tipo topológico.</p>
+        <details class="math">
+          <summary><strong>Parametrizações e contagens</strong></summary>
+          <div>Toro: <code>X(u,v)=((R+r cos v)cos u, r sin v, (R+r cos v)sin u)</code>, com R=1,55 e r=0,66.</div>
+          <div>Com M=2N, o toro possui V=MN, F=2MN e E=3MN; portanto, χ=0.</div>
+          <div>Na esfera, V=2+M(N−1), F=2M(N−1) e E=3M(N−1); portanto, χ=2.</div>
+        </details>
+        <p id="status" role="status">A malha é uma aproximação geométrica; os invariantes são contados exatamente em sua triangulação.</p>
+      </div>
+    </aside>
+  </main>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const $ = id => document.getElementById(id);
+    const stage = $('stage');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf8fafc);
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+    camera.position.set(4.8, 3.1, 5.8);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    stage.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.minDistance = 2.7;
+    controls.maxDistance = 12;
+    controls.target.set(0, 0, 0);
+
+    scene.add(new THREE.HemisphereLight(0xc7e7ff, 0x586579, 2));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    keyLight.position.set(4, 6, 5);
+    scene.add(keyLight);
+    const fillLight = new THREE.DirectionalLight(0x7bbcff, 0.8);
+    fillLight.position.set(-5, -2, -4);
+    scene.add(fillLight);
+    const rootGroup = new THREE.Group();
+    scene.add(rootGroup);
+
+    const MAJOR_RADIUS = 1.55;
+    const MINOR_RADIUS = 0.66;
+    const ATLAS_CELL = 32;
+    const ATLAS_COLUMNS = 32;
+    let N = 16;
+    let M = 2 * N;
+    let currentSurface = 'torus';
+    let displayMode = 'wire';
+    let active = null;
+    let autoRotation = true;
+    const labelState = { faces: false, vertices: false, edges: false };
+
+    function torusPoint(u, v) {
+      const q = MAJOR_RADIUS + MINOR_RADIUS * Math.cos(v);
+      return new THREE.Vector3(q * Math.cos(u), MINOR_RADIUS * Math.sin(v), q * Math.sin(u));
+    }
+
+    function normalAt(type, point) {
+      if (type === 'sphere') return point.clone().normalize();
+      const radial = new THREE.Vector3(point.x, 0, point.z).normalize().multiplyScalar(MAJOR_RADIUS);
+      return point.clone().sub(radial).normalize();
+    }
+
+    function appendSphereMesh(positions, indices, radius) {
+      const north = 0;
+      positions.push(0, radius, 0);
+      for (let j = 1; j < N; j++) {
+        const theta = Math.PI * j / N;
+        for (let i = 0; i < M; i++) {
+          const phi = 2 * Math.PI * i / M;
+          positions.push(radius * Math.sin(theta) * Math.cos(phi), radius * Math.cos(theta), radius * Math.sin(theta) * Math.sin(phi));
+        }
+      }
+      const south = positions.length / 3;
+      positions.push(0, -radius, 0);
+      const ring = (j, i) => 1 + (j - 1) * M + ((i + M) % M);
+      for (let i = 0; i < M; i++) indices.push(north, ring(1, i + 1), ring(1, i));
+      for (let j = 1; j < N - 1; j++) {
+        for (let i = 0; i < M; i++) {
+          const a = ring(j, i), b = ring(j, i + 1), c = ring(j + 1, i + 1), d = ring(j + 1, i);
+          indices.push(a, b, d, b, c, d);
+        }
+      }
+      for (let i = 0; i < M; i++) indices.push(south, ring(N - 1, i), ring(N - 1, i + 1));
+    }
+
+    function orientFaces(type, positions, indices) {
+      for (let k = 0; k < indices.length; k += 3) {
+        const a = pointAt(positions, indices[k]);
+        const b = pointAt(positions, indices[k + 1]);
+        const c = pointAt(positions, indices[k + 2]);
+        const center = a.clone().add(b).add(c).multiplyScalar(1 / 3);
+        const faceNormal = b.clone().sub(a).cross(c.clone().sub(a));
+        if (faceNormal.dot(normalAt(type, center)) < 0) {
+          const swap = indices[k + 1];
+          indices[k + 1] = indices[k + 2];
+          indices[k + 2] = swap;
+        }
+      }
+    }
+
+    function pointAt(positions, index) {
+      const offset = index * 3;
+      return new THREE.Vector3(positions[offset], positions[offset + 1], positions[offset + 2]);
+    }
+
+    function buildAtlas(count, textColor) {
+      const rows = Math.ceil(count / ATLAS_COLUMNS);
+      const canvas = document.createElement('canvas');
+      canvas.width = ATLAS_COLUMNS * ATLAS_CELL;
+      canvas.height = rows * ATLAS_CELL;
+      const context = canvas.getContext('2d');
+      context.font = 'bold 15px system-ui';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      for (let i = 0; i < count; i++) {
+        const x = (i % ATLAS_COLUMNS) * ATLAS_CELL + ATLAS_CELL / 2;
+        const y = Math.floor(i / ATLAS_COLUMNS) * ATLAS_CELL + ATLAS_CELL / 2;
+        context.lineWidth = 3;
+        context.strokeStyle = '#ffffff';
+        context.strokeText(String(i + 1), x, y);
+        context.fillStyle = textColor;
+        context.fillText(String(i + 1), x, y);
+      }
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.magFilter = THREE.LinearFilter;
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      return { texture, rows };
+    }
+
+    function buildLabelMesh(records, textColor, size, offset) {
+      const { texture, rows } = buildAtlas(records.length, textColor);
+      const positions = [], uvs = [], indices = [];
+      records.forEach((record, i) => {
+        const normal = record.normal.clone().normalize();
+        let u = record.tangent ? record.tangent.clone().addScaledVector(normal, -record.tangent.dot(normal)) : new THREE.Vector3(1, 0, 0).addScaledVector(normal, -normal.x);
+        if (u.lengthSq() < 1e-10) u = new THREE.Vector3(0, 0, 1).addScaledVector(normal, -normal.z);
+        u.normalize();
+        const v = normal.clone().cross(u).normalize();
+        const center = record.center.clone().addScaledVector(normal, offset);
+        const corners = [
+          center.clone().addScaledVector(u, -size).addScaledVector(v, -size),
+          center.clone().addScaledVector(u, size).addScaledVector(v, -size),
+          center.clone().addScaledVector(u, size).addScaledVector(v, size),
+          center.clone().addScaledVector(u, -size).addScaledVector(v, size)
+        ];
+        const base = positions.length / 3;
+        for (const point of corners) positions.push(point.x, point.y, point.z);
+        const col = i % ATLAS_COLUMNS, row = Math.floor(i / ATLAS_COLUMNS), pad = 0.08;
+        const u0 = (col + pad) / ATLAS_COLUMNS, u1 = (col + 1 - pad) / ATLAS_COLUMNS;
+        const vTop = 1 - (row + pad) / rows, vBottom = 1 - (row + 1 - pad) / rows;
+        uvs.push(u0, vBottom, u1, vBottom, u1, vTop, u0, vTop);
+        indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
+      });
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      geometry.setIndex(indices);
+      const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false, side: THREE.DoubleSide });
+      return new THREE.Mesh(geometry, material);
+    }
+
+    function createLabelLayer(type, surface, kind) {
+      const { positions, indices, edgeList } = surface;
+      const records = [];
+      if (kind === 'faces') {
+        for (let k = 0; k < indices.length; k += 3) {
+          const a = pointAt(positions, indices[k]), b = pointAt(positions, indices[k + 1]), c = pointAt(positions, indices[k + 2]);
+          const center = a.clone().add(b).add(c).multiplyScalar(1 / 3);
+          records.push({ center, normal: normalAt(type, center), tangent: b.clone().sub(a) });
+        }
+        return buildLabelMesh(records, '#a16207', 0.075, 0.045);
+      }
+      if (kind === 'vertices') {
+        for (let i = 0; i < positions.length / 3; i++) {
+          const center = pointAt(positions, i);
+          records.push({ center, normal: normalAt(type, center) });
+        }
+        return buildLabelMesh(records, '#0369a1', 0.055, 0.075);
+      }
+      for (const [a, b] of edgeList) {
+        const first = pointAt(positions, a), second = pointAt(positions, b);
+        records.push({ center: first.clone().add(second).multiplyScalar(0.5), normal: normalAt(type, first.clone().add(second).multiplyScalar(0.5)), tangent: second.sub(first) });
+      }
+      return buildLabelMesh(records, '#15803d', 0.047, 0.095);
+    }
+
+    function makeSurface(type) {
+      const positions = [], indices = [];
+      if (type === 'torus') {
+        for (let i = 0; i < M; i++) {
+          const u = 2 * Math.PI * i / M;
+          for (let j = 0; j < N; j++) {
+            const v = 2 * Math.PI * j / N;
+            const point = torusPoint(u, v);
+            positions.push(point.x, point.y, point.z);
+          }
+        }
+        for (let i = 0; i < M; i++) {
+          for (let j = 0; j < N; j++) {
+            const a = i * N + j, b = ((i + 1) % M) * N + j;
+            const c = ((i + 1) % M) * N + (j + 1) % N, d = i * N + (j + 1) % N;
+            indices.push(a, b, d, b, c, d);
+          }
+        }
+      } else {
+        appendSphereMesh(positions, indices, 1.9);
+      }
+      orientFaces(type, positions, indices);
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0x58a99a, roughness: 0.48, metalness: 0.08, side: THREE.DoubleSide }));
+
+      const edgeSet = new Set(), edgeList = [], edgePositions = [];
+      for (let k = 0; k < indices.length; k += 3) {
+        const triangle = [indices[k], indices[k + 1], indices[k + 2]];
+        for (let side = 0; side < 3; side++) {
+          let a = triangle[side], b = triangle[(side + 1) % 3];
+          if (a > b) [a, b] = [b, a];
+          const key = `${a}_${b}`;
+          if (!edgeSet.has(key)) {
+            edgeSet.add(key);
+            edgeList.push([a, b]);
+            const first = pointAt(positions, a), second = pointAt(positions, b);
+            edgePositions.push(first.x, first.y, first.z, second.x, second.y, second.z);
+          }
+        }
+      }
+      const edgeGeometry = new THREE.BufferGeometry();
+      edgeGeometry.setAttribute('position', new THREE.Float32BufferAttribute(edgePositions, 3));
+      const lines = new THREE.LineSegments(edgeGeometry, new THREE.LineBasicMaterial({ color: 0x263244 }));
+      const group = new THREE.Group();
+      group.add(mesh, lines);
+      const V = positions.length / 3, E = edgeSet.size, F = indices.length / 3;
+      return { group, mesh, lines, positions, indices, edgeList, counts: { V, E, F, chi: V - E + F }, labels: { faces: null, vertices: null, edges: null } };
+    }
+
+    function disposeObject(object) {
+      object.traverse(child => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          const materials = Array.isArray(child.material) ? child.material : [child.material];
+          for (const material of materials) {
+            if (material.map) material.map.dispose();
+            material.dispose();
+          }
+        }
+      });
+    }
+
+    function updateMetrics(counts) {
+      $('vertexCount').textContent = String(counts.V);
+      $('edgeCount').textContent = String(counts.E);
+      $('faceCount').textContent = String(counts.F);
+      $('chi').textContent = String(counts.chi);
+    }
+
+    function syncLabels() {
+      for (const kind of ['faces', 'vertices', 'edges']) {
+        const enabled = labelState[kind];
+        if (enabled && !active.labels[kind]) {
+          active.labels[kind] = createLabelLayer(currentSurface, active, kind);
+          active.group.add(active.labels[kind]);
+          active.labels[kind].renderOrder = 4;
+        }
+        if (active.labels[kind]) active.labels[kind].visible = enabled;
+      }
+    }
+
+    function updateSurfaceText() {
+      const isTorus = currentSurface === 'torus';
+      $('surfaceTitle').textContent = isTorus ? 'Toro triangulado' : 'Esfera triangulada';
+      $('surfaceSubtitle').textContent = isTorus ? 'Superfície fechada orientável de gênero 1' : 'Superfície fechada orientável de gênero 0';
+      $('resolutionOut').textContent = `${N} · ${active.counts.F} faces`;
+      $('status').textContent = `Malha ${M} × ${N} · χ=${active.counts.chi} · g=${(2 - active.counts.chi) / 2}.`;
+    }
+
+    function selectSurface(type) {
+      currentSurface = type;
+      if (active) {
+        rootGroup.remove(active.group);
+        disposeObject(active.group);
+      }
+      active = makeSurface(type);
+      rootGroup.add(active.group);
+      active.mesh.visible = displayMode !== 'wire';
+      active.lines.visible = displayMode !== 'solid';
+      syncLabels();
+      updateMetrics(active.counts);
+      updateSurfaceText();
+    }
+
+    function setDisplayMode(mode) {
+      displayMode = mode;
+      active.mesh.visible = mode !== 'wire';
+      active.lines.visible = mode !== 'solid';
+      for (const [id, value] of [['wireBtn', 'wire'], ['surfaceBtn', 'solid'], ['bothBtn', 'both']]) {
+        $(id).classList.toggle('active', value === mode);
+        $(id).setAttribute('aria-pressed', String(value === mode));
+      }
+    }
+
+    selectSurface(currentSurface);
+    setDisplayMode(displayMode);
+    function resize() {
+      const width = Math.max(1, stage.clientWidth), height = Math.max(1, stage.clientHeight);
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+    new ResizeObserver(resize).observe(stage);
+    window.addEventListener('resize', resize);
+    resize();
+
+    $('surfaceSelect').addEventListener('change', event => selectSurface(event.target.value));
+    $('resolution').addEventListener('input', event => {
+      N = Number(event.target.value);
+      M = 2 * N;
+      selectSurface(currentSurface);
+    });
+    $('wireBtn').addEventListener('click', () => setDisplayMode('wire'));
+    $('surfaceBtn').addEventListener('click', () => setDisplayMode('solid'));
+    $('bothBtn').addEventListener('click', () => setDisplayMode('both'));
+    for (const [id, kind] of [['faceNumbers', 'faces'], ['vertexNumbers', 'vertices'], ['edgeNumbers', 'edges']]) {
+      $(id).addEventListener('change', event => {
+        labelState[kind] = event.target.checked;
+        syncLabels();
+      });
+    }
+    $('autoRotate').addEventListener('change', event => { autoRotation = event.target.checked; });
+    $('resetCamera').addEventListener('click', () => {
+      camera.position.set(4.8, 3.1, 5.8);
+      controls.target.set(0, 0, 0);
+      controls.update();
+    });
+    $('newTab').addEventListener('click', () => {
+      if (!window.open(window.location.href, '_blank', 'noopener')) $('status').textContent = 'O navegador bloqueou a nova aba; abra a página diretamente.';
+    });
+    $('fullscreen').addEventListener('click', async () => {
+      const target = $('workspace');
+      try {
+        if (document.fullscreenElement === target) await document.exitFullscreen();
+        else {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          await target.requestFullscreen();
+        }
+      } catch (error) {
+        $('status').textContent = `Não foi possível abrir a visualização em tela cheia: ${error.message || error}`;
+      }
+    });
+    document.addEventListener('fullscreenchange', () => {
+      $('fullscreen').textContent = document.fullscreenElement === $('workspace') ? 'Sair da tela cheia' : 'Tela cheia';
+      setTimeout(resize, 100);
+    });
+
+    let previousTime = 0;
+    function animate(time) {
+      requestAnimationFrame(animate);
+      const delta = previousTime ? Math.min((time - previousTime) / 1000, 0.05) : 0;
+      previousTime = time;
+      if (autoRotation) rootGroup.rotation.y += delta * 0.15;
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>
