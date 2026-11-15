@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Visualize curvas integrais de campos vetoriais no toro e compare órbitas periódicas e densas.">
+  <title>Fluxos no toro — Laboratório Visual de Geometria</title>
+  <style>
+    :root{color-scheme:light;--bg:#f5f7fb;--panel:#fff;--line:#dce3ee;--text:#172033;--muted:#586579;--accent:#0f766e}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+    a{color:inherit}
+    .topbar{background:var(--panel);border-bottom:1px solid var(--line)}
+    .topbar-inner{max-width:1500px;margin:auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{font-weight:750;text-decoration:none}
+    .back{color:var(--accent);font-weight:650;text-decoration:none}
+    header.intro{max-width:1500px;margin:auto;padding:20px 20px 7px}
+    h1{font-size:clamp(1.5rem,3.2vw,2.2rem);line-height:1.2;margin:0 0 6px}
+    header p{max-width:950px;margin:0;color:var(--muted)}
+    .layout{max-width:1500px;margin:0 auto;padding:13px 20px 25px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px}
+    .visual,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0;box-shadow:0 5px 20px #17203308}
+    .visual{display:flex;flex-direction:column;min-height:610px}
+    .view-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;border-bottom:1px solid var(--line)}
+    .view-head h2,.panel h2{font-size:1rem;margin:0}
+    .view-head p{font-size:.8rem;color:var(--muted);margin:2px 0 0}
+    button,select{border:1px solid #c7d0df;border-radius:8px;background:#fff;color:var(--text);padding:7px 10px;font:inherit;font-size:.82rem}
+    button{cursor:pointer;white-space:nowrap}
+    button:hover{background:#f0fdfa;border-color:#99d5cc}
+    #stage{position:relative;flex:1;min-height:450px;background:#f8fafc;touch-action:none}
+    #stage canvas{display:block;width:100%;height:100%}
+    .legend{display:flex;flex-wrap:wrap;gap:8px 13px;padding:10px 12px;color:var(--muted);font-size:.76rem}
+    .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px}
+    .panel h2{padding:12px 14px;border-bottom:1px solid var(--line)}
+    .inside{padding:14px}
+    .control{margin-bottom:14px}
+    .control label{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:.87rem;font-weight:600}
+    output{color:var(--accent);font-variant-numeric:tabular-nums}
+    select{width:100%;padding:8px}
+    input[type=range]{width:100%;accent-color:var(--accent)}
+    .readout{padding:10px 11px;background:#f8fafc;border:1px solid var(--line);border-radius:9px;color:var(--muted);font-size:.82rem;line-height:1.65}
+    .readout strong{color:var(--text)}
+    .math{margin:12px 0 0;color:var(--muted);font-size:.81rem;line-height:1.65}
+    .math strong{color:var(--text)}
+    .actions{display:grid;grid-template-columns:1fr;gap:8px;margin:12px 0}
+    #status{min-height:1.2em;margin:10px 0 0;color:var(--muted);font-size:.78rem}
+    #workspace:fullscreen{width:100vw;height:100vh;max-width:none;margin:0;padding:12px;grid-template-columns:minmax(0,1fr) 340px;overflow:hidden;background:var(--bg)}
+    #workspace:fullscreen .visual{min-height:0}
+    #workspace:fullscreen #stage{min-height:0}
+    #workspace:fullscreen .panel{height:100%;overflow:auto}
+    @media(max-width:1000px){.layout{grid-template-columns:1fr}.visual{min-height:560px}}
+    @media(max-width:1000px){#workspace:fullscreen{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(300px,55vh) auto;overflow:auto}#workspace:fullscreen .panel{height:auto;overflow:visible}}
+    @media(max-width:560px){.topbar-inner,header.intro{padding-left:14px;padding-right:14px}.layout{padding:9px 9px 20px;gap:10px}.visual{min-height:500px}#stage{min-height:360px}.panel h2{padding:11px 12px}.inside{padding:12px}}
+  </style>
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+  </script>
+</head>
+<body>
+  <div class="topbar"><div class="topbar-inner"><a class="brand" href="../../">Laboratório Visual de Geometria</a><a class="back" href="../">Galeria de topologia</a></div></div>
+  <header class="intro">
+    <h1>Fluxos lineares no toro</h1>
+    <p>Compare as curvas integrais de dois campos vetoriais constantes nas coordenadas do toro. Razões racionais produzem órbitas periódicas; razões irracionais produzem órbitas densas quando o fluxo é seguido por tempo ilimitado.</p>
+  </header>
+  <main class="layout" id="workspace">
+    <section class="visual" aria-label="Toro e curvas integrais">
+      <div class="view-head"><div><h2>Toro de revolução</h2><p>Arraste para girar; use a roda do mouse ou a pinça para zoom.</p></div><button id="fullscreen" type="button">Tela cheia</button></div>
+      <div id="stage" aria-label="Visualização tridimensional do toro com curvas integrais"></div>
+      <div class="legend">
+        <span><i class="dot" style="background:#94a3b8"></i>Toro</span>
+        <span><i class="dot" style="background:#dc2626"></i>Fluxo de X</span>
+        <span><i class="dot" style="background:#2563eb"></i>Fluxo de Y</span>
+        <span><i class="dot" style="background:#16a34a"></i>Ponto inicial</span>
+        <span><i class="dot" style="background:#d97706"></i>Direções tangentes finais</span>
+      </div>
+    </section>
+    <aside class="panel">
+      <h2>Controles e convenções</h2>
+      <div class="inside">
+        <div class="control"><label for="tmax">Tempo máximo T <output id="timeOut">5.0</output></label><input id="tmax" type="range" min="0" max="100" step="0.1" value="5"></div>
+        <div class="control"><label for="lambda1">λ₁</label><select id="lambda1"></select></div>
+        <div class="control"><label for="lambda2">λ₂</label><select id="lambda2"></select></div>
+        <div class="control"><label for="flowMode">Curvas integrais</label><select id="flowMode"><option value="none">Nenhuma</option><option value="X">Somente fluxo de X</option><option value="Y">Somente fluxo de Y</option><option value="both" selected>Ambos os fluxos</option></select></div>
+        <div class="actions"><button id="resetCamera" type="button">Reiniciar câmera</button></div>
+        <div class="readout"><strong id="orbitType">Razão racional.</strong> <span id="orbitText">As órbitas dos dois campos são periódicas.</span><br>λ₁/λ₂ ≈ <output id="ratioOut">1.0000</output></div>
+        <p class="math">O gráfico mostra apenas o trecho 0≤t≤T, amostrado numericamente. Uma curva finita não prova densidade; ela apenas permite explorar o comportamento previsto pelo fluxo exato.</p>
+        <details class="math">
+          <summary><strong>Parametrização e campos</strong></summary>
+          <p>Φ(θ,φ)=((R+r cosθ)cosφ,(R+r cosθ)sinφ,r sinθ), com R=5, r=3 e (θ,φ)∈(ℝ/2πℤ)². O toro está embutido porque R&gt;r.</p>
+          <p>X=λ₁∂θ+λ₂∂φ e Y=−λ₂∂θ+λ₁∂φ. Com (θ₀,φ₀)=(π/4,π/4), as curvas são γ<sub>X</sub>(t)=Φ(θ₀+λ₁t,φ₀+λ₂t) e γ<sub>Y</sub>(t)=Φ(θ₀−λ₂t,φ₀+λ₁t).</p>
+          <p>Os vetores mostrados nos extremos são dΦ(X) e dΦ(Y). As setas têm comprimento gráfico ajustado para visibilidade; sua direção, não seu comprimento, representa o vetor tangente.</p>
+          <p>Para ambos os campos, a órbita é periódica quando λ₁/λ₂∈ℚ e densa no toro quando λ₁/λ₂∉ℚ. Para o par π,e, o painel não infere a racionalidade da razão por aproximações decimais.</p>
+        </details>
+        <p id="status" role="status">Condição inicial: (θ₀,φ₀)=(π/4,π/4).</p>
+      </div>
+    </aside>
+  </main>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const $ = id => document.getElementById(id);
+    const TWO_PI = 2 * Math.PI, R = 5, r = 3;
+    const theta0 = Math.PI / 4, phi0 = Math.PI / 4;
+    const stage = $('stage');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf8fafc);
+    const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
+    const initialCamera = new THREE.Vector3(14, 12, 17);
+    camera.position.copy(initialCamera);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    stage.appendChild(renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.06;
+    controls.minDistance = 5;
+    controls.maxDistance = 60;
+    controls.target.set(0, 0, 0);
+
+    scene.add(new THREE.HemisphereLight(0xc7e7ff, 0x586579, 2));
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+    keyLight.position.set(10, 14, 9);
+    scene.add(keyLight);
+    const fillLight = new THREE.DirectionalLight(0x7bbcff, 0.8);
+    fillLight.position.set(-10, -4, -8);
+    scene.add(fillLight);
+
+    const surfaceGroup = new THREE.Group(), flowGroup = new THREE.Group();
+    scene.add(surfaceGroup, flowGroup);
+    const parameters = [
+      ['1', 1], ['2', 2], ['3', 3], ['4', 4], ['5', 5], ['6', 6], ['7', 7], ['8', 8], ['9', 9],
+      ['√2', Math.SQRT2], ['π', Math.PI], ['e', Math.E]
+    ];
+    for (const id of ['lambda1', 'lambda2']) {
+      for (const [label, value] of parameters) {
+        const option = document.createElement('option');
+        option.value = label;
+        option.textContent = label;
+        $(id).appendChild(option);
+      }
+      $(id).value = '1';
+    }
+
+    function wrap(angle) {
+      return ((angle % TWO_PI) + TWO_PI) % TWO_PI;
+    }
+
+    function torusPoint(theta, phi) {
+      return new THREE.Vector3((R + r * Math.cos(theta)) * Math.cos(phi), (R + r * Math.cos(theta)) * Math.sin(phi), r * Math.sin(theta));
+    }
+
+    function dTheta(theta, phi) {
+      return new THREE.Vector3(-r * Math.sin(theta) * Math.cos(phi), -r * Math.sin(theta) * Math.sin(phi), r * Math.cos(theta));
+    }
+
+    function dPhi(theta, phi) {
+      return new THREE.Vector3(-(R + r * Math.cos(theta)) * Math.sin(phi), (R + r * Math.cos(theta)) * Math.cos(phi), 0);
+    }
+
+    function numericValue(id) {
+      const option = parameters.find(([label]) => label === $(id).value);
+      if (!option) throw new Error(`Parâmetro não reconhecido: ${$(id).value}`);
+      return option[1];
+    }
+
+    function buildTorus() {
+      const positions = [], indices = [], nTheta = 100, nPhi = 150;
+      for (let i = 0; i <= nTheta; i++) {
+        for (let j = 0; j <= nPhi; j++) {
+          const point = torusPoint(TWO_PI * i / nTheta, TWO_PI * j / nPhi);
+          positions.push(point.x, point.y, point.z);
+        }
+      }
+      for (let i = 0; i < nTheta; i++) {
+        for (let j = 0; j < nPhi; j++) {
+          const a = i * (nPhi + 1) + j, b = a + nPhi + 1;
+          indices.push(a, b, a + 1, b, b + 1, a + 1);
+        }
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.55, metalness: 0.02, transparent: true, opacity: 0.55, side: THREE.DoubleSide }));
+      surfaceGroup.add(mesh);
+    }
+
+    function disposeTree(root) {
+      root.traverse(object => {
+        if (object.geometry) object.geometry.dispose();
+        if (object.material) {
+          const materials = Array.isArray(object.material) ? object.material : [object.material];
+          for (const material of materials) material.dispose();
+        }
+      });
+    }
+
+    function clearFlows() {
+      while (flowGroup.children.length) {
+        const object = flowGroup.children[0];
+        flowGroup.remove(object);
+        disposeTree(object);
+      }
+    }
+
+    function addCurve(points, color) {
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      flowGroup.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color, linewidth: 2 })));
+    }
+
+    function addTangentArrow(point, vector, color) {
+      if (vector.lengthSq() < 1e-12) return;
+      const length = Math.min(1.5, Math.max(0.35, vector.length() * 0.16));
+      flowGroup.add(new THREE.ArrowHelper(vector.clone().normalize(), point, length, color, 0.25, 0.14));
+    }
+
+    function orbitParameters(kind, time, lambda1, lambda2) {
+      return kind === 'X'
+        ? [wrap(theta0 + lambda1 * time), wrap(phi0 + lambda2 * time)]
+        : [wrap(theta0 - lambda2 * time), wrap(phi0 + lambda1 * time)];
+    }
+
+    function addFlow(kind, timeMax, lambda1, lambda2, color) {
+      const segments = Math.max(2, Math.min(6000, Math.ceil(timeMax * 45)));
+      const points = [];
+      for (let i = 0; i <= segments; i++) {
+        const time = timeMax * i / segments;
+        const [theta, phi] = orbitParameters(kind, time, lambda1, lambda2);
+        points.push(torusPoint(theta, phi));
+      }
+      addCurve(points, color);
+      const [theta, phi] = orbitParameters(kind, timeMax, lambda1, lambda2);
+      const point = torusPoint(theta, phi);
+      const tangent = kind === 'X'
+        ? dTheta(theta, phi).multiplyScalar(lambda1).add(dPhi(theta, phi).multiplyScalar(lambda2))
+        : dTheta(theta, phi).multiplyScalar(-lambda2).add(dPhi(theta, phi).multiplyScalar(lambda1));
+      addTangentArrow(point, tangent, 0xd97706);
+    }
+
+    function ratioClassification() {
+      const first = $('lambda1').value, second = $('lambda2').value;
+      if (first === second || (/^[1-9]$/.test(first) && /^[1-9]$/.test(second))) return 'rational';
+      if ((first === 'π' && second === 'e') || (first === 'e' && second === 'π')) return 'unknown';
+      return 'irrational';
+    }
+
+    function updateRatio(lambda1, lambda2) {
+      $('ratioOut').textContent = (lambda1 / lambda2).toFixed(4);
+      const classification = ratioClassification();
+      if (classification === 'rational') {
+        $('orbitType').textContent = 'Razão racional.';
+        $('orbitText').textContent = 'As órbitas dos dois campos são periódicas.';
+      } else if (classification === 'irrational') {
+        $('orbitType').textContent = 'Razão irracional.';
+        $('orbitText').textContent = 'As órbitas dos dois campos são densas quando prolongadas para todo t.';
+      } else {
+        $('orbitType').textContent = 'Classificação exata não indicada.';
+        $('orbitText').textContent = 'O painel não decide se π/e é racional; a aproximação decimal não classifica a órbita.';
+      }
+    }
+
+    function update() {
+      clearFlows();
+      const timeMax = Number($('tmax').value), lambda1 = numericValue('lambda1'), lambda2 = numericValue('lambda2');
+      const mode = $('flowMode').value;
+      $('timeOut').textContent = timeMax.toFixed(1);
+      const start = torusPoint(theta0, phi0);
+      flowGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.14, 20, 14), new THREE.MeshStandardMaterial({ color: 0x16a34a })));
+      flowGroup.children[flowGroup.children.length - 1].position.copy(start);
+      if (mode === 'X' || mode === 'both') addFlow('X', timeMax, lambda1, lambda2, 0xdc2626);
+      if (mode === 'Y' || mode === 'both') addFlow('Y', timeMax, lambda1, lambda2, 0x2563eb);
+      updateRatio(lambda1, lambda2);
+      $('status').textContent = `T=${timeMax.toFixed(1)} · λ₁=${lambda1.toFixed(4)} · λ₂=${lambda2.toFixed(4)} · ponto inicial (π/4, π/4).`;
+    }
+
+    function resize() {
+      const width = Math.max(1, stage.clientWidth), height = Math.max(1, stage.clientHeight);
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+
+    function resetCamera() {
+      camera.position.copy(initialCamera);
+      controls.target.set(0, 0, 0);
+      controls.update();
+    }
+
+    for (const id of ['tmax', 'lambda1', 'lambda2', 'flowMode']) $(id).addEventListener('input', update);
+    $('resetCamera').addEventListener('click', resetCamera);
+    $('fullscreen').addEventListener('click', async () => {
+      const target = $('workspace');
+      try {
+        if (document.fullscreenElement === target) await document.exitFullscreen();
+        else {
+          if (document.fullscreenElement) await document.exitFullscreen();
+          await target.requestFullscreen();
+        }
+      } catch (error) {
+        $('status').textContent = `Não foi possível abrir a visualização em tela cheia: ${error.message || error}`;
+      }
+    });
+    document.addEventListener('fullscreenchange', () => {
+      $('fullscreen').textContent = document.fullscreenElement === $('workspace') ? 'Sair da tela cheia' : 'Tela cheia';
+      setTimeout(resize, 100);
+    });
+    new ResizeObserver(resize).observe(stage);
+    window.addEventListener('resize', resize);
+
+    buildTorus();
+    update();
+    resize();
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+  </script>
+</body>
+</html>
