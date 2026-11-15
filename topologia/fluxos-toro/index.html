@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Visualize curvas integrais de campos vetoriais no toro e compare órbitas periódicas e densas.">
-  <title>Fluxos no toro — Laboratório Visual de Geometria</title>
+  <meta name="description" content="Explore fluxos lineares no toro e curvas racionais no recobrimento da garrafa de Klein.">
+  <title>Fluxos no toro e na garrafa de Klein — Laboratório Visual de Geometria</title>
   <style>
     :root{color-scheme:light;--bg:#f5f7fb;--panel:#fff;--line:#dce3ee;--text:#172033;--muted:#586579;--accent:#0f766e}
     *{box-sizing:border-box}
@@ -17,9 +17,9 @@
     header.intro{max-width:1500px;margin:auto;padding:20px 20px 7px}
     h1{font-size:clamp(1.5rem,3.2vw,2.2rem);line-height:1.2;margin:0 0 6px}
     header p{max-width:950px;margin:0;color:var(--muted)}
-    .layout{max-width:1500px;margin:0 auto;padding:13px 20px 25px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px}
+    .layout{max-width:1500px;margin:0 auto;padding:13px 20px 25px;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:14px;align-items:start}
     .visual,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-width:0;box-shadow:0 5px 20px #17203308}
-    .visual{display:flex;flex-direction:column;min-height:610px}
+    .visual{display:flex;flex-direction:column;height:min(72vh,720px);min-height:560px}
     .view-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 13px;border-bottom:1px solid var(--line)}
     .view-head h2,.panel h2{font-size:1rem;margin:0}
     .view-head p{font-size:.8rem;color:var(--muted);margin:2px 0 0}
@@ -34,6 +34,7 @@
     .inside{padding:14px}
     .control{margin-bottom:14px}
     .control label{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;font-size:.87rem;font-weight:600}
+    input[type=number]{width:75px;border:1px solid #c7d0df;border-radius:8px;background:#fff;color:var(--text);padding:7px 9px;font:inherit}
     output{color:var(--accent);font-variant-numeric:tabular-nums}
     select{width:100%;padding:8px}
     input[type=range]{width:100%;accent-color:var(--accent)}
@@ -41,15 +42,17 @@
     .readout strong{color:var(--text)}
     .math{margin:12px 0 0;color:var(--muted);font-size:.81rem;line-height:1.65}
     .math strong{color:var(--text)}
+    [hidden]{display:none!important}
+    .phase{display:block;width:100%;height:auto;margin-top:8px;border:1px solid var(--line);border-radius:8px;background:#f8fafc}
     .actions{display:grid;grid-template-columns:1fr;gap:8px;margin:12px 0}
     #status{min-height:1.2em;margin:10px 0 0;color:var(--muted);font-size:.78rem}
     #workspace:fullscreen{width:100vw;height:100vh;max-width:none;margin:0;padding:12px;grid-template-columns:minmax(0,1fr) 340px;overflow:hidden;background:var(--bg)}
-    #workspace:fullscreen .visual{min-height:0}
+    #workspace:fullscreen .visual{height:100%;min-height:0}
     #workspace:fullscreen #stage{min-height:0}
     #workspace:fullscreen .panel{height:100%;overflow:auto}
-    @media(max-width:1000px){.layout{grid-template-columns:1fr}.visual{min-height:560px}}
+    @media(max-width:1000px){.layout{grid-template-columns:1fr}.visual{height:min(68vh,660px);min-height:560px}}
     @media(max-width:1000px){#workspace:fullscreen{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(300px,55vh) auto;overflow:auto}#workspace:fullscreen .panel{height:auto;overflow:visible}}
-    @media(max-width:560px){.topbar-inner,header.intro{padding-left:14px;padding-right:14px}.layout{padding:9px 9px 20px;gap:10px}.visual{min-height:500px}#stage{min-height:360px}.panel h2{padding:11px 12px}.inside{padding:12px}}
+    @media(max-width:560px){.topbar-inner,header.intro{padding-left:14px;padding-right:14px}.layout{padding:9px 9px 20px;gap:10px}.visual{height:min(65vh,560px);min-height:500px}#stage{min-height:360px}.panel h2{padding:11px 12px}.inside{padding:12px}}
   </style>
   <script type="importmap">
     {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
@@ -58,37 +61,65 @@
 <body>
   <div class="topbar"><div class="topbar-inner"><a class="brand" href="../../">Laboratório Visual de Geometria</a><a class="back" href="../">Galeria de topologia</a></div></div>
   <header class="intro">
-    <h1>Fluxos lineares no toro</h1>
-    <p>Compare as curvas integrais de dois campos vetoriais constantes nas coordenadas do toro. Razões racionais produzem órbitas periódicas; razões irracionais produzem órbitas densas quando o fluxo é seguido por tempo ilimitado.</p>
+    <h1>Fluxos lineares no toro e na garrafa de Klein</h1>
+    <p>No toro, compare órbitas periódicas e densas de campos lineares. Na garrafa de Klein, explore as projeções de retas racionais do toro de recobrimento e como a identificação pode reduzir o período.</p>
   </header>
   <main class="layout" id="workspace">
     <section class="visual" aria-label="Toro e curvas integrais">
-      <div class="view-head"><div><h2>Toro de revolução</h2><p>Arraste para girar; use a roda do mouse ou a pinça para zoom.</p></div><button id="fullscreen" type="button">Tela cheia</button></div>
+      <div class="view-head"><div><h2 id="surfaceTitle">Toro de revolução</h2><p id="surfaceHint">Arraste para girar; use a roda do mouse ou a pinça para zoom.</p></div><button id="fullscreen" type="button">Tela cheia</button></div>
       <div id="stage" aria-label="Visualização tridimensional do toro com curvas integrais"></div>
-      <div class="legend">
+      <div class="legend" id="torusLegend">
         <span><i class="dot" style="background:#94a3b8"></i>Toro</span>
         <span><i class="dot" style="background:#dc2626"></i>Fluxo de X</span>
         <span><i class="dot" style="background:#2563eb"></i>Fluxo de Y</span>
         <span><i class="dot" style="background:#16a34a"></i>Ponto inicial</span>
         <span><i class="dot" style="background:#d97706"></i>Direções tangentes finais</span>
       </div>
+      <div class="legend" id="kleinLegend" hidden>
+        <span><i class="dot" style="background:#94a3b8"></i>Imersão da garrafa de Klein</span>
+        <span><i class="dot" style="background:#d28b24"></i>Curva racional projetada</span>
+        <span><i class="dot" style="background:#16a34a"></i>Início</span>
+        <span><i class="dot" style="background:#2563eb"></i>Ponto móvel</span>
+      </div>
     </section>
     <aside class="panel">
       <h2>Controles e convenções</h2>
       <div class="inside">
-        <div class="control"><label for="tmax">Tempo máximo T <output id="timeOut">5.0</output></label><input id="tmax" type="range" min="0" max="100" step="0.1" value="5"></div>
-        <div class="control"><label for="lambda1">λ₁</label><select id="lambda1"></select></div>
-        <div class="control"><label for="lambda2">λ₂</label><select id="lambda2"></select></div>
-        <div class="control"><label for="flowMode">Curvas integrais</label><select id="flowMode"><option value="none">Nenhuma</option><option value="X">Somente fluxo de X</option><option value="Y">Somente fluxo de Y</option><option value="both" selected>Ambos os fluxos</option></select></div>
+        <div class="control"><label for="surfaceSelect">Superfície</label><select id="surfaceSelect"><option value="torus" selected>Toro</option><option value="klein">Garrafa de Klein</option></select></div>
+        <div id="torusControls">
+          <div class="control"><label for="tmax">Tempo máximo T <output id="timeOut">5.0</output></label><input id="tmax" type="range" min="0" max="100" step="0.1" value="5"></div>
+          <div class="control"><label for="lambda1">λ₁</label><select id="lambda1"></select></div>
+          <div class="control"><label for="lambda2">λ₂</label><select id="lambda2"></select></div>
+          <div class="control"><label for="flowMode">Curvas integrais</label><select id="flowMode"><option value="none">Nenhuma</option><option value="X">Somente fluxo de X</option><option value="Y">Somente fluxo de Y</option><option value="both" selected>Ambos os fluxos</option></select></div>
+        </div>
+        <div id="kleinControls" hidden>
+          <div class="control"><label for="kleinP">p (u)</label><input id="kleinP" type="number" min="-8" max="8" step="1" value="2"></div>
+          <div class="control"><label for="kleinQ">q (v)</label><input id="kleinQ" type="number" min="-8" max="8" step="1" value="1"></div>
+          <div class="control"><label for="kleinProgress">Percurso <output id="kleinProgressValue">0%</output></label><input id="kleinProgress" type="range" min="0" max="1" step="0.001" value="0"></div>
+          <button id="kleinPlay" type="button">▶ Percorrer</button>
+          <canvas id="kleinPhase" class="phase" width="600" height="230" aria-label="Levantamento da curva racional no toro de recobrimento"></canvas>
+        </div>
         <div class="actions"><button id="resetCamera" type="button">Reiniciar câmera</button></div>
-        <div class="readout"><strong id="orbitType">Razão racional.</strong> <span id="orbitText">As órbitas dos dois campos são periódicas.</span><br>λ₁/λ₂ ≈ <output id="ratioOut">1.0000</output></div>
-        <p class="math">O gráfico mostra apenas o trecho 0≤t≤T, amostrado numericamente. Uma curva finita não prova densidade; ela apenas permite explorar o comportamento previsto pelo fluxo exato.</p>
-        <details class="math">
+        <div class="readout" id="torusReadout"><strong id="orbitType">Razão racional.</strong> <span id="orbitText">As órbitas dos dois campos são periódicas.</span><br>λ₁/λ₂ ≈ <output id="ratioOut">1.0000</output></div>
+        <div class="readout" id="kleinReadout" hidden>
+          <strong id="kleinSlope">Inclinação 1/2.</strong>
+          <span>Período na Klein: <strong id="kleinPeriod">2π</strong>; no recobrimento: <strong id="coverPeriod">2π</strong>.</span>
+          <p id="kleinCurveStatus">A curva é o levantamento racional γ(t)=F(pt,qt), projetado na garrafa de Klein.</p>
+        </div>
+        <p class="math" id="torusNote">O gráfico mostra apenas o trecho 0≤t≤T, amostrado numericamente. Uma curva finita não prova densidade; ela apenas permite explorar o comportamento previsto pelo fluxo exato.</p>
+        <p class="math" id="kleinNote" hidden>A animação percorre uma curva projetada e fechada; ela não representa um campo vetorial linear global arbitrário na garrafa de Klein.</p>
+        <details class="math" id="torusMath">
           <summary><strong>Parametrização e campos</strong></summary>
           <p>Φ(θ,φ)=((R+r cosθ)cosφ,(R+r cosθ)sinφ,r sinθ), com R=5, r=3 e (θ,φ)∈(ℝ/2πℤ)². O toro está embutido porque R&gt;r.</p>
           <p>X=λ₁∂θ+λ₂∂φ e Y=−λ₂∂θ+λ₁∂φ. Com (θ₀,φ₀)=(π/4,π/4), as curvas são γ<sub>X</sub>(t)=Φ(θ₀+λ₁t,φ₀+λ₂t) e γ<sub>Y</sub>(t)=Φ(θ₀−λ₂t,φ₀+λ₁t).</p>
           <p>Os vetores mostrados nos extremos são dΦ(X) e dΦ(Y). As setas têm comprimento gráfico ajustado para visibilidade; sua direção, não seu comprimento, representa o vetor tangente.</p>
           <p>Para ambos os campos, a órbita é periódica quando λ₁/λ₂∈ℚ e densa no toro quando λ₁/λ₂∉ℚ. Para o par π,e, o painel não infere a racionalidade da razão por aproximações decimais.</p>
+        </details>
+        <details class="math" id="kleinMath" hidden>
+          <summary><strong>Quociente e período</strong></summary>
+          <p>A imersão F do toro duplo satisfaz F(τ(u,v))=F(u,v), onde τ(u,v)=(u+π,π−v). Ela parametriza a garrafa de Klein K=T²/⟨τ⟩; a imagem em ℝ³ tem auto-interseções.</p>
+          <p>Para p,q inteiros não ambos nulos, a reta levantada γ̃(t)=(pt,qt) define uma curva fechada após projeção. Com d=gcd(|p|,|q|), o período no toro de recobrimento é 2π/d. Se p/d e q/d são ambos ímpares, a projeção já fecha em π/d; caso contrário, fecha em 2π/d.</p>
+          <p>O diagrama mostra o levantamento no toro de recobrimento. Esta construção de curvas racionais não deve ser confundida com um campo vetorial constante arbitrário no quociente Klein.</p>
         </details>
         <p id="status" role="status">Condição inicial: (θ₀,φ₀)=(π/4,π/4).</p>
       </div>
@@ -97,16 +128,19 @@
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { formatPi, kleinCurveData, kleinPoint } from '../../assets/js/klein-flow.js';
 
     const $ = id => document.getElementById(id);
     const TWO_PI = 2 * Math.PI, R = 5, r = 3;
     const theta0 = Math.PI / 4, phi0 = Math.PI / 4;
+    const kleinState = { p: 2, q: 1, progress: 0, playing: false, data: null, adjustedZeroDirection: false };
     const stage = $('stage');
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf8fafc);
+    const initialTorusCamera = new THREE.Vector3(14, 12, 17);
+    const initialKleinCamera = new THREE.Vector3(8.3, 6.8, 10.6);
     const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
-    const initialCamera = new THREE.Vector3(14, 12, 17);
-    camera.position.copy(initialCamera);
+    camera.position.copy(initialTorusCamera);
     const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -127,6 +161,8 @@
     scene.add(fillLight);
 
     const surfaceGroup = new THREE.Group(), flowGroup = new THREE.Group();
+    let kleinMoving = null;
+    let surfaceCameraRadius = 0;
     scene.add(surfaceGroup, flowGroup);
     const parameters = [
       ['1', 1], ['2', 2], ['3', 3], ['4', 4], ['5', 5], ['6', 6], ['7', 7], ['8', 8], ['9', 9],
@@ -164,7 +200,18 @@
       return option[1];
     }
 
+    function clearSurface() {
+      while (surfaceGroup.children.length) {
+        const object = surfaceGroup.children[0];
+        surfaceGroup.remove(object);
+        disposeTree(object);
+      }
+    }
+
     function buildTorus() {
+      clearSurface();
+      surfaceGroup.position.set(0, 0, 0);
+      flowGroup.position.set(0, 0, 0);
       const positions = [], indices = [], nTheta = 100, nPhi = 150;
       for (let i = 0; i <= nTheta; i++) {
         for (let j = 0; j <= nPhi; j++) {
@@ -182,8 +229,42 @@
       geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
       geometry.setIndex(indices);
       geometry.computeVertexNormals();
+      geometry.computeBoundingSphere();
+      surfaceCameraRadius = geometry.boundingSphere.radius;
       const mesh = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.55, metalness: 0.02, transparent: true, opacity: 0.55, side: THREE.DoubleSide }));
       surfaceGroup.add(mesh);
+    }
+
+    function buildKleinSurface() {
+      clearSurface();
+      const uSteps = 120, vSteps = 180, positions = [], indices = [];
+      const index = (i, j) => i * vSteps + ((j % vSteps) + vSteps) % vSteps;
+      for (let i = 0; i < uSteps; i++) {
+        const u = Math.PI * i / uSteps;
+        for (let j = 0; j < vSteps; j++) {
+          const point = kleinPoint(u, TWO_PI * j / vSteps);
+          positions.push(point.x, point.y, point.z);
+        }
+      }
+      for (let i = 0; i < uSteps; i++) {
+        for (let j = 0; j < vSteps; j++) {
+          const nextV = (j + 1) % vSteps, a = index(i, j), d = index(i, nextV);
+          const b = i === uSteps - 1 ? index(0, vSteps / 2 - j) : index(i + 1, j);
+          const c = i === uSteps - 1 ? index(0, vSteps / 2 - nextV) : index(i + 1, nextV);
+          indices.push(a, b, d, b, c, d);
+        }
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      geometry.computeBoundingBox();
+      const center = geometry.boundingBox.getCenter(new THREE.Vector3());
+      surfaceCameraRadius = geometry.boundingBox.getSize(new THREE.Vector3()).length() / 2;
+      surfaceGroup.position.copy(center).negate();
+      flowGroup.position.copy(center).negate();
+      const material = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.62, transparent: true, opacity: 0.62, side: THREE.DoubleSide });
+      surfaceGroup.add(new THREE.Mesh(geometry, material));
     }
 
     function disposeTree(root) {
@@ -202,6 +283,7 @@
         flowGroup.remove(object);
         disposeTree(object);
       }
+      kleinMoving = null;
     }
 
     function addCurve(points, color) {
@@ -260,7 +342,8 @@
       }
     }
 
-    function update() {
+    function updateTorus() {
+      if ($('surfaceSelect').value !== 'torus') return;
       clearFlows();
       const timeMax = Number($('tmax').value), lambda1 = numericValue('lambda1'), lambda2 = numericValue('lambda2');
       const mode = $('flowMode').value;
@@ -274,20 +357,206 @@
       $('status').textContent = `T=${timeMax.toFixed(1)} · λ₁=${lambda1.toFixed(4)} · λ₂=${lambda2.toFixed(4)} · ponto inicial (π/4, π/4).`;
     }
 
+    function readKleinParameters() {
+      const pValue = $('kleinP').value, qValue = $('kleinQ').value;
+      const p = Number(pValue), q = Number(qValue);
+      kleinState.adjustedZeroDirection = false;
+      if (pValue === '' || qValue === '') {
+        $('status').textContent = 'Informe valores inteiros para p e q.';
+        return null;
+      }
+      if (!Number.isInteger(p) || !Number.isInteger(q) || Math.abs(p) > 8 || Math.abs(q) > 8) {
+        $('status').textContent = 'Escolha p e q como inteiros entre −8 e 8.';
+        return null;
+      }
+      if (p === 0 && q === 0) {
+        $('kleinQ').value = '1';
+        kleinState.adjustedZeroDirection = true;
+        return { p, q: 1 };
+      }
+      return { p, q };
+    }
+
+    function drawKleinPhase() {
+      const canvas = $('kleinPhase'), context = canvas.getContext('2d'), data = kleinState.data;
+      if (!context || !data) return;
+      const width = canvas.width, height = canvas.height;
+      const xEnd = kleinState.p * data.T / TWO_PI, yEnd = kleinState.q * data.T / TWO_PI;
+      const minX = Math.min(-0.6, xEnd - 0.6), maxX = Math.max(0.6, xEnd + 0.6);
+      const minY = Math.min(-0.6, yEnd - 0.6), maxY = Math.max(0.6, yEnd + 0.6);
+      const scale = Math.min((width - 76) / (maxX - minX), (height - 58) / (maxY - minY));
+      const offsetX = (width - scale * (maxX - minX)) / 2 - scale * minX;
+      const offsetY = height / 2 + scale * (minY + maxY) / 2;
+      const X = x => offsetX + scale * x, Y = y => offsetY - scale * y;
+      context.fillStyle = '#f8fafc';
+      context.fillRect(0, 0, width, height);
+      context.strokeStyle = '#dce3ee';
+      context.lineWidth = 1;
+      for (let x = Math.ceil(minX); x <= Math.floor(maxX); x++) {
+        context.beginPath();
+        context.moveTo(X(x), Y(minY));
+        context.lineTo(X(x), Y(maxY));
+        context.stroke();
+      }
+      for (let y = Math.ceil(minY); y <= Math.floor(maxY); y++) {
+        context.beginPath();
+        context.moveTo(X(minX), Y(y));
+        context.lineTo(X(maxX), Y(y));
+        context.stroke();
+      }
+      context.strokeStyle = '#64748b';
+      context.beginPath();
+      context.moveTo(X(minX), Y(0));
+      context.lineTo(X(maxX), Y(0));
+      context.moveTo(X(0), Y(minY));
+      context.lineTo(X(0), Y(maxY));
+      context.stroke();
+      context.strokeStyle = '#d28b24';
+      context.lineWidth = 4;
+      context.lineCap = 'round';
+      context.beginPath();
+      context.moveTo(X(0), Y(0));
+      context.lineTo(X(xEnd), Y(yEnd));
+      context.stroke();
+      const x = kleinState.p * data.T * kleinState.progress / TWO_PI;
+      const y = kleinState.q * data.T * kleinState.progress / TWO_PI;
+      context.fillStyle = '#16a34a';
+      context.beginPath();
+      context.arc(X(0), Y(0), 6, 0, TWO_PI);
+      context.fill();
+      context.fillStyle = '#2563eb';
+      context.beginPath();
+      context.arc(X(x), Y(y), 6, 0, TWO_PI);
+      context.fill();
+      context.fillStyle = '#334155';
+      context.font = '15px system-ui';
+      context.fillText('u/2π', width - 53, height - 10);
+      context.fillText('v/2π', 8, 18);
+    }
+
+    function updateKleinProgress() {
+      const data = kleinState.data;
+      if (!data) return;
+      kleinState.progress = Number($('kleinProgress').value);
+      if (kleinMoving) {
+        const time = data.T * kleinState.progress;
+        kleinMoving.position.copy(kleinPoint(kleinState.p * time, kleinState.q * time));
+      }
+      $('kleinProgressValue').textContent = `${Math.round(100 * kleinState.progress)}%`;
+      $('kleinPlay').textContent = kleinState.playing ? 'Ⅱ Pausar' : '▶ Percorrer';
+      drawKleinPhase();
+    }
+
+    function updateKleinCurve(resetProgress = true) {
+      const parameters = readKleinParameters();
+      if (!parameters) return;
+      kleinState.p = parameters.p;
+      kleinState.q = parameters.q;
+      if (resetProgress) {
+        kleinState.progress = 0;
+        kleinState.playing = false;
+        $('kleinProgress').value = '0';
+      }
+      const data = kleinState.data = kleinCurveData(kleinState.p, kleinState.q);
+      clearFlows();
+      const samples = Math.max(320, Math.min(2800, 220 * Math.max(2, Math.abs(kleinState.p) + Math.abs(kleinState.q))));
+      const points = [];
+      for (let i = 0; i < samples; i++) {
+        const time = data.T * i / samples;
+        points.push(kleinPoint(kleinState.p * time, kleinState.q * time));
+      }
+      const curve = new THREE.CatmullRomCurve3(points, true, 'centripetal');
+      const tube = new THREE.Mesh(
+        new THREE.TubeGeometry(curve, samples, 0.025, 8, true),
+        new THREE.MeshStandardMaterial({ color: 0xd28b24, roughness: 0.45, metalness: 0.04 })
+      );
+      const start = new THREE.Mesh(new THREE.SphereGeometry(0.09, 20, 15), new THREE.MeshBasicMaterial({ color: 0x16a34a }));
+      kleinMoving = new THREE.Mesh(new THREE.SphereGeometry(0.105, 24, 18), new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.3 }));
+      start.position.copy(kleinPoint(0, 0));
+      kleinMoving.position.copy(start.position);
+      flowGroup.add(tube, start, kleinMoving);
+
+      const period = formatPi(data.halfPeriod ? 1 : 2, data.d);
+      const coverPeriod = formatPi(2, data.d);
+      const slope = kleinState.p === 0 ? 'vertical' : `${data.qr}/${data.pr}`;
+      $('kleinSlope').textContent = `Inclinação ${slope}.`;
+      $('kleinPeriod').textContent = period;
+      $('coverPeriod').textContent = coverPeriod;
+      $('kleinCurveStatus').textContent = data.halfPeriod
+        ? 'A reta termina na imagem pela involução do recobrimento; por isso, a curva projetada fecha na metade do período do levantamento.'
+        : 'A reta retorna ao ponto inicial no toro de recobrimento; a curva projetada fecha no mesmo período.';
+      const correction = kleinState.adjustedZeroDirection ? ' · a direção nula foi corrigida para q=1' : '';
+      $('status').textContent = `γ(t)=F(${kleinState.p}t, ${kleinState.q}t) · período na Klein: ${period}${correction}.`;
+      $('kleinProgress').value = String(kleinState.progress);
+      updateKleinProgress();
+    }
+
+    function setSurface() {
+      const isKlein = $('surfaceSelect').value === 'klein';
+      kleinState.playing = false;
+      $('torusControls').hidden = isKlein;
+      $('kleinControls').hidden = !isKlein;
+      $('torusLegend').hidden = isKlein;
+      $('kleinLegend').hidden = !isKlein;
+      $('torusReadout').hidden = isKlein;
+      $('kleinReadout').hidden = !isKlein;
+      $('torusNote').hidden = isKlein;
+      $('kleinNote').hidden = !isKlein;
+      $('torusMath').hidden = isKlein;
+      $('kleinMath').hidden = !isKlein;
+      if (isKlein) {
+        $('surfaceTitle').textContent = 'Garrafa de Klein · imersão em ℝ³';
+        $('surfaceHint').textContent = 'A imagem tem auto-interseções; arraste para girar e use a roda ou a pinça para zoom.';
+        stage.setAttribute('aria-label', 'Imersão da garrafa de Klein e curva racional projetada');
+        buildKleinSurface();
+        updateKleinCurve(false);
+      } else {
+        $('surfaceTitle').textContent = 'Toro de revolução';
+        $('surfaceHint').textContent = 'Arraste para girar; use a roda do mouse ou a pinça para zoom.';
+        stage.setAttribute('aria-label', 'Visualização tridimensional do toro com curvas integrais');
+        buildTorus();
+        updateTorus();
+      }
+      resetCamera();
+    }
+
     function resize() {
       const width = Math.max(1, stage.clientWidth), height = Math.max(1, stage.clientHeight);
       renderer.setSize(width, height, false);
       camera.aspect = width / height;
       camera.updateProjectionMatrix();
+      if (surfaceCameraRadius) {
+        const direction = camera.position.clone().sub(controls.target).normalize();
+        camera.position.copy(controls.target).addScaledVector(direction, cameraDistanceForSurface());
+      }
+    }
+
+    function cameraDistanceForSurface() {
+      const verticalHalfFov = THREE.MathUtils.degToRad(camera.fov / 2);
+      const horizontalHalfFov = Math.atan(Math.tan(verticalHalfFov) * camera.aspect);
+      const limitingHalfFov = Math.min(verticalHalfFov, horizontalHalfFov);
+      return surfaceCameraRadius / Math.sin(limitingHalfFov) * 1.1;
     }
 
     function resetCamera() {
-      camera.position.copy(initialCamera);
       controls.target.set(0, 0, 0);
+      const initialPosition = $('surfaceSelect').value === 'klein' ? initialKleinCamera : initialTorusCamera;
+      camera.position.copy(initialPosition).setLength(cameraDistanceForSurface());
       controls.update();
     }
 
-    for (const id of ['tmax', 'lambda1', 'lambda2', 'flowMode']) $(id).addEventListener('input', update);
+    for (const id of ['tmax', 'lambda1', 'lambda2', 'flowMode']) $(id).addEventListener('input', updateTorus);
+    $('surfaceSelect').addEventListener('change', setSurface);
+    for (const id of ['kleinP', 'kleinQ']) $(id).addEventListener('change', () => updateKleinCurve());
+    $('kleinProgress').addEventListener('input', updateKleinProgress);
+    $('kleinPlay').addEventListener('click', () => {
+      if (kleinState.progress >= 1) {
+        kleinState.progress = 0;
+        $('kleinProgress').value = '0';
+      }
+      kleinState.playing = !kleinState.playing;
+      updateKleinProgress();
+    });
     $('resetCamera').addEventListener('click', resetCamera);
     $('fullscreen').addEventListener('click', async () => {
       const target = $('workspace');
@@ -308,11 +577,19 @@
     new ResizeObserver(resize).observe(stage);
     window.addEventListener('resize', resize);
 
-    buildTorus();
-    update();
+    setSurface();
     resize();
-    function animate() {
+    let lastFrameTime = 0;
+    function animate(time = 0) {
       requestAnimationFrame(animate);
+      const delta = lastFrameTime ? Math.min((time - lastFrameTime) / 1000, 0.05) : 0;
+      lastFrameTime = time;
+      if (kleinState.playing && $('surfaceSelect').value === 'klein') {
+        kleinState.progress = Math.min(1, kleinState.progress + delta * 0.12);
+        if (kleinState.progress >= 1) kleinState.playing = false;
+        $('kleinProgress').value = String(kleinState.progress);
+        updateKleinProgress();
+      }
       controls.update();
       renderer.render(scene, camera);
     }

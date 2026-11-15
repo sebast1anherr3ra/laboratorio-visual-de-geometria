@@ -374,6 +374,7 @@ body[data-theme="light"] #kleinPanel{background:#f7f4ff!important;border-color:#
 <div id="kleinPanel" style="display:none;margin-top:10px;padding:12px 14px;border:1px solid #8b5cf6;border-radius:10px;background:#1a1630;color:var(--text);font-size:12px;line-height:1.7">
  <strong style="color:#d8b4fe;font-size:13px">Garrafa de Klein · curvas racionais no recobrimento</strong>
  <div style="margin-top:5px">A malha usa a colagem <strong>(0,v) ∼ (π,π−v)</strong>. A imagem em ℝ³ se auto-intersecta, mas o domínio quociente é uma variedade suave não orientável.</div>
+ <div style="margin-top:5px">Esta visualização também está disponível junto aos fluxos do toro na <a href="topologia/fluxos-toro/">experiência unificada</a>.</div>
  <div class="klein-controls">
   <label for="kleinP">p <input id="kleinP" type="number" min="-8" max="8" step="1" value="2" inputmode="numeric"></label>
   <label for="kleinQ">q <input id="kleinQ" type="number" min="-8" max="8" step="1" value="1" inputmode="numeric"></label>
@@ -391,6 +392,7 @@ body[data-theme="light"] #kleinPanel{background:#f7f4ff!important;border-color:#
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { formatPi, kleinCurveData, kleinPoint } from './assets/js/klein-flow.js';
 
 const infoExtras=document.getElementById('surfaceInfoExtras');
 ['orbifoldPanel','pinchedPanel','crosscapPanel','boyPanel','steinerPanel','astroidPanel','bourPanel','kleinPanel'].forEach(id=>{
@@ -427,35 +429,8 @@ let showNumbers=false,showVertexNumbers=false,showEdgeNumbers=false,displayMode=
 let showStratum2=true,showStratum1=true,showStratum0=true;
 const kleinState={p:2,q:1,progress:0,playing:false};
 
-function positiveGcd(a,b){
- a=Math.abs(Math.trunc(a));b=Math.abs(Math.trunc(b));
- while(b){const rest=a%b;a=b;b=rest;}
- return a||1;
-}
-function kleinCurveData(p=kleinState.p,q=kleinState.q){
- const d=positiveGcd(p,q),pr=p/d,qr=q/d;
- // τ(u,v)=(u+π,π−v) is the deck involution of T² → K.
- // The lifted line reaches τ(0,0) halfway through precisely when p/d and q/d are odd.
- const halfPeriod=Math.abs(pr)%2===1&&Math.abs(qr)%2===1;
- const numerator=halfPeriod?1:2;
- return {d,pr,qr,halfPeriod,T:numerator*Math.PI/d,coverT:2*Math.PI/d};
-}
-function formatPi(numerator,denominator){
- if(denominator===1)return numerator===1?'π':`${numerator}π`;
- return numerator===1?`π/${denominator}`:`${numerator}π/${denominator}`;
-}
-function kleinPoint(u,v){
- // Nordstrand's classical immersion. It is invariant under (u,v) ↦ (u+π,π−v).
- const cu=Math.cos(u),su=Math.sin(u),cv=Math.cos(v),sv=Math.sin(v);
- const c2=cu*cu,c4=c2*c2,c6=c4*c2;
- const A=3*cv-30*su+90*c4*su-60*c6*su+5*cu*cv*su;
- const B=3*cv-3*c2*cv-48*c4*cv+48*c6*cv-60*su
-  +5*cu*cv*su-5*c2*cu*cv*su-80*c4*cu*cv*su+80*c6*cu*cv*su;
- const scale=1.25;
- return new THREE.Vector3(scale*(-2/15)*cu*A,scale*(-1/15)*su*B,scale*(2/15)*(3+5*cu*su)*sv);
-}
 function makeKleinCurve(){
- const data=kleinCurveData();
+ const data=kleinCurveData(kleinState.p,kleinState.q);
  const samples=Math.max(320,Math.min(2800,220*Math.max(2,Math.abs(kleinState.p)+Math.abs(kleinState.q))));
  const points=[];
  for(let i=0;i<samples;i++){
@@ -497,7 +472,7 @@ function drawKleinPhase(){
  const canvas=document.getElementById('kleinPhase');if(!canvas)return;
  const ctx=canvas.getContext('2d');if(!ctx)return;
  const W=canvas.width,H=canvas.height,highContrast=document.body.classList.contains('high-contrast');
- const data=kleinCurveData(),xEnd=kleinState.p*data.T/(2*Math.PI),yEnd=kleinState.q*data.T/(2*Math.PI);
+ const data=kleinCurveData(kleinState.p,kleinState.q),xEnd=kleinState.p*data.T/(2*Math.PI),yEnd=kleinState.q*data.T/(2*Math.PI);
  const minX=Math.min(-.6,xEnd-.6),maxX=Math.max(.6,xEnd+.6),minY=Math.min(-.6,yEnd-.6),maxY=Math.max(.6,yEnd+.6);
  const scale=Math.min((W-76)/(maxX-minX),(H-58)/(maxY-minY));
  const ox=(W-scale*(maxX-minX))/2-scale*minX,oy=H/2+scale*(minY+maxY)/2;
@@ -516,7 +491,7 @@ function drawKleinPhase(){
 function updateKleinPanel(){
  const pInput=document.getElementById('kleinP'),qInput=document.getElementById('kleinQ');if(!pInput||!qInput)return;
  pInput.value=String(kleinState.p);qInput.value=String(kleinState.q);
- const data=kleinCurveData(),period=formatPi(data.halfPeriod?1:2,data.d),coverPeriod=formatPi(2,data.d);
+ const data=kleinCurveData(kleinState.p,kleinState.q),period=formatPi(data.halfPeriod?1:2,data.d),coverPeriod=formatPi(2,data.d);
  document.getElementById('kleinProgress').value=String(kleinState.progress);
  document.getElementById('kleinProgressValue').textContent=`${Math.round(100*kleinState.progress)}%`;
  document.getElementById('kleinPlay').textContent=kleinState.playing?'Ⅱ Pausar':'▶ Percorrer';
