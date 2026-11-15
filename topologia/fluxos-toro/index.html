@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Explore fluxos lineares no toro e curvas racionais no recobrimento da garrafa de Klein.">
+  <meta name="description" content="Explore fluxos lineares no toro e curvas projetadas do recobrimento da garrafa de Klein.">
   <title>Fluxos no toro e na garrafa de Klein — Laboratório Visual de Geometria</title>
   <style>
     :root{color-scheme:light;--bg:#f5f7fb;--panel:#fff;--line:#dce3ee;--text:#172033;--muted:#586579;--accent:#0f766e}
@@ -77,7 +77,7 @@
       </div>
       <div class="legend" id="kleinLegend" hidden>
         <span><i class="dot" style="background:#94a3b8"></i>Imersão da garrafa de Klein</span>
-        <span><i class="dot" style="background:#d28b24"></i>Curva racional projetada</span>
+        <span><i class="dot" style="background:#d28b24"></i>Curva projetada</span>
         <span><i class="dot" style="background:#16a34a"></i>Início</span>
         <span><i class="dot" style="background:#2563eb"></i>Ponto móvel</span>
       </div>
@@ -93,21 +93,22 @@
           <div class="control"><label for="flowMode">Curvas integrais</label><select id="flowMode"><option value="none">Nenhuma</option><option value="X">Somente fluxo de X</option><option value="Y">Somente fluxo de Y</option><option value="both" selected>Ambos os fluxos</option></select></div>
         </div>
         <div id="kleinControls" hidden>
-          <div class="control"><label for="kleinP">p (u)</label><input id="kleinP" type="number" min="-8" max="8" step="1" value="2"></div>
-          <div class="control"><label for="kleinQ">q (v)</label><input id="kleinQ" type="number" min="-8" max="8" step="1" value="1"></div>
+          <div class="control"><label for="kleinLambda1">λ₁</label><select id="kleinLambda1"></select></div>
+          <div class="control"><label for="kleinLambda2">λ₂</label><select id="kleinLambda2"></select></div>
+          <div class="control"><label for="kleinTmax">Tempo do trecho T <output id="kleinTimeOut">5.0</output></label><input id="kleinTmax" type="range" min="0.1" max="100" step="0.1" value="5"></div>
           <div class="control"><label for="kleinProgress">Percurso <output id="kleinProgressValue">0%</output></label><input id="kleinProgress" type="range" min="0" max="1" step="0.001" value="0"></div>
           <button id="kleinPlay" type="button">▶ Percorrer</button>
-          <canvas id="kleinPhase" class="phase" width="600" height="230" aria-label="Levantamento da curva racional no toro de recobrimento"></canvas>
+          <canvas id="kleinPhase" class="phase" width="600" height="230" aria-label="Trecho da reta levantada no toro de recobrimento"></canvas>
         </div>
         <div class="actions"><button id="resetCamera" type="button">Reiniciar câmera</button></div>
         <div class="readout" id="torusReadout"><strong id="orbitType">Razão racional.</strong> <span id="orbitText">As órbitas dos dois campos são periódicas.</span><br>λ₁/λ₂ ≈ <output id="ratioOut">1.0000</output></div>
         <div class="readout" id="kleinReadout" hidden>
-          <strong id="kleinSlope">Inclinação 1/2.</strong>
+          <strong id="kleinSlope">Direção levantada (λ₁, λ₂)=(2, 1).</strong>
           <span>Período na Klein: <strong id="kleinPeriod">2π</strong>; no recobrimento: <strong id="coverPeriod">2π</strong>.</span>
-          <p id="kleinCurveStatus">A curva é o levantamento racional γ(t)=F(pt,qt), projetado na garrafa de Klein.</p>
+          <p id="kleinCurveStatus">O gráfico mostra o trecho selecionado da curva projetada.</p>
         </div>
         <p class="math" id="torusNote">O gráfico mostra apenas o trecho 0≤t≤T, amostrado numericamente. Uma curva finita não prova densidade; ela apenas permite explorar o comportamento previsto pelo fluxo exato.</p>
-        <p class="math" id="kleinNote" hidden>A animação percorre uma curva projetada e fechada; ela não representa um campo vetorial linear global arbitrário na garrafa de Klein.</p>
+        <p class="math" id="kleinNote" hidden>A animação percorre um trecho finito da projeção da reta levantada; ela não representa um campo vetorial linear global arbitrário na garrafa de Klein.</p>
         <details class="math" id="torusMath">
           <summary><strong>Parametrização e campos</strong></summary>
           <p>Φ(θ,φ)=((R+r cosθ)cosφ,(R+r cosθ)sinφ,r sinθ), com R=5, r=3 e (θ,φ)∈(ℝ/2πℤ)². O toro está embutido porque R&gt;r.</p>
@@ -118,8 +119,8 @@
         <details class="math" id="kleinMath" hidden>
           <summary><strong>Quociente e período</strong></summary>
           <p>A imersão F do toro duplo satisfaz F(τ(u,v))=F(u,v), onde τ(u,v)=(u+π,π−v). Ela parametriza a garrafa de Klein K=T²/⟨τ⟩; a imagem em ℝ³ tem auto-interseções.</p>
-          <p>Para p,q inteiros não ambos nulos, a reta levantada γ̃(t)=(pt,qt) define uma curva fechada após projeção. Com d=gcd(|p|,|q|), o período no toro de recobrimento é 2π/d. Se p/d e q/d são ambos ímpares, a projeção já fecha em π/d; caso contrário, fecha em 2π/d.</p>
-          <p>O diagrama mostra o levantamento no toro de recobrimento. Esta construção de curvas racionais não deve ser confundida com um campo vetorial constante arbitrário no quociente Klein.</p>
+          <p>A reta levantada é γ̃(t)=(λ₁t,λ₂t), e sua projeção é γ(t)=F(λ₁t,λ₂t). Quando (λ₁,λ₂)=c(p,q), com p,q inteiros coprimos, o período no toro de recobrimento é 2π/c. Se p e q forem ambos ímpares, a projeção fecha em π/c; caso contrário, fecha em 2π/c.</p>
+          <p>Se λ₁/λ₂ for irracional, não há período de retorno; o gráfico mostra somente o intervalo finito 0≤t≤T. Para π/e, a página não infere racionalidade por aproximações numéricas. Esta construção de curvas projetadas não deve ser confundida com um campo vetorial linear global arbitrário no quociente Klein.</p>
         </details>
         <p id="status" role="status">Condição inicial: (θ₀,φ₀)=(π/4,π/4).</p>
       </div>
@@ -133,7 +134,7 @@
     const $ = id => document.getElementById(id);
     const TWO_PI = 2 * Math.PI, R = 5, r = 3;
     const theta0 = Math.PI / 4, phi0 = Math.PI / 4;
-    const kleinState = { p: 2, q: 1, progress: 0, playing: false, data: null, adjustedZeroDirection: false };
+    const kleinState = { lambda1: 2, lambda2: 1, progress: 0, playing: false, data: null, segmentDuration: 5 };
     const stage = $('stage');
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf8fafc);
@@ -168,14 +169,14 @@
       ['1', 1], ['2', 2], ['3', 3], ['4', 4], ['5', 5], ['6', 6], ['7', 7], ['8', 8], ['9', 9],
       ['√2', Math.SQRT2], ['π', Math.PI], ['e', Math.E]
     ];
-    for (const id of ['lambda1', 'lambda2']) {
+    for (const id of ['lambda1', 'lambda2', 'kleinLambda1', 'kleinLambda2']) {
       for (const [label, value] of parameters) {
         const option = document.createElement('option');
         option.value = label;
         option.textContent = label;
         $(id).appendChild(option);
       }
-      $(id).value = '1';
+      $(id).value = id === 'kleinLambda1' ? '2' : '1';
     }
 
     function wrap(angle) {
@@ -357,31 +358,35 @@
       $('status').textContent = `T=${timeMax.toFixed(1)} · λ₁=${lambda1.toFixed(4)} · λ₂=${lambda2.toFixed(4)} · ponto inicial (π/4, π/4).`;
     }
 
-    function readKleinParameters() {
-      const pValue = $('kleinP').value, qValue = $('kleinQ').value;
-      const p = Number(pValue), q = Number(qValue);
-      kleinState.adjustedZeroDirection = false;
-      if (pValue === '' || qValue === '') {
-        $('status').textContent = 'Informe valores inteiros para p e q.';
-        return null;
+    function kleinFlowData(lambda1, lambda2, label1, label2) {
+      if (Number.isInteger(lambda1) && Number.isInteger(lambda2)) {
+        return { ...kleinCurveData(lambda1, lambda2), classification: 'periodic' };
       }
-      if (!Number.isInteger(p) || !Number.isInteger(q) || Math.abs(p) > 8 || Math.abs(q) > 8) {
-        $('status').textContent = 'Escolha p e q como inteiros entre −8 e 8.';
-        return null;
+      if (label1 === label2) {
+        return {
+          d: lambda1, pr: 1, qr: 1, halfPeriod: true,
+          T: Math.PI / lambda1, coverT: TWO_PI / lambda1,
+          classification: 'periodic', scaleLabel: label1
+        };
       }
-      if (p === 0 && q === 0) {
-        $('kleinQ').value = '1';
-        kleinState.adjustedZeroDirection = true;
-        return { p, q: 1 };
-      }
-      return { p, q };
+      const labels = new Set([label1, label2]);
+      return {
+        classification: labels.has('π') && labels.has('e') ? 'unknown' : 'nonperiodic'
+      };
+    }
+
+    function formatKleinPeriod(data, numerator) {
+      if (Number.isInteger(data.d)) return formatPi(numerator, data.d);
+      if (data.scaleLabel === 'π') return String(numerator);
+      return `${numerator === 1 ? 'π' : '2π'}/${data.scaleLabel}`;
     }
 
     function drawKleinPhase() {
       const canvas = $('kleinPhase'), context = canvas.getContext('2d'), data = kleinState.data;
       if (!context || !data) return;
       const width = canvas.width, height = canvas.height;
-      const xEnd = kleinState.p * data.T / TWO_PI, yEnd = kleinState.q * data.T / TWO_PI;
+      const timeMax = kleinState.segmentDuration;
+      const xEnd = kleinState.lambda1 * timeMax / TWO_PI, yEnd = kleinState.lambda2 * timeMax / TWO_PI;
       const minX = Math.min(-0.6, xEnd - 0.6), maxX = Math.max(0.6, xEnd + 0.6);
       const minY = Math.min(-0.6, yEnd - 0.6), maxY = Math.max(0.6, yEnd + 0.6);
       const scale = Math.min((width - 76) / (maxX - minX), (height - 58) / (maxY - minY));
@@ -418,8 +423,8 @@
       context.moveTo(X(0), Y(0));
       context.lineTo(X(xEnd), Y(yEnd));
       context.stroke();
-      const x = kleinState.p * data.T * kleinState.progress / TWO_PI;
-      const y = kleinState.q * data.T * kleinState.progress / TWO_PI;
+      const x = kleinState.lambda1 * timeMax * kleinState.progress / TWO_PI;
+      const y = kleinState.lambda2 * timeMax * kleinState.progress / TWO_PI;
       context.fillStyle = '#16a34a';
       context.beginPath();
       context.arc(X(0), Y(0), 6, 0, TWO_PI);
@@ -439,8 +444,8 @@
       if (!data) return;
       kleinState.progress = Number($('kleinProgress').value);
       if (kleinMoving) {
-        const time = data.T * kleinState.progress;
-        kleinMoving.position.copy(kleinPoint(kleinState.p * time, kleinState.q * time));
+        const time = kleinState.segmentDuration * kleinState.progress;
+        kleinMoving.position.copy(kleinPoint(kleinState.lambda1 * time, kleinState.lambda2 * time));
       }
       $('kleinProgressValue').textContent = `${Math.round(100 * kleinState.progress)}%`;
       $('kleinPlay').textContent = kleinState.playing ? 'Ⅱ Pausar' : '▶ Percorrer';
@@ -448,26 +453,31 @@
     }
 
     function updateKleinCurve(resetProgress = true) {
-      const parameters = readKleinParameters();
-      if (!parameters) return;
-      kleinState.p = parameters.p;
-      kleinState.q = parameters.q;
+      const lambda1Label = $('kleinLambda1').value, lambda2Label = $('kleinLambda2').value;
+      const lambda1 = kleinState.lambda1 = numericValue('kleinLambda1');
+      const lambda2 = kleinState.lambda2 = numericValue('kleinLambda2');
+      const timeMax = kleinState.segmentDuration = Number($('kleinTmax').value);
+      $('kleinTimeOut').textContent = timeMax.toFixed(1);
       if (resetProgress) {
         kleinState.progress = 0;
         kleinState.playing = false;
         $('kleinProgress').value = '0';
       }
-      const data = kleinState.data = kleinCurveData(kleinState.p, kleinState.q);
+      const data = kleinState.data = kleinFlowData(lambda1, lambda2, lambda1Label, lambda2Label);
       clearFlows();
-      const samples = Math.max(320, Math.min(2800, 220 * Math.max(2, Math.abs(kleinState.p) + Math.abs(kleinState.q))));
+      const samples = Math.max(320, Math.min(2800, Math.ceil(220 * timeMax * Math.max(lambda1, lambda2))));
+      const coverCycles = data.classification === 'periodic' ? timeMax / data.coverT : 0;
+      const closesAtEnd = data.classification === 'periodic'
+        && Math.abs(coverCycles - Math.round(coverCycles)) < 1e-8;
       const points = [];
-      for (let i = 0; i < samples; i++) {
-        const time = data.T * i / samples;
-        points.push(kleinPoint(kleinState.p * time, kleinState.q * time));
+      for (let i = 0; i <= samples; i++) {
+        if (closesAtEnd && i === samples) break;
+        const time = timeMax * i / samples;
+        points.push(kleinPoint(lambda1 * time, lambda2 * time));
       }
-      const curve = new THREE.CatmullRomCurve3(points, true, 'centripetal');
+      const curve = new THREE.CatmullRomCurve3(points, closesAtEnd, 'centripetal');
       const tube = new THREE.Mesh(
-        new THREE.TubeGeometry(curve, samples, 0.025, 8, true),
+        new THREE.TubeGeometry(curve, samples, 0.025, 8, closesAtEnd),
         new THREE.MeshStandardMaterial({ color: 0xd28b24, roughness: 0.45, metalness: 0.04 })
       );
       const start = new THREE.Mesh(new THREE.SphereGeometry(0.09, 20, 15), new THREE.MeshBasicMaterial({ color: 0x16a34a }));
@@ -476,17 +486,26 @@
       kleinMoving.position.copy(start.position);
       flowGroup.add(tube, start, kleinMoving);
 
-      const period = formatPi(data.halfPeriod ? 1 : 2, data.d);
-      const coverPeriod = formatPi(2, data.d);
-      const slope = kleinState.p === 0 ? 'vertical' : `${data.qr}/${data.pr}`;
-      $('kleinSlope').textContent = `Inclinação ${slope}.`;
+      const period = data.classification === 'periodic'
+        ? formatKleinPeriod(data, data.halfPeriod ? 1 : 2)
+        : data.classification === 'nonperiodic' ? 'não periódico' : 'não classificado';
+      const coverPeriod = data.classification === 'periodic'
+        ? formatKleinPeriod(data, 2)
+        : data.classification === 'nonperiodic' ? 'não periódico' : 'não classificado';
+      $('kleinSlope').textContent = `Direção levantada (λ₁, λ₂)=(${lambda1Label}, ${lambda2Label}).`;
       $('kleinPeriod').textContent = period;
       $('coverPeriod').textContent = coverPeriod;
-      $('kleinCurveStatus').textContent = data.halfPeriod
-        ? 'A reta termina na imagem pela involução do recobrimento; por isso, a curva projetada fecha na metade do período do levantamento.'
-        : 'A reta retorna ao ponto inicial no toro de recobrimento; a curva projetada fecha no mesmo período.';
-      const correction = kleinState.adjustedZeroDirection ? ' · a direção nula foi corrigida para q=1' : '';
-      $('status').textContent = `γ(t)=F(${kleinState.p}t, ${kleinState.q}t) · período na Klein: ${period}${correction}.`;
+      $('kleinCurveStatus').textContent = data.classification === 'periodic'
+        ? data.halfPeriod
+          ? 'A projeção fecha pela involução antes de a reta retornar no toro de recobrimento. O gráfico mostra o intervalo finito T selecionado.'
+          : 'A reta retorna no toro de recobrimento, e sua projeção fecha no mesmo período. O gráfico mostra o intervalo finito T selecionado.'
+        : data.classification === 'nonperiodic'
+          ? 'A razão λ₁/λ₂ é irracional para esta combinação; a curva projetada não fecha. O gráfico mostra apenas o intervalo finito selecionado.'
+          : 'Não inferimos se π/e é racional por aproximações decimais; o gráfico mostra somente o intervalo finito selecionado.';
+      const periodicity = data.classification === 'periodic'
+        ? `período na Klein: ${period}`
+        : data.classification === 'nonperiodic' ? 'curva projetada não periódica' : 'periodicidade não classificada';
+      $('status').textContent = `γ(t)=F(${lambda1Label}t, ${lambda2Label}t), 0≤t≤${timeMax.toFixed(1)} · ${periodicity}.`;
       $('kleinProgress').value = String(kleinState.progress);
       updateKleinProgress();
     }
@@ -507,7 +526,7 @@
       if (isKlein) {
         $('surfaceTitle').textContent = 'Garrafa de Klein · imersão em ℝ³';
         $('surfaceHint').textContent = 'A imagem tem auto-interseções; arraste para girar e use a roda ou a pinça para zoom.';
-        stage.setAttribute('aria-label', 'Imersão da garrafa de Klein e curva racional projetada');
+        stage.setAttribute('aria-label', 'Imersão da garrafa de Klein e curva projetada de uma reta levantada');
         buildKleinSurface();
         updateKleinCurve(false);
       } else {
@@ -547,7 +566,9 @@
 
     for (const id of ['tmax', 'lambda1', 'lambda2', 'flowMode']) $(id).addEventListener('input', updateTorus);
     $('surfaceSelect').addEventListener('change', setSurface);
-    for (const id of ['kleinP', 'kleinQ']) $(id).addEventListener('change', () => updateKleinCurve());
+    for (const id of ['kleinLambda1', 'kleinLambda2', 'kleinTmax']) {
+      $(id).addEventListener('input', () => updateKleinCurve());
+    }
     $('kleinProgress').addEventListener('input', updateKleinProgress);
     $('kleinPlay').addEventListener('click', () => {
       if (kleinState.progress >= 1) {

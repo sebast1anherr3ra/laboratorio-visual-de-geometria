@@ -18,6 +18,9 @@ export function kleinCurveData(p, q) {
 }
 
 export function formatPi(numerator, denominator) {
+  const divisor = positiveGcd(numerator, denominator);
+  numerator /= divisor;
+  denominator /= divisor;
   if (denominator === 1) return numerator === 1 ? 'π' : `${numerator}π`;
   return numerator === 1 ? `π/${denominator}` : `${numerator}π/${denominator}`;
 }
