@@ -104,10 +104,11 @@
         <p class="math">As bordas verdes superior e inferior são identificadas no mesmo sentido. Para o toro, as bordas vermelhas também têm o mesmo sentido; para a garrafa de Klein, uma delas é invertida.</p>
         <details class="math">
           <summary><strong>Quocientes e parametrizações</strong></summary>
-          <p>Seja Q=[0,1]². Para o toro, (u,0)~(u,1) e (0,v)~(1,v). Na parametrização de Klein usada aqui, (u,0)~(u,1) e (0,v)~(1,(1/2−v) mod 1): a borda vermelha é invertida com um deslocamento de meia volta no parâmetro periódico. Esse deslocamento é uma escolha de parametrização; o espaço quociente é a garrafa de Klein.</p>
-          <p>A interpolação visual usa P₀(u,v)=(2u−1,2v−1,0), C(u,v)=(2u−1,r cos(2πv),r sin(2πv)), com r=0,25, e o mapa final T ou K. A aplicação exibida é (1−t)((1−s)P₀+sC)+t(T ou K), com s,t∈[0,1].</p>
+          <p>Seja Q=[0,1]². Para o toro, (u,0)~(u,1) e (0,v)~(1,v). Para a garrafa de Klein, (u,0)~(u,1) e (0,v)~(1,1−v). Na figura, as setas indicam esses sentidos de identificação.</p>
+          <p>Defina P₀(u,v)=(2u−1,2v−1,0), o cilindro C<sub>g</sub>(u,v)=(2u−1,r cos(2πv),r sin(2πv)) e uma superfície C<sub>r</sub> para a colagem vermelha. Para o toro, C<sub>r</sub>=(cos(2πu),2v−1,sin(2πu)); para a Klein, C<sub>r</sub>=((2+q cos(πu))cos(2πu),q sin(πu),(2+q cos(πu))sin(2πu)), q=2v−1. Esta última parametriza uma faixa de Möbius.</p>
+          <p>A malha usa a combinação bilinear F<sub>s,t</sub>=(1−s)(1−t)P₀+s(1−t)C<sub>g</sub>+(1−s)tC<sub>r</sub>+st(T ou K), com s,t∈[0,1]. A coincidência completa das bordas verdes ocorre quando s=1; a das vermelhas, quando t=1. Os quatro cantos dos controles mostram o quadrado, o cilindro ou a faixa de Möbius parciais e o quociente final.</p>
           <p>Para o toro, T(u,v)=((R+r cos V)cos U,(R+r cos V)sin U,r sin V), U=2πu, V=2πv, R=1,4. O mapa K é uma imersão de garrafa de Klein em ℝ³; as autointerseções são necessárias na representação e não fazem parte do espaço abstrato.</p>
-          <p>Na parametrização de Klein, U=πu, V=2πv, c=r<sub>K</sub>cos V e w=r<sub>K</sub>sin V, com r<sub>K</sub>=1,25:</p>
+          <p>Na parametrização de Klein, U=πu, V=2π(v+u/2), c=r<sub>K</sub>cos V e w=r<sub>K</sub>sin V, com r<sub>K</sub>=1,25:</p>
           <p><code>x=−(4/15)cos U(3c−30sin U+90cos⁴U sin U−60cos⁶U sin U+5cos U c sin U)</code><br>
           <code>y=−(2/15)sin U(3c−3cos²U c−48cos⁴U c+48cos⁶U c−60sin U+5cos U c sin U−5cos³U c sin U−80cos⁵U c sin U+80cos⁷U c sin U)</code><br>
           <code>z=(4/15)(3+5cos U sin U)w</code>.</p>
@@ -162,6 +163,16 @@
       );
     }
 
+    function redCylinderPoint(u, v, type) {
+      if (type === 'torus') {
+        const angle = 2 * Math.PI * u;
+        return new THREE.Vector3(Math.cos(angle), 2 * v - 1, Math.sin(angle));
+      }
+      const q = 2 * v - 1, angle = 2 * Math.PI * u, twist = Math.PI * u;
+      const radius = 2 + q * Math.cos(twist);
+      return new THREE.Vector3(radius * Math.cos(angle), q * Math.sin(twist), radius * Math.sin(angle));
+    }
+
     function kleinPoint(u, v) {
       const U = Math.PI * u, V = 2 * Math.PI * v;
       const c = Math.cos(U), sn = Math.sin(U), cv = kleinRadius * Math.cos(V), sv = kleinRadius * Math.sin(V);
@@ -174,9 +185,14 @@
     function mapPoint(u, v) {
       const square = new THREE.Vector3(2 * u - 1, 2 * v - 1, 0);
       const cylinder = new THREE.Vector3(2 * u - 1, minorRadius * Math.cos(2 * Math.PI * v), minorRadius * Math.sin(2 * Math.PI * v));
-      const target = $('surfaceSelect').value === 'torus' ? torusPoint(u, v) : kleinPoint(u, v);
+      const type = $('surfaceSelect').value;
+      const redCylinder = redCylinderPoint(u, v, type);
+      const target = type === 'torus' ? torusPoint(u, v) : kleinPoint(u, v + u / 2);
       const s = Number($('greenJoin').value), t = Number($('redJoin').value);
-      return square.lerp(cylinder, s).lerp(target, t);
+      return square.multiplyScalar((1 - s) * (1 - t))
+        .addScaledVector(cylinder, s * (1 - t))
+        .addScaledVector(redCylinder, (1 - s) * t)
+        .addScaledVector(target, s * t);
     }
 
     function makeLine(points, color) {
@@ -212,9 +228,8 @@
         addArrow(group, mapPoint(a - epsilon, 0), mapPoint(a + epsilon, 0), green);
         addArrow(group, mapPoint(a - epsilon, 1), mapPoint(a + epsilon, 1), green);
         addArrow(group, mapPoint(0, a - epsilon), mapPoint(0, a + epsilon), red);
-        const paired = value => ((0.5 - value) % 1 + 1) % 1;
-        const rightStart = type === 'torus' ? a - epsilon : paired(a - epsilon);
-        const rightEnd = type === 'torus' ? a + epsilon : paired(a + epsilon);
+        const rightStart = type === 'torus' ? a - epsilon : a + epsilon;
+        const rightEnd = type === 'torus' ? a + epsilon : a - epsilon;
         addArrow(group, mapPoint(1, rightStart), mapPoint(1, rightEnd), red);
       }
     }
@@ -278,8 +293,7 @@
         svg += `<path d="M${x - 11} 50h26M${x - 11} 350h26" stroke="#15803d" stroke-width="2.5" marker-end="url(#greenArrow)"/>`;
         const y = 350 - 300 * a;
         svg += `<path d="M50 ${y + 13}V${y - 13}" stroke="#dc2626" stroke-width="2.5" marker-end="url(#redArrow)"/>`;
-        const paired = type === 'torus' ? a : ((0.5 - a) % 1 + 1) % 1;
-        const rightY = 350 - 300 * paired;
+        const rightY = y;
         const rightStart = type === 'torus' ? rightY + 13 : rightY - 13;
         const rightEnd = type === 'torus' ? rightY - 13 : rightY + 13;
         svg += `<path d="M350 ${rightStart}V${rightEnd}" stroke="#dc2626" stroke-width="2.5" marker-end="url(#redArrow)"/>`;
@@ -308,14 +322,29 @@
       } else if (s === 1 && t === 0) {
         stage = 'Cilindro: bordas verdes coladas';
         explanation = 'As bordas verdes coincidem; as bordas vermelhas ainda permanecem abertas.';
-      } else if (t === 1) {
+      } else if (s === 1 && t === 1) {
         stage = `${name}: quociente final`;
         explanation = type === 'torus'
           ? 'As duas famílias de bordas estão identificadas; a superfície resultante é o toro.'
           : 'As bordas vermelhas são identificadas com inversão; a imagem 3D é uma imersão com autointerseções.';
+      } else if (s === 0 && t === 1) {
+        stage = type === 'torus' ? 'Cilindro: bordas vermelhas coladas' : 'Faixa de Möbius: bordas vermelhas coladas';
+        explanation = 'As bordas vermelhas estão identificadas; as bordas verdes continuam abertas.';
+      } else if (t === 1) {
+        stage = 'Bordas vermelhas identificadas';
+        explanation = 'A costura vermelha está completa; a verde ainda depende do parâmetro s.';
       } else if (s === 1) {
         stage = 'Bordas verdes identificadas';
         explanation = 'A primeira identificação está completa; a segunda ainda está em interpolação.';
+      } else if (s === 0) {
+        stage = 'Identificação vermelha em curso';
+        explanation = 'A superfície evolui para o cilindro ou para a faixa de Möbius; as bordas verdes permanecem abertas.';
+      } else if (t > 0) {
+        stage = 'Duas identificações em curso';
+        explanation = 'Cada parâmetro altera sua própria família de bordas; nenhuma costura está completa ainda.';
+      } else {
+        stage = 'Bordas verdes em fechamento';
+        explanation = 'A primeira etapa ainda está em curso; o quociente final requer completar também a etapa vermelha.';
       }
       $('stageTitle').textContent = stage;
       $('stageReadout').textContent = explanation;
@@ -323,7 +352,9 @@
     }
 
     function update() {
-      const desiredCenterY = $('surfaceSelect').value === 'klein' ? kleinCenterY * Number($('redJoin').value) : 0;
+      const desiredCenterY = $('surfaceSelect').value === 'klein'
+        ? kleinCenterY * Number($('greenJoin').value) * Number($('redJoin').value)
+        : 0;
       const targetShift = desiredCenterY - controls.target.y;
       if (Math.abs(targetShift) > 1e-8) {
         camera.position.y += targetShift;
@@ -344,7 +375,7 @@
 
     function resetCamera() {
       const isKlein = $('surfaceSelect').value === 'klein';
-      controls.target.set(0, isKlein ? kleinCenterY * Number($('redJoin').value) : 0, 0);
+      controls.target.set(0, isKlein ? kleinCenterY * Number($('greenJoin').value) * Number($('redJoin').value) : 0, 0);
       camera.position.copy(isKlein ? controls.target.clone().add(kleinCameraOffset) : initialCamera);
       controls.update();
     }
